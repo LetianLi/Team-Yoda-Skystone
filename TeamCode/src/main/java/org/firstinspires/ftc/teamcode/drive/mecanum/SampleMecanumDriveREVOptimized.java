@@ -24,10 +24,10 @@ import org.openftc.revextensions2.RevBulkData;
  * trajectory following performance with moderate additional complexity.
  */
 public class SampleMecanumDriveREVOptimized extends SampleMecanumDriveBase {
-    private ExpansionHubEx hub;
-    private ExpansionHubMotor leftFront, leftRear, rightRear, rightFront;
-    private List<ExpansionHubMotor> motors;
-    private BNO055IMU imu;
+    protected ExpansionHubEx hub;
+    protected ExpansionHubMotor leftFront, leftRear, rightRear, rightFront;
+    protected List<ExpansionHubMotor> motors;
+    protected BNO055IMU imu;
 
     public SampleMecanumDriveREVOptimized(HardwareMap hardwareMap) {
         super();
