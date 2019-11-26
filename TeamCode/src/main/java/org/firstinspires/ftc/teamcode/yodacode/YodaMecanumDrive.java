@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.drive.localizer.StandardTrackingWheelLocalizer;
 import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveREVOptimized;
 import org.openftc.revextensions2.ExpansionHubEx;
 import org.openftc.revextensions2.ExpansionHubMotor;
@@ -20,7 +21,7 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
     public Servo foundationMoverLeft, foundationMoverRight;
     public Servo skystoneGrabberFront, skystoneArmFront, skystoneGrabberBack, skystoneArmBack;
     public Servo capstoneArm, intakeGrabber;
-    public Rev2mDistanceSensor frontDistance;
+    //public Rev2mDistanceSensor frontDistance;
     public SKYSTONEVuforiaDetector vuforiaDetector;
     private HardwareMap hardwareMap;
     private Telemetry telemetry;
@@ -44,7 +45,7 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         capstoneArm = hardwareMap.get(Servo.class, "capstone arm");
         intakeGrabber = hardwareMap.get(Servo.class, "intake grabber");
 
-        frontDistance = hardwareMap.get(Rev2mDistanceSensor.class, "front distance");
+        //frontDistance = hardwareMap.get(Rev2mDistanceSensor.class, "front distance");
 
         verticalExtender.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         verticalExtender.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -53,10 +54,14 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
         rightRear.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        foundationMoverRight.setDirection(Servo.Direction.REVERSE);
+        foundationMoverLeft.setDirection(Servo.Direction.REVERSE);
         capstoneArm.setDirection(Servo.Direction.REVERSE);
+        skystoneArmFront.setDirection(Servo.Direction.REVERSE);
+        skystoneGrabberFront.setDirection(Servo.Direction.REVERSE);
+        horizontalExtender.setDirection(Servo.Direction.REVERSE);
+        intakeGrabber.setDirection(Servo.Direction.REVERSE);
 
-
+        setLocalizer(new StandardTrackingWheelLocalizer(hardwareMap));
     }
 
     public void setTelemetry(Telemetry telemetry) {
@@ -100,7 +105,22 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
                 .build());
     }
 
-    public double getFrontDistance(DistanceUnit unit) {
+    /*public double getFrontDistance(DistanceUnit unit) {
         return frontDistance.getDistance(unit);
+    }*/
+
+    public void setMotorZeroPowerBehavior(String motorString, DcMotor.ZeroPowerBehavior zeroPowerBehavior) {
+        if (motorString == "leftFront" && leftFront.getZeroPowerBehavior() != zeroPowerBehavior) {
+            leftFront.setZeroPowerBehavior(zeroPowerBehavior);
+        }
+        else if (motorString == "leftRear" && leftRear.getZeroPowerBehavior() != zeroPowerBehavior) {
+            leftRear.setZeroPowerBehavior(zeroPowerBehavior);
+        }
+        else if (motorString == "rightFront" && rightFront.getZeroPowerBehavior() != zeroPowerBehavior) {
+            rightFront.setZeroPowerBehavior(zeroPowerBehavior);
+        }
+        else if (motorString == "rightRear" && rightRear.getZeroPowerBehavior() != zeroPowerBehavior) {
+            rightRear.setZeroPowerBehavior(zeroPowerBehavior);
+        }
     }
 }
