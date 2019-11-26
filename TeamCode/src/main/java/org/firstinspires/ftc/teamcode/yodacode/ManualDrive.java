@@ -91,10 +91,7 @@ public class ManualDrive extends LinearOpMode {
         double leftRearPower = 0;
         double rightRearPower = 0;
 
-        drive.setMotorZeroPowerBehavior("leftFront", DcMotor.ZeroPowerBehavior.BRAKE);
-        drive.setMotorZeroPowerBehavior("leftRear", DcMotor.ZeroPowerBehavior.BRAKE);
-        drive.setMotorZeroPowerBehavior("rightFront", DcMotor.ZeroPowerBehavior.BRAKE);
-        drive.setMotorZeroPowerBehavior("rightRear", DcMotor.ZeroPowerBehavior.BRAKE);
+        drive.setMotorsZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         if (gamepad1.dpad_right || gamepad2.dpad_right) dPadAdditionX = -0.2 * 2;
         else if (gamepad1.dpad_left || gamepad2.dpad_left) dPadAdditionX = 0.2 * 2;

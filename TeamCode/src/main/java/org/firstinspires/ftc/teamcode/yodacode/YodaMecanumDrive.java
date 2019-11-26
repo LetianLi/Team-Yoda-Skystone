@@ -51,9 +51,6 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         verticalExtender.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         verticalExtender.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
-        rightRear.setDirection(DcMotorSimple.Direction.REVERSE);
-
         foundationMoverLeft.setDirection(Servo.Direction.REVERSE);
         capstoneArm.setDirection(Servo.Direction.REVERSE);
         skystoneArmFront.setDirection(Servo.Direction.REVERSE);
@@ -109,18 +106,9 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         return frontDistance.getDistance(unit);
     }*/
 
-    public void setMotorZeroPowerBehavior(String motorString, DcMotor.ZeroPowerBehavior zeroPowerBehavior) {
-        if (motorString == "leftFront" && leftFront.getZeroPowerBehavior() != zeroPowerBehavior) {
-            leftFront.setZeroPowerBehavior(zeroPowerBehavior);
-        }
-        else if (motorString == "leftRear" && leftRear.getZeroPowerBehavior() != zeroPowerBehavior) {
-            leftRear.setZeroPowerBehavior(zeroPowerBehavior);
-        }
-        else if (motorString == "rightFront" && rightFront.getZeroPowerBehavior() != zeroPowerBehavior) {
-            rightFront.setZeroPowerBehavior(zeroPowerBehavior);
-        }
-        else if (motorString == "rightRear" && rightRear.getZeroPowerBehavior() != zeroPowerBehavior) {
-            rightRear.setZeroPowerBehavior(zeroPowerBehavior);
+    public void setMotorsZeroPowerBehavior(DcMotor.ZeroPowerBehavior zeroPowerBehavior) {
+        for (ExpansionHubMotor motor : getMotors()) {
+            motor.setZeroPowerBehavior(zeroPowerBehavior);
         }
     }
 }

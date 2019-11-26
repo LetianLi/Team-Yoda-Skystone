@@ -9,6 +9,7 @@ import android.support.annotation.NonNull;
 import com.acmerobotics.roadrunner.control.PIDCoefficients;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import java.util.ArrayList;
@@ -24,10 +25,10 @@ import org.openftc.revextensions2.RevBulkData;
  * trajectory following performance with moderate additional complexity.
  */
 public class SampleMecanumDriveREVOptimized extends SampleMecanumDriveBase {
-    protected ExpansionHubEx hub;
-    protected ExpansionHubMotor leftFront, leftRear, rightRear, rightFront;
-    protected List<ExpansionHubMotor> motors;
-    protected BNO055IMU imu;
+    private ExpansionHubEx hub;
+    private ExpansionHubMotor leftFront, leftRear, rightRear, rightFront;
+    private List<ExpansionHubMotor> motors;
+    private BNO055IMU imu;
 
     public SampleMecanumDriveREVOptimized(HardwareMap hardwareMap) {
         super();
@@ -68,6 +69,8 @@ public class SampleMecanumDriveREVOptimized extends SampleMecanumDriveBase {
         }
 
         // TODO: reverse any motors using DcMotor.setDirection()
+        rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
+        rightRear.setDirection(DcMotorSimple.Direction.REVERSE);
 
         // TODO: if desired, use setLocalizer() to change the localization method
         // for instance, setLocalizer(new ThreeTrackingWheelLocalizer(...));
@@ -125,6 +128,10 @@ public class SampleMecanumDriveREVOptimized extends SampleMecanumDriveBase {
         leftRear.setPower(v1);
         rightRear.setPower(v2);
         rightFront.setPower(v3);
+    }
+
+    protected List<ExpansionHubMotor> getMotors() {
+        return motors;
     }
 
     @Override
