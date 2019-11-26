@@ -37,7 +37,7 @@ public class SampleMecanumDriveREVOptimized extends SampleMecanumDriveBase {
         // TODO: adjust the names of the following hardware devices to match your configuration
         // for simplicity, we assume that the desired IMU and drive motors are on the same hub
         // if your motors are split between hubs, **you will need to add another bulk read**
-        hub = hardwareMap.get(ExpansionHubEx.class, "Motor Hub id:3");
+        hub = hardwareMap.get(ExpansionHubEx.class, "Motor Hub id: 3");
 
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
@@ -57,6 +57,7 @@ public class SampleMecanumDriveREVOptimized extends SampleMecanumDriveBase {
 
         for (ExpansionHubMotor motor : motors) {
             if (RUN_USING_ENCODER) {
+                motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             }
             motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
