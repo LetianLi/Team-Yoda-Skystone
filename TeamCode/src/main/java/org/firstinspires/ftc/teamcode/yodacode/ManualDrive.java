@@ -2,18 +2,15 @@ package org.firstinspires.ftc.teamcode.yodacode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 
 @TeleOp(group = "drive")
 public class ManualDrive extends LinearOpMode {
     private YodaMecanumDrive drive;
     private boolean[] pressed = new boolean[5];
     private double speed = 1;
-    private double turningSpeed = 1;
+    private double SPEED_MULTIPLIER = 1.4;
+    private double TURNING_SPEED = 1;
     private String driveMode = "Mecanum Drive";
-    private double dPadAdditionX = 0;
-    private double dPadAdditionY = 0;
-    private double bumperTurnAddition = 0;
     private String foundationMoverMode = "Stored";
     private String skystoneGrabberMode = "|| \n|";
     private String capstoneArmMode = "Stored";
@@ -44,13 +41,8 @@ public class ManualDrive extends LinearOpMode {
             controlSkystoneGrabbers();
 
             telemetry.addData("Drive Mode", driveMode);
-            telemetry.addData("Speed co-efficients", "turn *%.2f, entire *%.2f", turningSpeed, speed);
+            telemetry.addData("Speed co-efficients", "turn *%.2f, entire *%.2f", TURNING_SPEED, speed);
             telemetry.addData("Encoder values, lf, lr, rr, rf", drive.getWheelPositions());
-//            telemetry.addData(
-//                    "Distance",
-//                    "front: %.2f, back: %.2f",
-//                    drive.frontDistance.getDistance(DistanceUnit.INCH),
-//                    drive.backDistance.getDistance(DistanceUnit.INCH));
             telemetry.addData("Foundation Mover", foundationMoverMode);
             telemetry.addData("Capstone Arm", capstoneArmMode);
             telemetry.addData("Skystone Grabber", "\n" + skystoneGrabberMode + "\n|");
@@ -91,28 +83,39 @@ public class ManualDrive extends LinearOpMode {
         double leftRearPower = 0;
         double rightRearPower = 0;
 
-        drive.setMotorsZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        double input_x = gamepad1.left_stick_x;
+        double input_y = -gamepad1.left_stick_y;
+        double input_turning = gamepad1.right_stick_x;
 
-        if (gamepad1.dpad_right || gamepad2.dpad_right) dPadAdditionX = -0.2 * 2;
-        else if (gamepad1.dpad_left || gamepad2.dpad_left) dPadAdditionX = 0.2 * 2;
-        else dPadAdditionX = 0;
+        if (gamepad1.dpad_up || gamepad2.dpad_up) {
+            input_y = 0.2;
+            input_x = 0;
+        } else if (gamepad1.dpad_down || gamepad2.dpad_down) {
+            input_y = -0.2;
+            input_x = 0;
+        }
 
-        if (gamepad1.dpad_up || gamepad2.dpad_up) dPadAdditionY = 0.2;
-        else if (gamepad1.dpad_down || gamepad2.dpad_down) dPadAdditionY = -0.2;
-        else dPadAdditionY = 0;
+        if(gamepad1.dpad_right || gamepad2.dpad_right) {
+            input_x = 0.2;
+            input_y = 0;
+        } else if (gamepad1.dpad_left || gamepad2.dpad_left) {
+            input_x = -0.2;
+            input_y = 0;
+        }
 
-        if (!gamepad1.left_bumper && !gamepad1.right_bumper) bumperTurnAddition = 0;
-        else if (gamepad1.left_bumper) bumperTurnAddition = 0.2;
-        else if (gamepad1.right_bumper) bumperTurnAddition = -0.2;
+        if (gamepad1.left_bumper) {
+            input_turning = 0.2;
+        } else if (gamepad1.right_bumper) {
+            input_turning = -0.2;
+        }
 
-        double r = Math.hypot(gamepad1.left_stick_x, -gamepad1.left_stick_y);
-        double robotAngle = Math.atan2(-gamepad1.left_stick_y, gamepad1.left_stick_x) - Math.PI / 4;
-        double rightX = gamepad1.right_stick_x;
+        double r = Math.hypot(input_x, input_y);
+        double robotAngle = Math.atan2(input_y, input_x) - Math.PI / 4;
 
-        leftFrontPower = (r * Math.cos(robotAngle) + turningSpeed * rightX) * speed + dPadAdditionY - dPadAdditionX - bumperTurnAddition;
-        rightFrontPower = (r * Math.sin(robotAngle) - turningSpeed * rightX) * speed + dPadAdditionY + dPadAdditionX + bumperTurnAddition;
-        leftRearPower = (r * Math.sin(robotAngle) + turningSpeed * rightX) * speed + dPadAdditionY + dPadAdditionX - bumperTurnAddition;
-        rightRearPower = (r * Math.cos(robotAngle) - turningSpeed * rightX) * speed + dPadAdditionY - dPadAdditionX + bumperTurnAddition;
+        leftFrontPower = (r * Math.cos(robotAngle) + TURNING_SPEED * input_turning) * speed * SPEED_MULTIPLIER;
+        rightFrontPower = (r * Math.sin(robotAngle) - TURNING_SPEED * input_turning) * speed * SPEED_MULTIPLIER;
+        leftRearPower = (r * Math.sin(robotAngle) + TURNING_SPEED * input_turning) * speed * SPEED_MULTIPLIER;
+        rightRearPower = (r * Math.cos(robotAngle) - TURNING_SPEED * input_turning) * speed * SPEED_MULTIPLIER;
 
 
         drive.setMotorPowers(leftFrontPower, leftRearPower, rightRearPower, rightFrontPower);
