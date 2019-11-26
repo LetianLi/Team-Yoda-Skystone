@@ -35,7 +35,7 @@ import java.util.List;
  *YES
  */
 @Autonomous(name= "opencvSkystoneDetector", group="Sky autonomous")
-@Disabled//comment out this line before using
+//@Disabled//comment out this line before using
 public class opencvSkystoneDetectorOp extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
 
@@ -51,9 +51,9 @@ public class opencvSkystoneDetectorOp extends LinearOpMode {
     private static float offsetX = 0f/8f;//changing this moves the three rects and the three circles left or right, range : (-2, 2) not inclusive
     private static float offsetY = 0f/8f;//changing this moves the three rects and circles up or down, range: (-4, 4) not inclusive
 
-    private static float[] midPos = {4f/8f+offsetX, 4f/8f+offsetY};//0 = col, 1 = row
-    private static float[] leftPos = {2f/8f+offsetX, 4f/8f+offsetY};
-    private static float[] rightPos = {6f/8f+offsetX, 4f/8f+offsetY};
+    private static float[] midPos = {4f/8f + offsetX, 4f/8f + offsetY};//0 = col, 1 = row
+    private static float[] leftPos = {2f/8f + offsetX, 4f/8f + offsetY};
+    private static float[] rightPos = {6f/8f + offsetX, 4f/8f + offsetY};
     //moves all rectangles right or left by amount. units are in ratio to monitor
 
     private final int rows = 640;
@@ -169,6 +169,10 @@ public class opencvSkystoneDetectorOp extends LinearOpMode {
             Imgproc.circle(all, pointMid,5, new Scalar( 255, 0, 0 ),1 );//draws circle
             Imgproc.circle(all, pointLeft,5, new Scalar( 255, 0, 0 ),1 );//draws circle
             Imgproc.circle(all, pointRight,5, new Scalar( 255, 0, 0 ),1 );//draws circle
+
+            if (valMid == 0) Imgproc.putText(all, "S", new Point((int)(input.cols()* midPos[0]) - 24, (int)(input.rows()* midPos[1]) - 30), 1, 5, new Scalar(255, 0, 0, 1));
+            if (valLeft == 0) Imgproc.putText(all, "S", new Point((int)(input.cols()* leftPos[0]) - 24, (int)(input.rows()* leftPos[1]) - 30), 1, 5, new Scalar(255, 0, 0, 1));
+            if (valRight == 0) Imgproc.putText(all, "S", new Point((int)(input.cols()* rightPos[0]) - 24, (int)(input.rows()* rightPos[1]) - 30), 1, 5, new Scalar(255, 0, 0, 1));
 
             //draw 3 rectangles
             Imgproc.rectangle(//1-3
