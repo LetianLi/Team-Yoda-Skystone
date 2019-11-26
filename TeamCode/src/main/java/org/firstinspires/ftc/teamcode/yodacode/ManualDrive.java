@@ -7,9 +7,14 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 public class ManualDrive extends LinearOpMode {
     private YodaMecanumDrive drive;
     private boolean[] pressed = new boolean[5];
-    private double speed = 1;
-    private double SPEED_MULTIPLIER = 1.4;
+
+    private double speed_multiplier = 1;
+    private boolean isSlowMode = false;
+    private double GLOBAL_SPEED_MULTIPLIER = 1.4; //somehow it only read 0.7 power, use this to get to 1
+    private double SLOW_MODE_MULTIPLIER = 0.5;
     private double TURNING_SPEED = 1;
+    private double DPAD_SPEED_MULTIPLIER = 0.3;
+
     private String driveMode = "Mecanum Drive";
     private String foundationMoverMode = "Stored";
     private String skystoneGrabberMode = "|| \n|";
@@ -41,7 +46,7 @@ public class ManualDrive extends LinearOpMode {
             controlSkystoneGrabbers();
 
             telemetry.addData("Drive Mode", driveMode);
-            telemetry.addData("Speed co-efficients", "turn *%.2f, entire *%.2f", TURNING_SPEED, speed);
+            telemetry.addData("Speed co-efficients", "turn *%.2f, entire *%.2f", TURNING_SPEED, speed_multiplier);
             telemetry.addData("Encoder values, lf, lr, rr, rf", drive.getWheelPositions());
             telemetry.addData("Foundation Mover", foundationMoverMode);
             telemetry.addData("Capstone Arm", capstoneArmMode);
@@ -71,8 +76,7 @@ public class ManualDrive extends LinearOpMode {
 
     private void moveRobot() {
         if (gamepad1.a && !pressed[1]) {
-            if (speed == 0.5) speed = 1;
-            else if (speed == 1) speed = 0.5;
+            isSlowMode = ! isSlowMode;
             pressed[1] = true;
         } else if (!gamepad1.a && pressed[1]) {
             pressed[1] = false;
@@ -87,35 +91,49 @@ public class ManualDrive extends LinearOpMode {
         double input_y = -gamepad1.left_stick_y;
         double input_turning = gamepad1.right_stick_x;
 
+        boolean dpad_pressed = false;
         if (gamepad1.dpad_up || gamepad2.dpad_up) {
-            input_y = 0.2;
+            input_y = DPAD_SPEED_MULTIPLIER;
             input_x = 0;
+            dpad_pressed = true;
         } else if (gamepad1.dpad_down || gamepad2.dpad_down) {
-            input_y = -0.2;
+            input_y = -DPAD_SPEED_MULTIPLIER;
             input_x = 0;
+            dpad_pressed = true;
         }
 
         if(gamepad1.dpad_right || gamepad2.dpad_right) {
-            input_x = 0.2;
+            input_x = DPAD_SPEED_MULTIPLIER;
             input_y = 0;
+            dpad_pressed = true;
         } else if (gamepad1.dpad_left || gamepad2.dpad_left) {
-            input_x = -0.2;
+            input_x = -DPAD_SPEED_MULTIPLIER;
             input_y = 0;
+            dpad_pressed = true;
         }
 
         if (gamepad1.left_bumper) {
-            input_turning = 0.2;
+            input_turning = DPAD_SPEED_MULTIPLIER;
+            dpad_pressed = true;
         } else if (gamepad1.right_bumper) {
-            input_turning = -0.2;
+            input_turning = -DPAD_SPEED_MULTIPLIER;
+            dpad_pressed = true;
         }
+
+        if (dpad_pressed) {
+            speed_multiplier = 1;
+        } else if (isSlowMode) {
+            speed_multiplier = SLOW_MODE_MULTIPLIER;
+        }
+        speed_multiplier = speed_multiplier * GLOBAL_SPEED_MULTIPLIER;
 
         double r = Math.hypot(input_x, input_y);
         double robotAngle = Math.atan2(input_y, input_x) - Math.PI / 4;
 
-        leftFrontPower = (r * Math.cos(robotAngle) + TURNING_SPEED * input_turning) * speed * SPEED_MULTIPLIER;
-        rightFrontPower = (r * Math.sin(robotAngle) - TURNING_SPEED * input_turning) * speed * SPEED_MULTIPLIER;
-        leftRearPower = (r * Math.sin(robotAngle) + TURNING_SPEED * input_turning) * speed * SPEED_MULTIPLIER;
-        rightRearPower = (r * Math.cos(robotAngle) - TURNING_SPEED * input_turning) * speed * SPEED_MULTIPLIER;
+        leftFrontPower = (r * Math.cos(robotAngle) + TURNING_SPEED * input_turning) * speed_multiplier;
+        rightFrontPower = (r * Math.sin(robotAngle) - TURNING_SPEED * input_turning) * speed_multiplier;
+        leftRearPower = (r * Math.sin(robotAngle) + TURNING_SPEED * input_turning) * speed_multiplier;
+        rightRearPower = (r * Math.cos(robotAngle) - TURNING_SPEED * input_turning) * speed_multiplier;
 
 
         drive.setMotorPowers(leftFrontPower, leftRearPower, rightRearPower, rightFrontPower);
