@@ -10,7 +10,7 @@ public class ManualDrive extends LinearOpMode {
 
     private double speed_multiplier = 1;
     private boolean isSlowMode = false;
-    private double GLOBAL_SPEED_MULTIPLIER = 1.4; //somehow it only read 0.7 power, use this to get to 1
+    private double GLOBAL_SPEED_MULTIPLIER = 1; //change to 1.0 for now but it only get 0.7 power. Try using 1.4, but it disables other directions
     private double SLOW_MODE_MULTIPLIER = 0.5;
     private double TURNING_SPEED = 1;
     private double DPAD_SPEED_MULTIPLIER = 0.3;
