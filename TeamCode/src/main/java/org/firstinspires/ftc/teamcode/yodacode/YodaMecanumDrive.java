@@ -22,7 +22,6 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
     public Servo skystoneGrabberFront, skystoneArmFront, skystoneGrabberBack, skystoneArmBack;
     public Servo capstoneArm, intakeGrabber;
     //public Rev2mDistanceSensor frontDistance;
-    public SKYSTONEVuforiaDetector vuforiaDetector;
     private HardwareMap hardwareMap;
     private Telemetry telemetry;
     private ElapsedTime global_timer;
@@ -63,19 +62,6 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
 
     public void setTelemetry(Telemetry telemetry) {
         this.telemetry = telemetry;
-    }
-
-    public void activateImageDetector() {
-        vuforiaDetector = new SKYSTONEVuforiaDetector();
-        vuforiaDetector.setTelemetry(this.telemetry);
-        vuforiaDetector.initialize(hardwareMap);
-        vuforiaDetector.activateDetection();
-    }
-
-    public void deactiveImageDetector() {
-        if (vuforiaDetector != null) {
-            vuforiaDetector.deactivateDetection();
-        }
     }
 
     public void strafeRight(double inches) {
