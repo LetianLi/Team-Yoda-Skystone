@@ -3,16 +3,14 @@ package org.firstinspires.ftc.teamcode.yodacode;
 // Get it from https://github.com/uhs3939/SkyStone/blob/master/TeamCode/src/main/java/org/firstinspires/ftc/teamcode/opencvSkystoneDetector.java
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
-import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
-import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvCamera;
@@ -34,10 +32,8 @@ import java.util.List;
  * monitor: 640 x 480
  *YES
  */
-@Autonomous(name= "opencvSkystoneDetector", group="Sky autonomous")
-//@Disabled//comment out this line before using
-public class opencvSkystoneDetectorOp extends LinearOpMode {
-    private ElapsedTime runtime = new ElapsedTime();
+public class OpencvDetector {
+    private HardwareMap hardwareMap;
 
     //0 means skystone, 1 means yellow stone
     //-1 for debug, but we can keep it like this because if it works, it should change to either 0 or 255
@@ -61,8 +57,8 @@ public class opencvSkystoneDetectorOp extends LinearOpMode {
 
     OpenCvCamera phoneCam;
 
-    @Override
-    public void runOpMode() throws InterruptedException {
+    public OpencvDetector(HardwareMap hardwareMap) {
+        this.hardwareMap = hardwareMap;
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         phoneCam = new OpenCvInternalCamera(OpenCvInternalCamera.CameraDirection.BACK, cameraMonitorViewId);
@@ -72,20 +68,19 @@ public class opencvSkystoneDetectorOp extends LinearOpMode {
         //width, height
         //width = height in this case, because camera is in portrait mode.
 
-        waitForStart();
-        runtime.reset();
-        while (opModeIsActive()) {
-            telemetry.addData("Values", valLeft+"   "+valMid+"   "+valRight);
-            telemetry.addData("Height", rows);
-            telemetry.addData("Width", cols);
+    }
 
-            telemetry.update();
-            sleep(100);
-            //call movement functions
-//            strafe(0.4, 200);
-//            moveDistance(0.4, 700);
-
+    public SkystonePos getSkystonePos(){
+        if(valLeft == 0) return SkystonePos.LEFT;
+        else if(valMid == 0) return SkystonePos.MIDDLE;
+        else if(valRight == 0) return SkystonePos.RIGHT;
+        else {
+            return SkystonePos.UNKNOW;
         }
+    }
+
+    public String getValues() {
+        return valLeft+"   "+valMid+"   "+valRight;
     }
 
     //detection pipeline
