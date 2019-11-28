@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode.yodacode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import java.util.List;
+
 @TeleOp(group = "drive")
 public class ManualDrive extends LinearOpMode {
     private YodaMecanumDrive drive;
@@ -10,13 +12,12 @@ public class ManualDrive extends LinearOpMode {
 
     private double speed_multiplier = 1;
     private boolean isSlowMode = false;
-    private double GLOBAL_SPEED_MULTIPLIER = 1; //change to 1.0 for now but it only get 0.7 power. Try using 1.4, but it disables other directions
+    //private double GLOBAL_SPEED_MULTIPLIER = 1; //change to 1.0 for now but it only get 0.7 power. Try using 1.4, but it disables other directions
     private double SLOW_MODE_MULTIPLIER = 0.5;
     private double TURNING_SPEED = 1;
     private double DPAD_SPEED_MULTIPLIER = 0.3;
 
     private String driveMode = "Mecanum Drive";
-    private String foundationMoverMode = "Stored";
     private String skystoneGrabberMode = "|| \n|";
     private String capstoneArmMode = "Stored";
     private double horizontalPosition = 0;
@@ -46,9 +47,11 @@ public class ManualDrive extends LinearOpMode {
             controlSkystoneGrabbers();
 
             telemetry.addData("Drive Mode", driveMode);
+            telemetry.addData("left encoder", drive.leftEncoder.getCurrentPosition());
+            telemetry.addData("right encoder", drive.rightEncoder.getCurrentPosition());
+            telemetry.addData("front encoder", drive.frontEncoder.getCurrentPosition());
             telemetry.addData("Speed co-efficients", "turn *%.2f, entire *%.2f", TURNING_SPEED, speed_multiplier);
             telemetry.addData("Encoder values, lf, lr, rr, rf", drive.getWheelPositions());
-            telemetry.addData("Foundation Mover", foundationMoverMode);
             telemetry.addData("Capstone Arm", capstoneArmMode);
             telemetry.addData("Skystone Grabber", "\n" + skystoneGrabberMode + "\n|");
             telemetry.addData("Horizontal Pos", drive.horizontalExtender.getPosition());
@@ -57,20 +60,13 @@ public class ManualDrive extends LinearOpMode {
     }
 
     private void moveFoundationServo() {
-        if (gamepad1.x && !pressed[0]) {
-            pressed[0] = true;
-            if (foundationMoverMode == "Stored") foundationMoverMode = "Grab";
-            else if (foundationMoverMode == "Grab") foundationMoverMode = "Stored";
-        } else if (pressed[0] && !gamepad1.x) {
-            pressed[0] = false;
+        if (gamepad1.left_trigger >= 0.95 && gamepad1.right_trigger >= 0.95) {
+            drive.foundationMoverLeft.setPosition(1);
+            drive.foundationMoverRight.setPosition(1);
         }
-
-        if (foundationMoverMode == "Stored") {
-            drive.foundationMoverLeft.setPosition(0.4);
-            drive.foundationMoverRight.setPosition(0.3);
-        } else if (foundationMoverMode == "Grab") {
-            drive.foundationMoverLeft.setPosition(0.7);
-            drive.foundationMoverRight.setPosition(0.6);
+        else {
+            drive.foundationMoverLeft.setPosition(0);
+            drive.foundationMoverRight.setPosition(0);
         }
     }
 
@@ -113,19 +109,19 @@ public class ManualDrive extends LinearOpMode {
         }
 
         if (gamepad1.left_bumper) {
-            input_turning = DPAD_SPEED_MULTIPLIER;
+            input_turning = -DPAD_SPEED_MULTIPLIER;
             dpad_pressed = true;
         } else if (gamepad1.right_bumper) {
-            input_turning = -DPAD_SPEED_MULTIPLIER;
+            input_turning = DPAD_SPEED_MULTIPLIER;
             dpad_pressed = true;
         }
 
-        if (dpad_pressed) {
-            speed_multiplier = 1;
-        } else if (isSlowMode) {
+        if (isSlowMode && !dpad_pressed) {
             speed_multiplier = SLOW_MODE_MULTIPLIER;
+        }  else {
+            speed_multiplier = 1;
         }
-        speed_multiplier = speed_multiplier * GLOBAL_SPEED_MULTIPLIER;
+        //speed_multiplier = speed_multiplier * GLOBAL_SPEED_MULTIPLIER;
 
         double r = Math.hypot(input_x, input_y);
         double robotAngle = Math.atan2(input_y, input_x) - Math.PI / 4;
@@ -135,8 +131,9 @@ public class ManualDrive extends LinearOpMode {
         leftRearPower = (r * Math.sin(robotAngle) + TURNING_SPEED * input_turning) * speed_multiplier;
         rightRearPower = (r * Math.cos(robotAngle) - TURNING_SPEED * input_turning) * speed_multiplier;
 
+        List<Double> powersList = drive.scaleDown(leftFrontPower, leftRearPower, rightRearPower, rightFrontPower, 1);
 
-        drive.setMotorPowers(leftFrontPower, leftRearPower, rightRearPower, rightFrontPower);
+        drive.setMotorPowers(powersList.get(0), powersList.get(1), powersList.get(2), powersList.get(3));
         telemetry.addData("Wheel Powers", "lf %.2f, lr %.2f, rr %.2f, rf %.2f", leftFrontPower, rightFrontPower, leftRearPower, rightRearPower);
     }
 
@@ -234,5 +231,4 @@ public class ManualDrive extends LinearOpMode {
         }
 
     }
-
 }

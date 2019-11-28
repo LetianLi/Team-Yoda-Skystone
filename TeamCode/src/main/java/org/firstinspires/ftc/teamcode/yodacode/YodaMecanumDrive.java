@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.yodacode;
 
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -14,6 +13,9 @@ import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveREVOptimiz
 import org.openftc.revextensions2.ExpansionHubEx;
 import org.openftc.revextensions2.ExpansionHubMotor;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
     public ExpansionHubEx hub2;
     public ExpansionHubMotor verticalExtender;
@@ -21,10 +23,12 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
     public Servo foundationMoverLeft, foundationMoverRight;
     public Servo skystoneGrabberFront, skystoneArmFront, skystoneGrabberBack, skystoneArmBack;
     public Servo capstoneArm, intakeGrabber;
-    //public Rev2mDistanceSensor frontDistance;
+    public Rev2mDistanceSensor frontLeftDistance, frontRightDistance;
+
     private HardwareMap hardwareMap;
     private Telemetry telemetry;
     private ElapsedTime global_timer;
+    public DcMotor leftEncoder, rightEncoder, frontEncoder;
 
     public YodaMecanumDrive(HardwareMap hardwareMap) {
         super(hardwareMap);
@@ -44,13 +48,14 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         capstoneArm = hardwareMap.get(Servo.class, "capstone arm");
         intakeGrabber = hardwareMap.get(Servo.class, "intake grabber");
 
-        //frontDistance = hardwareMap.get(Rev2mDistanceSensor.class, "front distance");
+        frontLeftDistance = hardwareMap.get(Rev2mDistanceSensor.class, "front left distance");
+        frontRightDistance = hardwareMap.get(Rev2mDistanceSensor.class, "front right distance");
 
         verticalExtender.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         verticalExtender.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         verticalExtender.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        foundationMoverLeft.setDirection(Servo.Direction.REVERSE);
+        foundationMoverRight.setDirection(Servo.Direction.REVERSE);
         capstoneArm.setDirection(Servo.Direction.REVERSE);
         skystoneArmFront.setDirection(Servo.Direction.REVERSE);
         skystoneGrabberFront.setDirection(Servo.Direction.REVERSE);
@@ -58,6 +63,17 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         intakeGrabber.setDirection(Servo.Direction.REVERSE);
 
         setLocalizer(new StandardTrackingWheelLocalizer(hardwareMap));
+
+        leftEncoder = hardwareMap.dcMotor.get("leftEncoder");
+        rightEncoder = hardwareMap.dcMotor.get("rightEncoder");
+        frontEncoder = hardwareMap.dcMotor.get("frontEncoder");
+        leftEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        leftEncoder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightEncoder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontEncoder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
     }
 
     public void setTelemetry(Telemetry telemetry) {
@@ -96,5 +112,20 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         for (ExpansionHubMotor motor : getMotors()) {
             motor.setZeroPowerBehavior(zeroPowerBehavior);
         }
+    }
+
+    public List<Double> scaleDown(double a, double b, double c, double d, double max) {
+        double biggestNumber = a;
+        if (biggestNumber < b) biggestNumber = b;
+        if (biggestNumber < c) biggestNumber = c;
+        if (biggestNumber < d) biggestNumber = d;
+
+        if (biggestNumber > max) {
+            a = a / biggestNumber * max;
+            b = b / biggestNumber * max;
+            c = c / biggestNumber * max;
+            d = d / biggestNumber * max;
+        }
+        return Arrays.asList(a, b, c, d);
     }
 }
