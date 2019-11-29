@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.yodacode;
+package org.firstinspires.ftc.teamcode.yoda_enum;
 
 public enum SkystonePos {
     LEFT,
