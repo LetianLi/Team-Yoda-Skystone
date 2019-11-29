@@ -145,6 +145,10 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
         switch (mode) {
             case IDLE:
                 // do nothing
+
+                fieldOverlay.setStroke("#F44336");
+                DashboardUtil.drawRobot(fieldOverlay, currentPose);
+
                 break;
             case TURN: {
                 double t = clock.seconds() - turnStart;
