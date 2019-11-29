@@ -10,12 +10,16 @@ public abstract class AutonomousBase extends LinearOpMode {
     ElapsedTime op_timer;
     protected StrategistBase strategist;
     protected TeamColor teamColor = TeamColor.UNKNOWN;
-    protected boolean useImageDetector = true;
     protected boolean askTeamColor = true;
+
+    private SkystonePos skystonePos = SkystonePos.UNKNOW;
+    private OpencvDetector detector;
 
     protected void initialize() {
         telemetry.addData("Status", "Initializing, please wait");
         telemetry.update();
+
+        detector = new OpencvDetector(hardwareMap);
 
         drive = new YodaMecanumDrive(hardwareMap);
         drive.setTelemetry(telemetry);
@@ -41,16 +45,27 @@ public abstract class AutonomousBase extends LinearOpMode {
 
         telemetry.log().add("Ready!");
         telemetry.update();
-        waitForStartPrintMsg();
+        detectStoneWhileWaiting();
     }
 
-    protected void waitForStartPrintMsg() {
+    protected void detectStoneWhileWaiting() {
         while (!isStarted() && !isStopRequested()) {
             telemetry.addData("Status", "Initialized. Wait to start");
             telemetry.addData("TeamColor", teamColor.toString());
+            telemetry.addData("Values", detector.getValues());
+            skystonePos = detector.getSkystonePos();
+            telemetry.addData("Skystone Pos", skystonePos);
             telemetry.update();
             idle();
-            sleep(100);
+            sleep(200);
+        }
+    }
+
+    protected SkystonePos getSkystonePos() {
+        if (skystonePos != SkystonePos.UNKNOW) {
+            return skystonePos;
+        } else {
+            return SkystonePos.MIDDLE; //default
         }
     }
 
