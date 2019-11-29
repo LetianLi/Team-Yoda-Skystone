@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.yoda_opmode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-import org.firstinspires.ftc.teamcode.yodacode.AutonomousBase;
+import org.firstinspires.ftc.teamcode.yoda_code.AutonomousBase;
 
 @Autonomous(group = "auto", name = "M4: Skystone -> foundation, Park")
 public class M4_SkystoneF_Park extends AutonomousBase {
@@ -12,7 +12,7 @@ public class M4_SkystoneF_Park extends AutonomousBase {
         initialize();
         if (isStopRequested()) return;
         if (strategist != null) {
-            strategist.DetectAndGrabSkyStone();
+            strategist.GrabSkyStone();
             strategist.moveAndDropSkystoneOnFoundation();
             strategist.fromFoundationToPark();
         }

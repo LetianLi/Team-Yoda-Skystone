@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.yodacode;
+package org.firstinspires.ftc.teamcode.yoda_code;
 
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -10,7 +10,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.drive.localizer.StandardTrackingWheelLocalizer;
 import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveREVOptimized;
 import org.openftc.revextensions2.ExpansionHubEx;
 import org.openftc.revextensions2.ExpansionHubMotor;
@@ -67,7 +66,7 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         horizontalExtender.setDirection(Servo.Direction.REVERSE);
         intakeGrabber.setDirection(Servo.Direction.REVERSE);
 
-        setLocalizer(new StandardTrackingWheelLocalizer(hardwareMap));
+        //setLocalizer(new StandardTrackingWheelLocalizer(hardwareMap));
 
         leftEncoder = hardwareMap.dcMotor.get("leftEncoder");
         rightEncoder = hardwareMap.dcMotor.get("rightEncoder");
@@ -83,6 +82,8 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         rightEncoder.setDirection(DcMotor.Direction.REVERSE);
         frontEncoder.setDirection(DcMotorSimple.Direction.REVERSE);
 
+        skystoneArmFront.scaleRange(1 - 0.33, 1);
+        skystoneArmBack.scaleRange(0, 0.33);
     }
 
     public void setOpMode(LinearOpMode opMode) {
@@ -154,6 +155,7 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         double adjacent =  10 + 1/16; // Distance between sensors, in.
         double right = frontRightDistance.getDistance(DistanceUnit.INCH);
         double left = frontLeftDistance.getDistance(DistanceUnit.INCH);
+
         double opposite = right - left;
 
         if (left > 150 || right > 150) return 0;

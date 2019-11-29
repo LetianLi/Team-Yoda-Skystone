@@ -1,8 +1,11 @@
-package org.firstinspires.ftc.teamcode.yodacode;
+package org.firstinspires.ftc.teamcode.yoda_code;
 
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
+import org.firstinspires.ftc.teamcode.yoda_enum.SkystonePos;
+import org.firstinspires.ftc.teamcode.yoda_enum.TeamColor;
 
 public abstract class AutonomousBase extends LinearOpMode {
 
@@ -61,7 +64,7 @@ public abstract class AutonomousBase extends LinearOpMode {
         }
     }
 
-    protected SkystonePos getSkystonePos() {
+    public SkystonePos getSkystonePos() {
         if (skystonePos != SkystonePos.UNKNOW) {
             return skystonePos;
         } else {
