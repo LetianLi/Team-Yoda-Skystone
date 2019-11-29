@@ -3,12 +3,14 @@ package org.firstinspires.ftc.teamcode.yodacode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+
 import java.util.List;
 
 @TeleOp(group = "drive")
 public class ManualDrive extends LinearOpMode {
     private YodaMecanumDrive drive;
-    private boolean[] pressed = new boolean[5];
+    private boolean[] pressed = new boolean[6];
 
     private double speed_multiplier = 1;
     private boolean isSlowMode = false;
@@ -17,13 +19,20 @@ public class ManualDrive extends LinearOpMode {
     private double TURNING_SPEED = 1;
     private double DPAD_SPEED_MULTIPLIER = 0.3;
 
-    private String driveMode = "Mecanum Drive";
     private String skystoneGrabberMode = "|| \n|";
     private String capstoneArmMode = "Stored";
+
+    private double verticalPosition = 0;
+    private double previousVerticalPos = -1;
+    private final double bottomVerticalLim = -20;
+    private final double topVerticalLim = 2510;
+    private final double ticksPerUpBlock = 300;
+    private final double ticksPerDownBlock = 230;
+
     private double horizontalPosition = 0;
     private double previousHorizontalPos = -1;
-    private final double insideHorizontal = 0.13;
-    private final double outsideHorizontal = 0.33; // Actually 0.37
+    private final double insideHorizontalLim = 0.13;
+    private final double outsideHorizontalLim = 0.33; // Actually 0.37
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -46,15 +55,16 @@ public class ManualDrive extends LinearOpMode {
             moveFoundationServo();
             controlSkystoneGrabbers();
 
-            telemetry.addData("Drive Mode", driveMode);
-            telemetry.addData("left encoder", drive.leftEncoder.getCurrentPosition());
-            telemetry.addData("right encoder", drive.rightEncoder.getCurrentPosition());
-            telemetry.addData("front encoder", drive.frontEncoder.getCurrentPosition());
-            telemetry.addData("Speed co-efficients", "turn *%.2f, entire *%.2f", TURNING_SPEED, speed_multiplier);
+            telemetry.addData("Encoders", "Left %d, Right %d, Front %d", drive.leftEncoder.getCurrentPosition(), drive.rightEncoder.getCurrentPosition(), drive.frontEncoder.getCurrentPosition());
+            telemetry.addData("Speed co-efficients", "turn %.2f  ||  entire %.2f", TURNING_SPEED, speed_multiplier);
             telemetry.addData("Encoder values, lf, lr, rr, rf", drive.getWheelPositions());
+            telemetry.addData("Distance", "Left %.2f, Right %.2f", drive.frontLeftDistance.getDistance(DistanceUnit.INCH), drive.frontRightDistance.getDistance(DistanceUnit.INCH));
+            telemetry.addData("Front Angle", Math.toDegrees(drive.getAngleToFront()));
             telemetry.addData("Capstone Arm", capstoneArmMode);
             telemetry.addData("Skystone Grabber", "\n" + skystoneGrabberMode + "\n|");
             telemetry.addData("Horizontal Pos", drive.horizontalExtender.getPosition());
+            telemetry.addData("Vertical Pos", drive.verticalExtender.getCurrentPosition());
+            telemetry.addData("Vertical Pow", drive.verticalExtender.getPower());
             telemetry.update();
         }
     }
@@ -78,63 +88,73 @@ public class ManualDrive extends LinearOpMode {
             pressed[1] = false;
         }
 
-        double leftFrontPower = 0;
-        double rightFrontPower = 0;
-        double leftRearPower = 0;
-        double rightRearPower = 0;
-
-        double input_x = gamepad1.left_stick_x;
-        double input_y = -gamepad1.left_stick_y;
-        double input_turning = gamepad1.right_stick_x;
-
-        boolean dpad_pressed = false;
-        if (gamepad1.dpad_up || gamepad2.dpad_up) {
-            input_y = DPAD_SPEED_MULTIPLIER;
-            input_x = 0;
-            dpad_pressed = true;
-        } else if (gamepad1.dpad_down || gamepad2.dpad_down) {
-            input_y = -DPAD_SPEED_MULTIPLIER;
-            input_x = 0;
-            dpad_pressed = true;
+        if (gamepad1.x && !pressed[0]) {
+            drive.turnSync(drive.getAngleToFront());
+            pressed[0] = true;
+        } else if (!gamepad1.x && pressed[0]) {
+            pressed[0] = false;
         }
 
-        if(gamepad1.dpad_right || gamepad2.dpad_right) {
-            input_x = DPAD_SPEED_MULTIPLIER;
-            input_y = 0;
-            dpad_pressed = true;
-        } else if (gamepad1.dpad_left || gamepad2.dpad_left) {
-            input_x = -DPAD_SPEED_MULTIPLIER;
-            input_y = 0;
-            dpad_pressed = true;
+        if (!pressed[0]) {
+            double leftFrontPower = 0;
+            double rightFrontPower = 0;
+            double leftRearPower = 0;
+            double rightRearPower = 0;
+
+            double input_x = gamepad1.left_stick_x;
+            double input_y = -gamepad1.left_stick_y;
+            double input_turning = gamepad1.right_stick_x;
+
+            boolean dpad_pressed = false;
+            if (gamepad1.dpad_up) {
+                input_y = DPAD_SPEED_MULTIPLIER;
+                input_x = 0;
+                dpad_pressed = true;
+            } else if (gamepad1.dpad_down) {
+                input_y = -DPAD_SPEED_MULTIPLIER;
+                input_x = 0;
+                dpad_pressed = true;
+            }
+
+            if (gamepad1.dpad_right) {
+                input_x = DPAD_SPEED_MULTIPLIER;
+                input_y = 0;
+                dpad_pressed = true;
+            } else if (gamepad1.dpad_left) {
+                input_x = -DPAD_SPEED_MULTIPLIER;
+                input_y = 0;
+                dpad_pressed = true;
+            }
+
+            if (gamepad1.left_bumper) {
+                input_turning = -DPAD_SPEED_MULTIPLIER;
+                dpad_pressed = true;
+            } else if (gamepad1.right_bumper) {
+                input_turning = DPAD_SPEED_MULTIPLIER;
+                dpad_pressed = true;
+            }
+
+            if (isSlowMode && !dpad_pressed) {
+                speed_multiplier = SLOW_MODE_MULTIPLIER;
+            } else {
+                speed_multiplier = 1;
+            }
+            //speed_multiplier = speed_multiplier * GLOBAL_SPEED_MULTIPLIER;
+
+            double r = Math.hypot(input_x, input_y);
+            double robotAngle = Math.atan2(input_y, input_x) - Math.PI / 4;
+
+            leftFrontPower = (r * Math.cos(robotAngle) + TURNING_SPEED * input_turning) * speed_multiplier;
+            rightFrontPower = (r * Math.sin(robotAngle) - TURNING_SPEED * input_turning) * speed_multiplier;
+            leftRearPower = (r * Math.sin(robotAngle) + TURNING_SPEED * input_turning) * speed_multiplier;
+            rightRearPower = (r * Math.cos(robotAngle) - TURNING_SPEED * input_turning) * speed_multiplier;
+
+            List<Double> powersList = drive.scaleDown(leftFrontPower, leftRearPower, rightRearPower, rightFrontPower, 1);
+
+            drive.setMotorPowers(powersList.get(0), powersList.get(1), powersList.get(2), powersList.get(3));
+            telemetry.addData("Wheel Powers", "lf %.2f, lr %.2f, rr %.2f, rf %.2f", leftFrontPower, rightFrontPower, leftRearPower, rightRearPower);
         }
-
-        if (gamepad1.left_bumper) {
-            input_turning = -DPAD_SPEED_MULTIPLIER;
-            dpad_pressed = true;
-        } else if (gamepad1.right_bumper) {
-            input_turning = DPAD_SPEED_MULTIPLIER;
-            dpad_pressed = true;
-        }
-
-        if (isSlowMode && !dpad_pressed) {
-            speed_multiplier = SLOW_MODE_MULTIPLIER;
-        }  else {
-            speed_multiplier = 1;
-        }
-        //speed_multiplier = speed_multiplier * GLOBAL_SPEED_MULTIPLIER;
-
-        double r = Math.hypot(input_x, input_y);
-        double robotAngle = Math.atan2(input_y, input_x) - Math.PI / 4;
-
-        leftFrontPower = (r * Math.cos(robotAngle) + TURNING_SPEED * input_turning) * speed_multiplier;
-        rightFrontPower = (r * Math.sin(robotAngle) - TURNING_SPEED * input_turning) * speed_multiplier;
-        leftRearPower = (r * Math.sin(robotAngle) + TURNING_SPEED * input_turning) * speed_multiplier;
-        rightRearPower = (r * Math.cos(robotAngle) - TURNING_SPEED * input_turning) * speed_multiplier;
-
-        List<Double> powersList = drive.scaleDown(leftFrontPower, leftRearPower, rightRearPower, rightFrontPower, 1);
-
-        drive.setMotorPowers(powersList.get(0), powersList.get(1), powersList.get(2), powersList.get(3));
-        telemetry.addData("Wheel Powers", "lf %.2f, lr %.2f, rr %.2f, rf %.2f", leftFrontPower, rightFrontPower, leftRearPower, rightRearPower);
+        else telemetry.addData("Wheel Powers", "Turning");
     }
 
     private void intake() {
@@ -158,7 +178,7 @@ public class ManualDrive extends LinearOpMode {
         } else if (capstoneArmMode == "Ready") {
             drive.capstoneArm.setPosition(0.92);
             drive.intakeGrabber.setPosition(0.5);
-            drive.horizontalExtender.setPosition(insideHorizontal);
+            drive.horizontalExtender.setPosition(insideHorizontalLim);
         } else if (capstoneArmMode == "Dropping") {
             drive.capstoneArm.setPosition(drive.capstoneArm.getPosition() + 0.002);
         } else if (capstoneArmMode == "Dropped") {
@@ -168,12 +188,27 @@ public class ManualDrive extends LinearOpMode {
     }
 
     private void controlExtenders() {
-        double verticalPower = -gamepad2.right_stick_y;
-        if (verticalPower == 0 && drive.verticalExtender.getCurrentPosition() > 20) {
-            //verticalPower = 0.05;
+        if (gamepad2.dpad_up && !pressed[4]) {
+            verticalPosition += ticksPerUpBlock;
+            pressed[4] = true;
+        } else if (!gamepad2.dpad_up && pressed[4]) {
+            pressed[4] = false;
         }
-        drive.verticalExtender.setPower(verticalPower);
-        horizontalPosition = Math.min(Math.max(horizontalPosition - gamepad2.left_stick_y / 300, insideHorizontal), outsideHorizontal);
+        if (gamepad2.dpad_down && !pressed[5]) {
+            verticalPosition -= ticksPerDownBlock;
+            pressed[5] = true;
+        } else if (!gamepad2.dpad_down && pressed[5]) {
+            pressed[5] = false;
+        }
+
+        if (gamepad2.right_stick_button) verticalPosition = 0;
+
+
+        verticalPosition = Math.min(Math.max(verticalPosition - gamepad2.right_stick_y * 100, bottomVerticalLim), topVerticalLim);
+        if (verticalPosition != previousVerticalPos) drive.verticalExtender.setTargetPosition((int) verticalPosition);
+        previousVerticalPos = verticalPosition;
+
+        horizontalPosition = Math.min(Math.max(horizontalPosition - gamepad2.left_stick_y / 300, insideHorizontalLim), outsideHorizontalLim);
         if (horizontalPosition != previousHorizontalPos) drive.horizontalExtender.setPosition(horizontalPosition);
         previousHorizontalPos = horizontalPosition;
     }
