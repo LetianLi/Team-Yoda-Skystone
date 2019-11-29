@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.yodacode;
 
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -52,7 +53,9 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         frontRightDistance = hardwareMap.get(Rev2mDistanceSensor.class, "front right distance");
 
         verticalExtender.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        verticalExtender.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        verticalExtender.setTargetPosition(0);
+        verticalExtender.setPower(1);
+        verticalExtender.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         verticalExtender.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         foundationMoverRight.setDirection(Servo.Direction.REVERSE);
@@ -73,6 +76,10 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         rightEncoder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         frontEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         frontEncoder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+
+        rightEncoder.setDirection(DcMotor.Direction.REVERSE);
+        frontEncoder.setDirection(DcMotorSimple.Direction.REVERSE);
 
     }
 
@@ -127,5 +134,20 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
             d = d / biggestNumber * max;
         }
         return Arrays.asList(a, b, c, d);
+    }
+
+    public double getAngleToFront() {
+        double adjacent =  10 + 1/16; // Distance between sensors, in.
+        double right = frontRightDistance.getDistance(DistanceUnit.INCH);
+        double left = frontLeftDistance.getDistance(DistanceUnit.INCH);
+        double opposite = right - left;
+
+        if (left > 150 || right > 150) return 0;
+
+        double angle = Math.atan(Math.abs(opposite) / adjacent);
+
+        if (opposite < 0) angle = -angle;
+
+        return angle;
     }
 }
