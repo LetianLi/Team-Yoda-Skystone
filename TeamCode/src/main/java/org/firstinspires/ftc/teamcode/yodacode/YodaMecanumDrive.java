@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.yodacode;
 
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -30,6 +31,7 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
     private Telemetry telemetry;
     private ElapsedTime global_timer;
     public DcMotor leftEncoder, rightEncoder, frontEncoder;
+    protected LinearOpMode opMode;
 
     public YodaMecanumDrive(HardwareMap hardwareMap) {
         super(hardwareMap);
@@ -81,6 +83,10 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         rightEncoder.setDirection(DcMotor.Direction.REVERSE);
         frontEncoder.setDirection(DcMotorSimple.Direction.REVERSE);
 
+    }
+
+    public void setOpMode(LinearOpMode opMode) {
+        this.opMode = opMode;
     }
 
     public void setTelemetry(Telemetry telemetry) {
@@ -136,6 +142,14 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         return Arrays.asList(a, b, c, d);
     }
 
+    public void waitForIdle() {
+        while (!Thread.currentThread().isInterrupted()
+                && isBusy()
+                && (opMode == null || !opMode.isStopRequested())) {
+            update();
+        }
+    }
+
     public double getAngleToFront() {
         double adjacent =  10 + 1/16; // Distance between sensors, in.
         double right = frontRightDistance.getDistance(DistanceUnit.INCH);
@@ -149,5 +163,9 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         if (opposite < 0) angle = -angle;
 
         return angle;
+    }
+
+
+    public void resetServos() {
     }
 }

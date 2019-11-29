@@ -1,9 +1,10 @@
-package org.firstinspires.ftc.teamcode.yodacode;
+package org.firstinspires.ftc.teamcode.yoda_opmode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.yodacode.YodaMecanumDrive;
 
 import java.util.List;
 
@@ -43,6 +44,7 @@ public class ManualDrive extends LinearOpMode {
         telemetry.update();
         telemetry.clear();
         gamepad1.setJoystickDeadzone(0.1f);
+        gamepad2.setJoystickDeadzone(0.1f);
         waitForStart();
 
         if (isStopRequested()) return;
@@ -228,40 +230,28 @@ public class ManualDrive extends LinearOpMode {
         }
 
         double skystoneArmDownPosition = 0.33;
-        if (skystoneGrabberMode == "|| \n|") {
+        if (skystoneGrabberMode == "|| \n|") { // Stored
             drive.skystoneArmFront.setPosition(0);
             drive.skystoneGrabberFront.setPosition(0);
             drive.skystoneArmBack.setPosition(0);
             drive.skystoneGrabberBack.setPosition(0);
-        } else if (skystoneGrabberMode == "|-- \n|") {
-            drive.skystoneArmFront.setPosition(0);
+        } else if (skystoneGrabberMode == "|-- \n|") { // Open grabbers
             drive.skystoneGrabberFront.setPosition(1);
-            drive.skystoneArmBack.setPosition(0);
             drive.skystoneGrabberBack.setPosition(1);
-        } else if (skystoneGrabberMode == "\n----|") {
+        } else if (skystoneGrabberMode == "\n----|") { // Move arm down
             drive.skystoneArmFront.setPosition(skystoneArmDownPosition);
-            drive.skystoneGrabberFront.setPosition(1);
             drive.skystoneArmBack.setPosition(skystoneArmDownPosition);
-            drive.skystoneGrabberBack.setPosition(1);
-        } else if (skystoneGrabberMode == "\n--[]") {
-            drive.skystoneArmFront.setPosition(skystoneArmDownPosition);
+        } else if (skystoneGrabberMode == "\n--[]") { // Grab
             drive.skystoneGrabberFront.setPosition(0);
-            drive.skystoneArmBack.setPosition(skystoneArmDownPosition);
             drive.skystoneGrabberBack.setPosition(0);
-        } else if (skystoneGrabberMode == "|[] \n|") {
+        } else if (skystoneGrabberMode == "|[] \n|") { // Move arm back up
             drive.skystoneArmFront.setPosition(0);
-            drive.skystoneGrabberFront.setPosition(0);
             drive.skystoneArmBack.setPosition(0);
-            drive.skystoneGrabberBack.setPosition(0);
-        } else if (skystoneGrabberMode == "\n--[_]") {
+        } else if (skystoneGrabberMode == "\n--[_]") { // Move arm back down
             drive.skystoneArmFront.setPosition(skystoneArmDownPosition - 0.05);
-            drive.skystoneGrabberFront.setPosition(0);
             drive.skystoneArmBack.setPosition(skystoneArmDownPosition - 0.05);
-            drive.skystoneGrabberBack.setPosition(0);
-        } else if (skystoneGrabberMode == "\n--_--") {
-            drive.skystoneArmFront.setPosition(skystoneArmDownPosition - 0.05);
+        } else if (skystoneGrabberMode == "\n--_--") { // Release grabbers
             drive.skystoneGrabberFront.setPosition(1);
-            drive.skystoneArmBack.setPosition(skystoneArmDownPosition - 0.05);
             drive.skystoneGrabberBack.setPosition(1);
         }
 
