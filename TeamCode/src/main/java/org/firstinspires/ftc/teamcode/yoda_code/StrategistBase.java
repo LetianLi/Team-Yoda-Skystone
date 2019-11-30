@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.yoda_enum.ArmSide;
 import org.firstinspires.ftc.teamcode.yoda_enum.ArmStage;
+import org.firstinspires.ftc.teamcode.yoda_enum.SkystonePos;
 
 public abstract class StrategistBase {
     protected YodaMecanumDrive drive;
@@ -57,23 +58,44 @@ public abstract class StrategistBase {
                 targetGrabber.setPosition(1);
                 opMode.sleep(100);
                 targetArm.setPosition(0);
+                opMode.sleep(100);
+                targetGrabber.setPosition(0);
                 break;
         }
     }
 
+    protected void moveFoundationServos(double position) {
+        drive.foundationMoverLeft.setPosition(position);
+        drive.foundationMoverRight.setPosition(position);
+    }
 
 
 
+    public double getForwardOffset(SkystonePos skystonePos, double[] forwardOffsetsPerPos) {
+        switch(skystonePos) {
+            case LEFT:
+                return forwardOffsetsPerPos[0];
+            case MIDDLE:
+                return forwardOffsetsPerPos[1];
+            case RIGHT:
+                return forwardOffsetsPerPos[2];
+            case UNKNOW:
+                return forwardOffsetsPerPos[1];
+        }
+        return forwardOffsetsPerPos[1];
+    }
 
     protected void turnTo(double angle) {
-        angle -= Math.toDegrees(drive.getExternalHeading());
+        turnTo(angle, drive.getRawExternalHeading());
+    }
+    protected void turnTo(double angle, double currentAngle) {
+        angle -= Math.toDegrees(currentAngle);
         while (angle < -180) {
             angle += 360;
         }
         while (angle > 180) {
             angle -= 360;
         }
-        if (angle > 180) angle -= 360;
         drive.turnSync(Math.toRadians(angle));
     }
     protected void forward(double distance) {
@@ -95,5 +117,17 @@ public abstract class StrategistBase {
         drive.followTrajectorySync(drive.trajectoryBuilder()
                 .strafeLeft(distance)
                 .build());
+    }
+    protected double getX() {
+        return drive.getPoseEstimate().getX();
+    }
+    protected double getY() {
+        return drive.getPoseEstimate().getY();
+    }
+    protected double getHeading() {
+        return drive.getPoseEstimate().getHeading();
+    }
+    protected void updatePose() {
+        drive.updatePoseEstimate();
     }
 }

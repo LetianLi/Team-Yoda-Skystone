@@ -19,10 +19,10 @@ public class ManualDrive extends LinearOpMode {
 
     private double speed_multiplier = 1;
     private boolean isSlowMode = false;
-    private double GLOBAL_SPEED_MULTIPLIER = 1.4; //change to 1.0 for now but it only get 0.7 power. Try using 1.4, but it disables other directions
+    private double GLOBAL_SPEED_MULTIPLIER = 1; //change to 1.0 for now but it only get 0.7 power. Try using 1.4, but it disables other directions
     private double SLOW_MODE_MULTIPLIER = 0.5;
     private double TURNING_SPEED = 1;
-    private double DPAD_SPEED = 0.3;
+    private double DPAD_SPEED = 0.2;
 
     private String skystoneGrabberMode = "|| \n|";
     private String capstoneArmMode = "Stored";
@@ -38,12 +38,15 @@ public class ManualDrive extends LinearOpMode {
     private double previousHorizontalPos = -1;
     private final double insideHorizontalLim = 0.13;
     private final double outsideHorizontalLim = 0.33; // Actually 0.37
+    private final double placingHorizontalPos = 0.32;
 
     @Override
     public void runOpMode() throws InterruptedException {
         drive = new YodaMecanumDrive(hardwareMap);
         drive.setTelemetry(telemetry);
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
+
+        horizontalPosition = drive.horizontalExtender.getPosition();
 
         telemetry.addLine("Ready!");
         telemetry.update();
@@ -93,7 +96,7 @@ public class ManualDrive extends LinearOpMode {
 
     private void moveRobot() {
         if (gamepad1.a && !pressed[1]) {
-            isSlowMode = ! isSlowMode;
+            isSlowMode = !isSlowMode;
             pressed[1] = true;
         } else if (!gamepad1.a && pressed[1]) {
             pressed[1] = false;
@@ -105,6 +108,7 @@ public class ManualDrive extends LinearOpMode {
         } else if (!gamepad1.x && pressed[0]) {
             pressed[0] = false;
         }
+        //if (gamepad1.x) drive.turnSync(drive.getAngleToFront(telemetry));
 
         if (!gamepad1.x) {
             double leftFrontPower = 0;
@@ -118,35 +122,42 @@ public class ManualDrive extends LinearOpMode {
 
             boolean dpad_pressed = false;
             if (gamepad1.dpad_up) {
-                input_y = DPAD_SPEED;
+                input_y += DPAD_SPEED;
                 dpad_pressed = true;
             } else if (gamepad1.dpad_down) {
-                input_y = -DPAD_SPEED;
+                input_y -= DPAD_SPEED;
                 dpad_pressed = true;
             }
 
             if (gamepad1.dpad_right) {
-                input_x = DPAD_SPEED;
+                input_x += DPAD_SPEED;
                 dpad_pressed = true;
             } else if (gamepad1.dpad_left) {
-                input_x = -DPAD_SPEED;
+                input_x -= DPAD_SPEED;
                 dpad_pressed = true;
             }
 
             if (gamepad1.left_bumper) {
-                input_turning = DPAD_SPEED * 0.7;
+                input_turning -= DPAD_SPEED * 0.65;
                 dpad_pressed = true;
             } else if (gamepad1.right_bumper) {
-                input_turning = DPAD_SPEED * 0.7;
+                input_turning += DPAD_SPEED * 0.65;
                 dpad_pressed = true;
             }
 
-            if (isSlowMode && !dpad_pressed) {
+            if ((isSlowMode && !dpad_pressed)|| gamepad1.left_stick_button || gamepad1.right_stick_button) {
                 speed_multiplier = SLOW_MODE_MULTIPLIER;
             } else {
                 speed_multiplier = 1;
             }
             speed_multiplier = speed_multiplier * GLOBAL_SPEED_MULTIPLIER;
+
+            if ((gamepad2.left_trigger > 0.9 || gamepad2.right_trigger > 0.9) && input_y > 0) {
+                if (drive.frontLeftDistance.getDistance(DistanceUnit.INCH) < 10 && drive.frontRightDistance.getDistance(DistanceUnit.INCH) < 10) {
+                    input_y = 0;
+                }
+            }
+
 
             double r = Math.hypot(input_x, input_y);
             double robotAngle = Math.atan2(input_y, input_x) - Math.PI / 4;
@@ -208,11 +219,15 @@ public class ManualDrive extends LinearOpMode {
             pressed[5] = false;
         }
 
+        if (gamepad2.dpad_left) verticalPosition -= 10;
+        if (gamepad2.dpad_right) verticalPosition += 10;
+
+
         if (gamepad2.right_stick_button) verticalPosition = bottomVerticalLim;
-        if (gamepad2.left_stick_button) horizontalPosition = outsideHorizontalLim;
+        if (gamepad2.left_stick_button) horizontalPosition = placingHorizontalPos;
 
 
-        verticalPosition = Math.min(Math.max(verticalPosition - gamepad2.right_stick_y * 300, bottomVerticalLim), topVerticalLim);
+        verticalPosition = Math.min(Math.max(verticalPosition - gamepad2.right_stick_y * 100, bottomVerticalLim), topVerticalLim);
         if (verticalPosition != previousVerticalPos) drive.verticalExtender.setTargetPosition((int) verticalPosition);
         previousVerticalPos = verticalPosition;
 

@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.yoda_code;
 
+import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -24,20 +25,7 @@ public class RedStrategist extends StrategistBase {
     public void GrabSkyStone() {
         moveSkystoneArms(ArmSide.BACK, ArmStage.PREPARE);
 
-        switch(opMode.getSkystonePos()) {
-            case LEFT:
-                forwardOffset = forwardOffsetsPerPos[0];
-                break;
-            case MIDDLE:
-                forwardOffset = forwardOffsetsPerPos[1];
-                break;
-            case RIGHT:
-                forwardOffset = forwardOffsetsPerPos[2];
-                break;
-            case UNKNOW:
-                forwardOffset = forwardOffsetsPerPos[1];
-                break;
-        }
+        this.forwardOffset = getForwardOffset(opMode.getSkystonePos(), forwardOffsetsPerPos);
 
         strafeRight(RIGHT_TO_STONE);
         turnTo(0);
@@ -54,16 +42,25 @@ public class RedStrategist extends StrategistBase {
         }
         moveSkystoneArms(ArmSide.BACK, ArmStage.GRAB);
         opMode.sleep(1000);
-        strafeLeft(5);
     }
 
     @Override
     public void moveAndDropSkystoneOnFoundation() {
-
+        strafeLeft(5);
+        turnTo(0);
+        drive.followTrajectorySync(drive.trajectoryBuilder()
+                .forward(80 - forwardOffset)
+                .strafeRight(8)
+                .build());
+        moveSkystoneArms(ArmSide.BACK, ArmStage.DROP);
     }
 
     @Override
     public void fromFoundationToPark() {
+        drive.followTrajectorySync(drive.trajectoryBuilder()
+                .strafeLeft(7)
+                .back(60)
+                .build());
     }
 
     @Override
@@ -73,5 +70,24 @@ public class RedStrategist extends StrategistBase {
     @Override
     // Used in M5 only
     public void turnAndMoveFoundationAndPark() {
+        strafeLeft(5);
+        drive.turnSync(Math.toRadians(-90));
+        forward(7);
+        moveFoundationServos(1);
+        updatePose();
+        opMode.sleep(1000);
+        drive.followTrajectorySync(drive.trajectoryBuilder()
+                .setReversed(true)
+                .splineTo(new Pose2d(getX() - 20, getY() + 10, 0))
+                .setReversed(false)
+                .forward(25)
+                .build());
+        moveFoundationServos(0);
+        updatePose();
+        drive.followTrajectorySync(drive.trajectoryBuilder()
+                .setReversed(true)
+                .splineTo(new Pose2d(getX() - 43, getY() - 3, 0))
+                .setReversed(false)
+                .build());
     }
 }

@@ -25,6 +25,7 @@ import com.acmerobotics.roadrunner.trajectory.TrajectoryBuilder;
 import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
 import com.acmerobotics.roadrunner.trajectory.constraints.MecanumConstraints;
 import com.acmerobotics.roadrunner.util.NanoClock;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import org.firstinspires.ftc.teamcode.util.DashboardUtil;
 
@@ -37,6 +38,7 @@ import java.util.List;
  */
 @Config
 public abstract class SampleMecanumDriveBase extends MecanumDrive {
+    protected LinearOpMode opMode;
     public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(0, 0, 0);
     public static PIDCoefficients HEADING_PID = new PIDCoefficients(0, 0, 0);
 
@@ -142,6 +144,7 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
         packet.put("yError", lastError.getY());
         packet.put("headingError", lastError.getHeading());
 
+
         switch (mode) {
             case IDLE:
                 // do nothing
@@ -200,6 +203,8 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
         }
 
         dashboard.sendTelemetryPacket(packet);
+        opMode.telemetry.log().add("Staying alive");
+        opMode.telemetry.update();
     }
 
     public void waitForIdle() {
@@ -234,7 +239,13 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
         return velocities;
     }
 
+    public void setOpMode(LinearOpMode opMode) {
+        this.opMode = opMode;
+    }
+
     public abstract PIDCoefficients getPIDCoefficients(DcMotor.RunMode runMode);
 
     public abstract void setPIDCoefficients(DcMotor.RunMode runMode, PIDCoefficients coefficients);
+
+
 }

@@ -30,7 +30,6 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
     private Telemetry telemetry;
     private ElapsedTime global_timer;
     public DcMotor leftEncoder, rightEncoder, frontEncoder;
-    protected LinearOpMode opMode;
 
     public YodaMecanumDrive(HardwareMap hardwareMap) {
         super(hardwareMap);
@@ -84,10 +83,6 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
 
         skystoneArmFront.scaleRange(1 - 0.33, 1);
         skystoneArmBack.scaleRange(0, 0.33);
-    }
-
-    public void setOpMode(LinearOpMode opMode) {
-        this.opMode = opMode;
     }
 
     public void setTelemetry(Telemetry telemetry) {
@@ -157,13 +152,14 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         double left = frontLeftDistance.getDistance(DistanceUnit.INCH);
 
         double opposite = right - left;
-
-        if (left > 150 || right > 150) return 0;
+        telemetry.addData("Distance", "Left %.2f, Right %.2f", left, right);
+        if (left > 200 || right > 200) return 0;
 
         double angle = Math.atan(Math.abs(opposite) / adjacent);
 
         if (opposite < 0) angle = -angle;
 
+        telemetry.addData("Angle", angle);
         return angle;
     }
 
