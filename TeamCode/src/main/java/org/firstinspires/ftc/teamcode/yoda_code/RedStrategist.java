@@ -11,7 +11,7 @@ import static java.lang.Thread.sleep;
 
 public class RedStrategist extends StrategistBase {
     private double forwardOffset = 0;
-    private double[] forwardOffsetsPerPos = {11, 3, -5}; // left, middle, right
+    private double[] forwardOffsetsPerPos = {11, 3, -4}; // left, middle, right
     private static double RIGHT_TO_STONE = 30;
 
     public RedStrategist(
@@ -49,8 +49,8 @@ public class RedStrategist extends StrategistBase {
         strafeLeft(5);
         turnTo(0);
         drive.followTrajectorySync(drive.trajectoryBuilder()
-                .forward(80 - forwardOffset)
-                .strafeRight(8)
+                .forward(75 - forwardOffset)
+                .strafeRight(10)
                 .build());
         moveSkystoneArms(ArmSide.BACK, ArmStage.DROP);
     }
@@ -70,15 +70,20 @@ public class RedStrategist extends StrategistBase {
     @Override
     // Used in M5 only
     public void turnAndMoveFoundationAndPark() {
-        strafeLeft(5);
-        drive.turnSync(Math.toRadians(-90));
-        forward(7);
+        strafeLeft(6);
+        drive.turnSync(Math.toRadians(-90) - drive.getRawExternalHeading());
+        forward(5);
         moveFoundationServos(1);
+        forward(2);
         updatePose();
         opMode.sleep(1000);
         drive.followTrajectorySync(drive.trajectoryBuilder()
+                .back(10)
                 .setReversed(true)
-                .splineTo(new Pose2d(getX() - 20, getY() + 10, 0))
+                .splineTo(new Pose2d(getX() - 20, getY() + 15, 0))
+                .build());
+        turnTo(0);
+        drive.followTrajectorySync(drive.trajectoryBuilder()
                 .setReversed(false)
                 .forward(25)
                 .build());
@@ -86,7 +91,7 @@ public class RedStrategist extends StrategistBase {
         updatePose();
         drive.followTrajectorySync(drive.trajectoryBuilder()
                 .setReversed(true)
-                .splineTo(new Pose2d(getX() - 43, getY() - 3, 0))
+                .splineTo(new Pose2d(getX() - 43, getY() - 7, 0))
                 .setReversed(false)
                 .build());
     }

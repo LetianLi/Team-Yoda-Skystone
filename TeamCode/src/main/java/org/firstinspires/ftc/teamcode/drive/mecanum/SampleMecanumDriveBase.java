@@ -203,8 +203,11 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
         }
 
         dashboard.sendTelemetryPacket(packet);
-        opMode.telemetry.log().add("Staying alive");
-        opMode.telemetry.update();
+        if (opMode.telemetry != null) {
+            opMode.telemetry.log().add("status", "Staying alive");
+            opMode.telemetry.update();
+            opMode.telemetry.log().clear();
+        }
     }
 
     public void waitForIdle() {

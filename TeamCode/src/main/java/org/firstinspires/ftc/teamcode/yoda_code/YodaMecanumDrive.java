@@ -26,9 +26,6 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
     public Servo capstoneArm, intakeGrabber;
     public Rev2mDistanceSensor frontLeftDistance, frontRightDistance;
 
-    private HardwareMap hardwareMap;
-    private Telemetry telemetry;
-    private ElapsedTime global_timer;
     public DcMotor leftEncoder, rightEncoder, frontEncoder;
 
     public YodaMecanumDrive(HardwareMap hardwareMap) {
@@ -83,11 +80,11 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
 
         skystoneArmFront.scaleRange(1 - 0.33, 1);
         skystoneArmBack.scaleRange(0, 0.33);
+
+        foundationMoverLeft.scaleRange(0, 0.6);
+        foundationMoverRight.scaleRange(0.5, 1);
     }
 
-    public void setTelemetry(Telemetry telemetry) {
-        this.telemetry = telemetry;
-    }
 
     public void strafeRight(double inches) {
         followTrajectorySync(this.trajectoryBuilder()
@@ -146,7 +143,7 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         }
     }
 
-    public double getAngleToFront() {
+    public double getAngleToFront(Telemetry telemetry) {
         double adjacent =  10 + 1/16; // Distance between sensors, in.
         double right = frontRightDistance.getDistance(DistanceUnit.INCH);
         double left = frontLeftDistance.getDistance(DistanceUnit.INCH);

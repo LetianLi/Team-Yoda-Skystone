@@ -77,6 +77,11 @@ public class OpencvDetector {
 
     }
 
+    public void deactivate() {
+        webcam.stopStreaming();
+        webcam.closeCameraDevice();
+    }
+
     public SkystonePos getSkystonePos(){
         if(valLeft == 0) return SkystonePos.LEFT;
         else if(valMid == 0) return SkystonePos.MIDDLE;

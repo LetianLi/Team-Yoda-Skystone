@@ -43,7 +43,7 @@ public class ManualDrive extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         drive = new YodaMecanumDrive(hardwareMap);
-        drive.setTelemetry(telemetry);
+        drive.setOpMode(this);
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
         horizontalPosition = drive.horizontalExtender.getPosition();
@@ -103,7 +103,7 @@ public class ManualDrive extends LinearOpMode {
         }
 
         if (gamepad1.x && !pressed[0]) {
-            drive.turnSync(drive.getAngleToFront());
+            drive.turnSync(drive.getAngleToFront(telemetry));
             pressed[0] = true;
         } else if (!gamepad1.x && pressed[0]) {
             pressed[0] = false;

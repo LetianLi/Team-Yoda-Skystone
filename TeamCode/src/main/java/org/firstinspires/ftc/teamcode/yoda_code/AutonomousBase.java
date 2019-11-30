@@ -25,7 +25,6 @@ public abstract class AutonomousBase extends LinearOpMode {
         detector = new OpencvDetector(hardwareMap);
 
         drive = new YodaMecanumDrive(hardwareMap);
-        drive.setTelemetry(telemetry);
         drive.setOpMode(this);
 
         op_timer = new ElapsedTime();
@@ -62,6 +61,7 @@ public abstract class AutonomousBase extends LinearOpMode {
             idle();
             sleep(200);
         }
+//        detector.deactivate();
     }
 
     public SkystonePos getSkystonePos() {
