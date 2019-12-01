@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.drive.opmode;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.yoda_code.YodaMecanumDrive;
@@ -9,6 +10,7 @@ import org.firstinspires.ftc.teamcode.yoda_code.YodaMecanumDrive;
 /*
  * This is an example of a more complex path to really test the tuning.
  */
+@Disabled
 @Autonomous(group = "drive")
 public class SplineTest extends LinearOpMode {
     @Override
