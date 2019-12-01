@@ -1,37 +1,137 @@
 package org.firstinspires.ftc.teamcode.yoda_code;
 
+import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
+import org.firstinspires.ftc.teamcode.yoda_enum.ArmSide;
+import org.firstinspires.ftc.teamcode.yoda_enum.ArmStage;
 
 public class BlueStrategist extends StrategistBase {
     private double forwardOffset = 0;
-    private double[] forwardOffsetsPerPos = {1, 9, 19}; // right, middle, left
-    private static double FIRST_RIGHT_DETECT_STONE = 21;
-    private static double SECOND_RIGHT_CLOSER_TO_STONE = 18.5;
+    private double[] forwardOffsetsPerPos = {10, 3, -4}; // left, middle, right
+    private static double RIGHT_TO_STONE = 30;
 
     public BlueStrategist(
             YodaMecanumDrive drive, ElapsedTime op_timer, AutonomousBase opMode) {
         super(drive, op_timer, opMode);
     }
 
-    @Override
-    public void GrabSkyStone() {
 
+    // 5.5 , -5, 18
+    @Override
+    public void grabSkyStone() {
+        drive.setPoseEstimate(new Pose2d(-33, 63, 0));
+        moveSkystoneArms(ArmSide.BACK, ArmStage.PREPARE);
+
+        this.forwardOffset = getForwardOffset(opMode.getSkystonePos(), forwardOffsetsPerPos);
+
+        strafeRight(RIGHT_TO_STONE);
+        turnTo(0);
+        //drive.updatePoseEstimate();
+        /*drive.followTrajectorySync(drive.trajectoryBuilder()
+                .lineTo(new Vector2d(forwardOffset))
+                .build());*/
+
+        if (forwardOffset > 0) {
+            forward(Math.abs(forwardOffset));
+        }
+        else if (forwardOffset < 0){
+            back(Math.abs(forwardOffset));
+        }
+        moveSkystoneArms(ArmSide.BACK, ArmStage.GRAB);
+        opMode.sleep(500);
     }
 
     @Override
     public void moveAndDropSkystoneOnFoundation() {
+        moveAndDropSkystoneOnFoundation(0);
     }
+
+    @Override
+    public void moveAndDropSkystoneOnFoundation(double extraForwards) {
+        strafeLeft(5);
+        turnTo(0);
+        drive.followTrajectorySync(drive.trajectoryBuilder()
+                .forward(70 - forwardOffset + extraForwards)
+                .strafeRight(13)
+                .build());
+        moveSkystoneArms(ArmSide.BACK, ArmStage.DROP);
+    }
+
+    @Override
+    public void goBackGrabDeliverSecondSkystone() {
+        strafeLeft(7);
+        turnTo(0);
+        back(90);
+        double extraMoveBackDistance = moveBackToDistance(9 + forwardOffset);
+        moveSkystoneArms(ArmSide.BACK, ArmStage.PREPARE);
+        turnTo(0);
+        moveRightToDistance(2, 5);
+        moveSkystoneArms(ArmSide.BACK, ArmStage.GRAB);
+        moveAndDropSkystoneOnFoundation(extraMoveBackDistance + 8);
+    }
+
 
     @Override
     public void fromFoundationToPark() {
-    }
-
-    @Override
-    public void DoubleSkystoneDelivery() {
+        strafeLeft(5);
+        turnTo(0);
+        back(50);
+        strafeRight(6);
     }
 
     @Override
     // Used in M5 only
     public void turnAndMoveFoundationAndPark() {
+        strafeLeft(6);
+        forward(3);
+        turnTo(Math.toRadians(-90));
+        forward(5);
+        moveFoundationServos(1);
+        forward(2);
+        updatePose();
+        opMode.sleep(500);
+        drive.followTrajectorySync(drive.trajectoryBuilder()
+                .back(10)
+                .setReversed(true)
+                .splineTo(new Pose2d(getX() - 25, getY() + 15, 0))
+                .build());
+        turnTo(0);
+        drive.followTrajectorySync(drive.trajectoryBuilder()
+                .setReversed(false)
+                .forward(20)
+                .build());
+        moveFoundationServos(0);
+        updatePose();
+        drive.followTrajectorySync(drive.trajectoryBuilder()
+                .setReversed(true)
+                .splineTo(new Pose2d(getX() - 43, getY() - 10, 0))
+                .strafeRight(1)
+                .setReversed(false)
+                .build());
+    }
+
+    public void moveFoundationBackAndPark() {
+        drive.followTrajectorySync(drive.trajectoryBuilder()
+                .strafeLeft(1)
+                .forward(3)
+                .build());
+        turnTo(Math.toRadians(-90));
+        moveFoundationServos(1);
+        drive.followTrajectorySync(drive.trajectoryBuilder()
+                .forward(5)
+                .strafeLeft(6)
+                .build());
+        turnTo(Math.toRadians(-90));
+        back(45);
+        moveFoundationServos(0);
+
+        drive.followTrajectorySync(drive.trajectoryBuilder()
+                .forward(1)
+                .back(1)
+                .strafeRight(38)
+                .forward(27)
+                .strafeRight(28)
+                .build());
     }
 }

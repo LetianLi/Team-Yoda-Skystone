@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.yoda_opmode;
 // Get it from https://github.com/uhs3939/SkyStone/blob/master/TeamCode/src/main/java/org/firstinspires/ftc/teamcode/opencvSkystoneDetector.java
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.yoda_code.OpencvDetector;
@@ -20,7 +21,7 @@ import org.firstinspires.ftc.teamcode.yoda_code.OpencvDetector;
  *YES
  */
 @Autonomous(name= "Opencv Test", group="Sky autonomous")
-//@Disabled//comment out this line before using
+@Disabled//comment out this line before using
 public class OpencvTestOps extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {

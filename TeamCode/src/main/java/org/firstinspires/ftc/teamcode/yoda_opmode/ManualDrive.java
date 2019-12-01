@@ -36,9 +36,7 @@ public class ManualDrive extends LinearOpMode {
 
     private double horizontalPosition = 0;
     private double previousHorizontalPos = -1;
-    private final double insideHorizontalLim = 0.13;
-    private final double outsideHorizontalLim = 0.33; // Actually 0.37
-    private final double placingHorizontalPos = 0.32;
+    private final double placingHorizontalPos = 0.9;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -196,7 +194,7 @@ public class ManualDrive extends LinearOpMode {
         } else if (capstoneArmMode == "Ready") {
             drive.capstoneArm.setPosition(0.92);
             drive.intakeGrabber.setPosition(0.5);
-            drive.horizontalExtender.setPosition(insideHorizontalLim);
+            drive.horizontalExtender.setPosition(0);
         } else if (capstoneArmMode == "Dropping") {
             drive.capstoneArm.setPosition(drive.capstoneArm.getPosition() + 0.002);
         } else if (capstoneArmMode == "Dropped") {
@@ -231,7 +229,7 @@ public class ManualDrive extends LinearOpMode {
         if (verticalPosition != previousVerticalPos) drive.verticalExtender.setTargetPosition((int) verticalPosition);
         previousVerticalPos = verticalPosition;
 
-        horizontalPosition = Math.min(Math.max(horizontalPosition - gamepad2.left_stick_y / 25, insideHorizontalLim), outsideHorizontalLim);
+        horizontalPosition = Math.min(Math.max(horizontalPosition - gamepad2.left_stick_y / 25, 0), 1);
         if (horizontalPosition != previousHorizontalPos) drive.horizontalExtender.setPosition(horizontalPosition);
         previousHorizontalPos = horizontalPosition;
     }

@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.yoda_code;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.yoda_enum.ArmSide;
 import org.firstinspires.ftc.teamcode.yoda_enum.ArmStage;
 import org.firstinspires.ftc.teamcode.yoda_enum.SkystonePos;
@@ -21,15 +22,26 @@ public abstract class StrategistBase {
         this.opMode = opMode;
     }
 
-    public abstract void GrabSkyStone();
+    public void readyForManual() {
+        drive.horizontalExtender.setPosition(1);
+        drive.intakeGrabber.setPosition(0.4);
+        moveFoundationServos(0);
+        opMode.sleep(3000);
+    }
+
+    public abstract void grabSkyStone();
 
     public abstract void moveAndDropSkystoneOnFoundation();
 
+    public abstract void moveAndDropSkystoneOnFoundation(double extraForwards);
+
     public abstract void fromFoundationToPark();
 
-    public abstract void DoubleSkystoneDelivery();
+    public abstract void goBackGrabDeliverSecondSkystone();
 
     public abstract void turnAndMoveFoundationAndPark();
+
+    public abstract void moveFoundationBackAndPark();
 
     protected void moveSkystoneArms(ArmSide side, ArmStage stage) {
         Servo targetArm = (side == ArmSide.FRONT) ? drive.skystoneArmFront : drive.skystoneArmBack;
@@ -47,16 +59,15 @@ public abstract class StrategistBase {
                 break;
             case GRAB:
                 targetArm.setPosition(1);
-                opMode.sleep(500);
+                opMode.sleep(400);
                 targetGrabber.setPosition(0);
-                opMode.sleep(600);
+                opMode.sleep(500);
                 targetArm.setPosition(0);
                 break;
             case DROP:
                 targetArm.setPosition(1 - 0.15);
-                opMode.sleep(500);
                 targetGrabber.setPosition(1);
-                opMode.sleep(100);
+                opMode.sleep(200);
                 targetArm.setPosition(0);
                 opMode.sleep(100);
                 targetGrabber.setPosition(0);
@@ -67,6 +78,40 @@ public abstract class StrategistBase {
     protected void moveFoundationServos(double position) {
         drive.foundationMoverLeft.setPosition(position);
         drive.foundationMoverRight.setPosition(position);
+    }
+
+    public double moveRightToDistance(double distanceFromRight, double maxMovement) {
+        double currentDistance = drive.getRightDistance();
+        opMode.telemetry.addData("current distance right", currentDistance);
+        opMode.telemetry.update();
+        if (currentDistance > distanceFromRight && currentDistance - distanceFromRight <= maxMovement) {
+            strafeRight(currentDistance - distanceFromRight);
+        }
+        else if (currentDistance - distanceFromRight >= maxMovement) strafeRight(maxMovement);
+        else if (distanceFromRight > currentDistance) {
+            strafeLeft(distanceFromRight - currentDistance);
+        }
+        return currentDistance - distanceFromRight;
+    }
+
+    public double moveBackToDistance(double distanceFromBack) {
+        distanceFromBack += 3.5;
+        double currentDistance = drive.getBackDistance() + 3.5;
+        opMode.telemetry.addData("current distance back", currentDistance);
+        opMode.telemetry.update();
+        if (currentDistance > distanceFromBack) back(currentDistance - distanceFromBack);
+        else if (distanceFromBack > currentDistance) forward(distanceFromBack - currentDistance);
+        return currentDistance - distanceFromBack;
+    }
+
+    public double moveForwardToDistance(double distanceFromFront) {
+        distanceFromFront += 0.5;
+        double currentDistance = drive.frontRightDistance.getDistance(DistanceUnit.INCH);
+        opMode.telemetry.addData("current distance front", currentDistance);
+        opMode.telemetry.update();
+        if (currentDistance > distanceFromFront) forward(currentDistance - distanceFromFront);
+        else if (distanceFromFront > currentDistance) back(distanceFromFront - currentDistance);
+        return currentDistance - distanceFromFront;
     }
 
 
@@ -89,7 +134,7 @@ public abstract class StrategistBase {
         turnTo(angle, drive.getRawExternalHeading());
     }
     protected void turnTo(double angle, double currentAngle) {
-        angle -= Math.toDegrees(currentAngle);
+        angle = Math.toDegrees(angle) - Math.toDegrees(currentAngle);
         while (angle < -180) {
             angle += 360;
         }

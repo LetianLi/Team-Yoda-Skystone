@@ -3,9 +3,10 @@ package org.firstinspires.ftc.teamcode.yoda_opmode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.yoda_code.AutonomousBase;
+import org.firstinspires.ftc.teamcode.yoda_enum.TeamColor;
 
-@Autonomous(group = "auto", name = "M4: 1 Skystone -> foundation, Park")
-public class M4_SkystoneF_Park extends AutonomousBase {
+@Autonomous(group = "auto", name = "M11: 2 Skystone->Foundation->Move it->park ")
+public class M11_TwoSkystone_Foundation_MoveFoundation extends AutonomousBase {
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -13,9 +14,10 @@ public class M4_SkystoneF_Park extends AutonomousBase {
         if (isStopRequested()) return;
         if (strategist != null) {
             strategist.grabSkyStone();
-            strategist.moveAndDropSkystoneOnFoundation();
-            strategist.fromFoundationToPark();
-            strategist.readyForManual();
+            strategist.moveAndDropSkystoneOnFoundation(10);
+            strategist.goBackGrabDeliverSecondSkystone();
+            strategist.moveFoundationBackAndPark();
+
         }
     }
 }

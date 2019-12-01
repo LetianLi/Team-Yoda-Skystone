@@ -24,7 +24,7 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
     public Servo foundationMoverLeft, foundationMoverRight;
     public Servo skystoneGrabberFront, skystoneArmFront, skystoneGrabberBack, skystoneArmBack;
     public Servo capstoneArm, intakeGrabber;
-    public Rev2mDistanceSensor frontLeftDistance, frontRightDistance;
+    public Rev2mDistanceSensor frontLeftDistance, frontRightDistance, rightDistance, backDistance;
 
     public DcMotor leftEncoder, rightEncoder, frontEncoder;
 
@@ -48,6 +48,8 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
 
         frontLeftDistance = hardwareMap.get(Rev2mDistanceSensor.class, "front left distance");
         frontRightDistance = hardwareMap.get(Rev2mDistanceSensor.class, "front right distance");
+        rightDistance = hardwareMap.get(Rev2mDistanceSensor.class, "right distance");
+        backDistance = hardwareMap.get(Rev2mDistanceSensor.class, "back distance");
 
         verticalExtender.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         verticalExtender.setTargetPosition(0);
@@ -77,6 +79,8 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
 
         rightEncoder.setDirection(DcMotor.Direction.REVERSE);
         frontEncoder.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        horizontalExtender.scaleRange(1 - 0.33, 1 - 0.13); // actually limit 0.37
 
         skystoneArmFront.scaleRange(1 - 0.33, 1);
         skystoneArmBack.scaleRange(0, 0.33);
@@ -158,6 +162,14 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
 
         telemetry.addData("Angle", angle);
         return angle;
+    }
+
+    public double getRightDistance() {
+        return rightDistance.getDistance(DistanceUnit.INCH);
+    }
+
+    public double getBackDistance() {
+        return backDistance.getDistance(DistanceUnit.INCH);
     }
 
 
