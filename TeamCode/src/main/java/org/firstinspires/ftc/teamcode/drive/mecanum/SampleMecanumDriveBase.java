@@ -138,11 +138,11 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
 
         packet.put("x", currentPose.getX());
         packet.put("y", currentPose.getY());
-        packet.put("heading", currentPose.getHeading());
+        packet.put("heading", Math.toDegrees(currentPose.getHeading()));
 
         packet.put("xError", lastError.getX());
         packet.put("yError", lastError.getY());
-        packet.put("headingError", lastError.getHeading());
+        packet.put("headingError", Math.toDegrees(lastError.getHeading()));
 
 
         switch (mode) {
@@ -174,6 +174,8 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
                     mode = Mode.IDLE;
                     setDriveSignal(new DriveSignal());
                 }
+                fieldOverlay.setStroke("#F44336");
+                DashboardUtil.drawRobot(fieldOverlay, currentPose);
 
                 break;
             }
@@ -203,15 +205,10 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
         }
 
         dashboard.sendTelemetryPacket(packet);
-        if (opMode.telemetry != null) {
-            opMode.telemetry.log().add("status", "Staying alive");
-            opMode.telemetry.update();
-            opMode.telemetry.log().clear();
-        }
     }
 
     public void waitForIdle() {
-        while (!Thread.currentThread().isInterrupted() && isBusy()) {
+        while (!Thread.currentThread().isInterrupted() && isBusy() && !opMode.isStopRequested()) {
             update();
         }
     }
