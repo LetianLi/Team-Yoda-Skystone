@@ -98,8 +98,8 @@ public abstract class StrategistBase {
     }
 
     public double moveBackToDistance(double distanceFromBack, boolean doForwardInCase, double maxMovementBack) {
-        distanceFromBack += 3.5;
-        double currentDistance = drive.getBackDistance() + 3.5;
+        distanceFromBack -= 3.5;
+        double currentDistance = drive.getBackDistance() - 3.5;
         opMode.telemetry.addData("current distance back", currentDistance);
         opMode.telemetry.update();
         if (currentDistance > distanceFromBack && currentDistance - distanceFromBack <= maxMovementBack) {
@@ -116,8 +116,8 @@ public abstract class StrategistBase {
     }
 
     public double moveForwardToDistance(double distanceFromFront, boolean doBackwardInCase, double maxMovementForward) {
-        distanceFromFront += 0.5;
-        double currentDistance = drive.frontRightDistance.getDistance(DistanceUnit.INCH);
+        distanceFromFront -= 3;
+        double currentDistance = drive.getFrontDistance() - 3;
         opMode.telemetry.addData("current distance front", currentDistance);
         opMode.telemetry.update();
         if (currentDistance > distanceFromFront && currentDistance - distanceFromFront <= maxMovementForward) {
