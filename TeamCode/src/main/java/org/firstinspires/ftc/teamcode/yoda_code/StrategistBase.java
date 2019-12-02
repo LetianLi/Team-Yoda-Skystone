@@ -89,6 +89,7 @@ public abstract class StrategistBase {
         }
         else if (currentDistance - distanceFromRight >= maxMovementRight) {
             strafeRight(maxMovementRight);
+            return maxMovementRight;
         }
         else if (distanceFromRight > currentDistance && doLeftInCase) {
             strafeLeft(distanceFromRight - currentDistance);
@@ -101,11 +102,12 @@ public abstract class StrategistBase {
         double currentDistance = drive.getBackDistance() + 3.5;
         opMode.telemetry.addData("current distance back", currentDistance);
         opMode.telemetry.update();
-        if (currentDistance > distanceFromBack) {
+        if (currentDistance > distanceFromBack && currentDistance - distanceFromBack <= maxMovementBack) {
             back(currentDistance - distanceFromBack);
         }
         else if (currentDistance - distanceFromBack >= maxMovementBack) {
             strafeRight(maxMovementBack);
+            return maxMovementBack;
         }
         else if (distanceFromBack > currentDistance && doForwardInCase) {
             forward(distanceFromBack - currentDistance);
@@ -113,13 +115,21 @@ public abstract class StrategistBase {
         return currentDistance - distanceFromBack;
     }
 
-    public double moveForwardToDistance(double distanceFromFront) {
+    public double moveForwardToDistance(double distanceFromFront, boolean doBackwardInCase, double maxMovementForward) {
         distanceFromFront += 0.5;
         double currentDistance = drive.frontRightDistance.getDistance(DistanceUnit.INCH);
         opMode.telemetry.addData("current distance front", currentDistance);
         opMode.telemetry.update();
-        if (currentDistance > distanceFromFront) forward(currentDistance - distanceFromFront);
-        else if (distanceFromFront > currentDistance) back(distanceFromFront - currentDistance);
+        if (currentDistance > distanceFromFront && currentDistance - distanceFromFront <= maxMovementForward) {
+            forward(currentDistance - distanceFromFront);
+        }
+        else if (currentDistance - distanceFromFront >= maxMovementForward) {
+            forward(maxMovementForward);
+            return maxMovementForward;
+        }
+        else if (distanceFromFront > currentDistance && doBackwardInCase) {
+            back(distanceFromFront - currentDistance);
+        }
         return currentDistance - distanceFromFront;
     }
 

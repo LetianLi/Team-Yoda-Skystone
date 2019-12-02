@@ -83,7 +83,7 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         rightEncoder.setDirection(DcMotor.Direction.REVERSE);
         frontEncoder.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        horizontalExtender.scaleRange(1 - 0.33, 1 - 0.13); // actually limit 0.37
+        horizontalExtender.scaleRange(1 - 0.36, 1 - 0.13); // actually limit 0.37
 
         skystoneArmFront.scaleRange(1 - 0.33, 1);
         skystoneArmBack.scaleRange(0, 0.33);

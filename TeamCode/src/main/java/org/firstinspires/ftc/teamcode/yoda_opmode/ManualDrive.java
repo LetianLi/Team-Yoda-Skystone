@@ -36,7 +36,7 @@ public class ManualDrive extends LinearOpMode {
 
     private double horizontalPosition = 0;
     private double previousHorizontalPos = -1;
-    private final double placingHorizontalPos = 0.9;
+    private final double placingHorizontalPos = 1;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -50,7 +50,7 @@ public class ManualDrive extends LinearOpMode {
         telemetry.update();
         telemetry.clear();
         gamepad1.setJoystickDeadzone(0.1f);
-        gamepad2.setJoystickDeadzone(0.1f);
+        gamepad2.setJoystickDeadzone(0.15f);
         waitForStart();
 
         if (isStopRequested()) return;
@@ -143,7 +143,7 @@ public class ManualDrive extends LinearOpMode {
                 dpad_pressed = true;
             }
 
-            if ((isSlowMode && !dpad_pressed)|| gamepad1.left_stick_button || gamepad1.right_stick_button) {
+            if ((isSlowMode && !dpad_pressed)|| gamepad2.y) {
                 speed_multiplier = SLOW_MODE_MULTIPLIER;
             } else {
                 speed_multiplier = 1;
@@ -151,7 +151,7 @@ public class ManualDrive extends LinearOpMode {
             speed_multiplier = speed_multiplier * GLOBAL_SPEED_MULTIPLIER;
 
             if ((gamepad2.left_trigger > 0.9 || gamepad2.right_trigger > 0.9) && input_y > 0) {
-                if (drive.frontLeftDistance.getDistance(DistanceUnit.INCH) < 10 && drive.frontRightDistance.getDistance(DistanceUnit.INCH) < 10) {
+                if (drive.frontLeftDistance.getDistance(DistanceUnit.INCH) < 10 || drive.frontRightDistance.getDistance(DistanceUnit.INCH) < 10) {
                     input_y = 0;
                 }
             }
@@ -225,7 +225,7 @@ public class ManualDrive extends LinearOpMode {
         if (gamepad2.left_stick_button) horizontalPosition = placingHorizontalPos;
 
 
-        verticalPosition = Math.min(Math.max(verticalPosition - gamepad2.right_stick_y * 100, bottomVerticalLim), topVerticalLim);
+        verticalPosition = Math.min(Math.max(verticalPosition - gamepad2.right_stick_y * 25, bottomVerticalLim), topVerticalLim);
         if (verticalPosition != previousVerticalPos) drive.verticalExtender.setTargetPosition((int) verticalPosition);
         previousVerticalPos = verticalPosition;
 

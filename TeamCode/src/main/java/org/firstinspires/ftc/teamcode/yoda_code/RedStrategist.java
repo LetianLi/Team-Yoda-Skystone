@@ -39,7 +39,6 @@ public class RedStrategist extends StrategistBase {
         }
 
         moveSkystoneArms(ArmSide.FRONT, ArmStage.GRAB);
-        opMode.sleep(1000);
     }
 
     @Override
@@ -49,7 +48,7 @@ public class RedStrategist extends StrategistBase {
 
     @Override
     public void moveAndDropSkystoneOnFoundation(double extraForwards) {
-        strafeLeft(5);
+        strafeLeft(7);
         turnTo(0);
         drive.followTrajectorySync(drive.trajectoryBuilder()
                 .back(79.5 - forwardOffset + extraForwards)
@@ -63,18 +62,12 @@ public class RedStrategist extends StrategistBase {
         strafeLeft(7);
         turnTo(0);
         forward(77);
-        double extraMoveForwardsDistance = moveForwardToDistance(6);
+        double extraMoveForwardsDistance = moveForwardToDistance(6/*11 + forwardOffset*/, false, 30);
         moveSkystoneArms(ArmSide.FRONT, ArmStage.PREPARE);
-        if (forwardOffset > 0) {
-            back(Math.abs(forwardOffset));
-        }
-        else {
-            forward(Math.abs(forwardOffset));
-        }
         turnTo(0);
         moveRightToDistance(2, true, 5);
         moveSkystoneArms(ArmSide.FRONT, ArmStage.GRAB);
-        moveAndDropSkystoneOnFoundation(extraMoveForwardsDistance);
+        moveAndDropSkystoneOnFoundation(extraMoveForwardsDistance + forwardOffset - 2);
     }
 
 
@@ -102,8 +95,6 @@ public class RedStrategist extends StrategistBase {
                 .setReversed(true)
                 .splineTo(new Pose2d(getX() + 25, getY() + 15, Math.toRadians(180)))
                 .build());
-        turnTo(Math.toRadians(160));
-        turnTo(Math.toRadians(180));
         turnTo(Math.toRadians(180));
         drive.followTrajectorySync(drive.trajectoryBuilder()
                 .setReversed(false)
@@ -121,21 +112,32 @@ public class RedStrategist extends StrategistBase {
     }
 
     public void moveFoundationBackAndPark() {
-        strafeLeft(6);
-        forward(3);
-        turnTo(Math.toRadians(-90));
-        forward(5);
-        moveFoundationServos(1);
-        forward(2);
-        strafeLeft(5);
-        turnTo(Math.toRadians(-90));
-        back(45);
-        moveFoundationServos(0);
-
+        // adjust position
         drive.followTrajectorySync(drive.trajectoryBuilder()
-                .strafeLeft(34)
-                .forward(27)
-                .strafeLeft(24)
+                .strafeLeft(3)
+                .back(3)
                 .build());
+        // turn to face foundation and move
+        turnTo(Math.toRadians(-90));
+
+        updatePose();
+        drive.followTrajectorySync(drive.trajectoryBuilder()
+                .forward(5)
+                .addMarker(0, () -> { moveFoundationServos(1); return null; })
+                .setReversed(true)
+                .splineTo(new Pose2d(getX() - 20, getY() - 30, Math.toRadians(-50)))
+                .setReversed(false)
+                .build());
+
+        turnTo(Math.toRadians(170));
+        drive.followTrajectorySync(drive.trajectoryBuilder()
+                .forward(5)
+                .addMarker(0, () -> { moveFoundationServos(0); return null;})
+                .back(5)
+                .strafeLeft(13)
+                .back(50)
+//                .addMarker(2  , () -> {readyForManual(); return null;})
+                .build());
+
     }
 }

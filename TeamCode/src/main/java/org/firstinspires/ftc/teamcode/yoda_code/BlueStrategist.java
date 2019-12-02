@@ -31,10 +31,6 @@ public class BlueStrategist extends StrategistBase {
 
         strafeRight(RIGHT_TO_STONE);
         turnTo(0);
-        //drive.updatePoseEstimate();
-        /*drive.followTrajectorySync(drive.trajectoryBuilder()
-                .lineTo(new Vector2d(forwardOffset))
-                .build());*/
 
         if (forwardOffset > 0) {
             forward(Math.abs(forwardOffset));
@@ -43,7 +39,6 @@ public class BlueStrategist extends StrategistBase {
             back(Math.abs(forwardOffset));
         }
         moveSkystoneArms(ArmSide.BACK, ArmStage.GRAB);
-        opMode.sleep(500);
     }
 
     @Override
@@ -66,19 +61,19 @@ public class BlueStrategist extends StrategistBase {
     public void goBackGrabDeliverSecondSkystone() {
         strafeLeft(7);
         turnTo(0);
-        back(90);
-        double extraMoveBackDistance = moveBackToDistance(11 + forwardOffset, false, 50);
+        back(87);
+        double extraMoveBackDistance = moveBackToDistance(11 + forwardOffset, false, 30);
         moveSkystoneArms(ArmSide.BACK, ArmStage.PREPARE);
         turnTo(0);
         moveRightToDistance(2, true, 5);
         moveSkystoneArms(ArmSide.BACK, ArmStage.GRAB);
-        moveAndDropSkystoneOnFoundation(extraMoveBackDistance + 0);
+        moveAndDropSkystoneOnFoundation(extraMoveBackDistance + forwardOffset - 2);
     }
 
 
     @Override
     public void fromFoundationToPark() {
-        strafeLeft(5);
+        strafeLeft(7);
         turnTo(0);
         back(50);
         strafeRight(6);
@@ -123,11 +118,7 @@ public class BlueStrategist extends StrategistBase {
                 .build());
         // turn to face foundation and move
         turnTo(Math.toRadians(-90));
-//        drive.followTrajectorySync(drive.trajectoryBuilder()
-//                .forward(5)
-//                .addMarker(0.5, () -> { moveFoundationServos(1); return null; })
-//                .strafeLeft(6)
-//                .build());
+
         updatePose();
         drive.followTrajectorySync(drive.trajectoryBuilder()
                 .forward(5)
@@ -138,31 +129,14 @@ public class BlueStrategist extends StrategistBase {
                 .build());
 
         turnTo(Math.toRadians(10));
-        turnTo(Math.toRadians(0));
         drive.followTrajectorySync(drive.trajectoryBuilder()
                 .forward(5)
                 .addMarker(0, () -> { moveFoundationServos(0); return null;})
                 .back(5)
-                .strafeRight(13)
-                .back(50)
-                .addMarker(2  , () -> {readyForManual(); return null;})
+                .strafeRight(15)
+                .back(45)
+//                .addMarker(1  , () -> {readyForManual(); return null;})
                 .build());
 
-
-
-        /*
-        turnTo(Math.toRadians(-90));
-        back(45);
-        moveFoundationServos(0);
-
-        drive.followTrajectorySync(drive.trajectoryBuilder()
-                .forward(1)
-                .back(1)
-                .strafeRight(38)
-                .forward(27)
-                .strafeRight(28)
-                .build());
-
-         */
     }
 }
