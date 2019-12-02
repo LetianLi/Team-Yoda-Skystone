@@ -1,10 +1,14 @@
 package org.firstinspires.ftc.teamcode.yoda_code;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.yoda_enum.ArmSide;
 import org.firstinspires.ftc.teamcode.yoda_enum.ArmStage;
+
+import kotlin.Unit;
+import kotlin.jvm.functions.Function0;
 
 public class BlueStrategist extends StrategistBase {
     private double forwardOffset = 0;
@@ -49,11 +53,11 @@ public class BlueStrategist extends StrategistBase {
 
     @Override
     public void moveAndDropSkystoneOnFoundation(double extraForwards) {
-        strafeLeft(5);
+        strafeLeft(7);
         turnTo(0);
         drive.followTrajectorySync(drive.trajectoryBuilder()
                 .forward(70 - forwardOffset + extraForwards)
-                .strafeRight(13)
+                .strafeRight(15)
                 .build());
         moveSkystoneArms(ArmSide.BACK, ArmStage.DROP);
     }
@@ -63,12 +67,12 @@ public class BlueStrategist extends StrategistBase {
         strafeLeft(7);
         turnTo(0);
         back(90);
-        double extraMoveBackDistance = moveBackToDistance(9 + forwardOffset);
+        double extraMoveBackDistance = moveBackToDistance(11 + forwardOffset, false, 50);
         moveSkystoneArms(ArmSide.BACK, ArmStage.PREPARE);
         turnTo(0);
-        moveRightToDistance(2, 5);
+        moveRightToDistance(2, true, 5);
         moveSkystoneArms(ArmSide.BACK, ArmStage.GRAB);
-        moveAndDropSkystoneOnFoundation(extraMoveBackDistance + 8);
+        moveAndDropSkystoneOnFoundation(extraMoveBackDistance + 0);
     }
 
 
@@ -112,16 +116,41 @@ public class BlueStrategist extends StrategistBase {
     }
 
     public void moveFoundationBackAndPark() {
+        // adjust position
         drive.followTrajectorySync(drive.trajectoryBuilder()
-                .strafeLeft(1)
+                .strafeLeft(3)
                 .forward(3)
                 .build());
+        // turn to face foundation and move
         turnTo(Math.toRadians(-90));
-        moveFoundationServos(1);
+//        drive.followTrajectorySync(drive.trajectoryBuilder()
+//                .forward(5)
+//                .addMarker(0.5, () -> { moveFoundationServos(1); return null; })
+//                .strafeLeft(6)
+//                .build());
+        updatePose();
         drive.followTrajectorySync(drive.trajectoryBuilder()
                 .forward(5)
-                .strafeLeft(6)
+                .addMarker(0, () -> { moveFoundationServos(1); return null; })
+                .setReversed(true)
+                .splineTo(new Pose2d(getX() - 20, getY() + 30, Math.toRadians(-50)))
+                .setReversed(false)
                 .build());
+
+        turnTo(Math.toRadians(10));
+        turnTo(Math.toRadians(0));
+        drive.followTrajectorySync(drive.trajectoryBuilder()
+                .forward(5)
+                .addMarker(0, () -> { moveFoundationServos(0); return null;})
+                .back(5)
+                .strafeRight(13)
+                .back(50)
+                .addMarker(2  , () -> {readyForManual(); return null;})
+                .build());
+
+
+
+        /*
         turnTo(Math.toRadians(-90));
         back(45);
         moveFoundationServos(0);
@@ -133,5 +162,7 @@ public class BlueStrategist extends StrategistBase {
                 .forward(27)
                 .strafeRight(28)
                 .build());
+
+         */
     }
 }

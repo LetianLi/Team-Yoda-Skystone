@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.yoda_code;
 
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -24,7 +25,8 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
     public Servo foundationMoverLeft, foundationMoverRight;
     public Servo skystoneGrabberFront, skystoneArmFront, skystoneGrabberBack, skystoneArmBack;
     public Servo capstoneArm, intakeGrabber;
-    public Rev2mDistanceSensor frontLeftDistance, frontRightDistance, rightDistance, backDistance;
+    public Rev2mDistanceSensor frontLeftDistance, frontRightDistance, rightDistance;
+    public ModernRoboticsI2cRangeSensor backDistance;
 
     public DcMotor leftEncoder, rightEncoder, frontEncoder;
 
@@ -49,7 +51,7 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         frontLeftDistance = hardwareMap.get(Rev2mDistanceSensor.class, "front left distance");
         frontRightDistance = hardwareMap.get(Rev2mDistanceSensor.class, "front right distance");
         rightDistance = hardwareMap.get(Rev2mDistanceSensor.class, "right distance");
-        backDistance = hardwareMap.get(Rev2mDistanceSensor.class, "back distance");
+        backDistance = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "back distance");
 
         verticalExtender.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         verticalExtender.setTargetPosition(0);
@@ -58,6 +60,7 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         verticalExtender.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         foundationMoverRight.setDirection(Servo.Direction.REVERSE);
+        foundationMoverLeft.setDirection(Servo.Direction.REVERSE);
         capstoneArm.setDirection(Servo.Direction.REVERSE);
         skystoneArmFront.setDirection(Servo.Direction.REVERSE);
         skystoneGrabberFront.setDirection(Servo.Direction.REVERSE);
@@ -85,7 +88,7 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         skystoneArmFront.scaleRange(1 - 0.33, 1);
         skystoneArmBack.scaleRange(0, 0.33);
 
-        foundationMoverLeft.scaleRange(0, 0.6);
+        foundationMoverLeft.scaleRange(0.4, 1);
         foundationMoverRight.scaleRange(0.5, 1);
     }
 

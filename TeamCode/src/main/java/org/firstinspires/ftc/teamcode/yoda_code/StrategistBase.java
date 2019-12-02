@@ -80,27 +80,36 @@ public abstract class StrategistBase {
         drive.foundationMoverRight.setPosition(position);
     }
 
-    public double moveRightToDistance(double distanceFromRight, double maxMovement) {
+    public double moveRightToDistance(double distanceFromRight, boolean doLeftInCase, double maxMovementRight) {
         double currentDistance = drive.getRightDistance();
         opMode.telemetry.addData("current distance right", currentDistance);
         opMode.telemetry.update();
-        if (currentDistance > distanceFromRight && currentDistance - distanceFromRight <= maxMovement) {
+        if (currentDistance > distanceFromRight && currentDistance - distanceFromRight <= maxMovementRight) {
             strafeRight(currentDistance - distanceFromRight);
         }
-        else if (currentDistance - distanceFromRight >= maxMovement) strafeRight(maxMovement);
-        else if (distanceFromRight > currentDistance) {
+        else if (currentDistance - distanceFromRight >= maxMovementRight) {
+            strafeRight(maxMovementRight);
+        }
+        else if (distanceFromRight > currentDistance && doLeftInCase) {
             strafeLeft(distanceFromRight - currentDistance);
         }
         return currentDistance - distanceFromRight;
     }
 
-    public double moveBackToDistance(double distanceFromBack) {
+    public double moveBackToDistance(double distanceFromBack, boolean doForwardInCase, double maxMovementBack) {
         distanceFromBack += 3.5;
         double currentDistance = drive.getBackDistance() + 3.5;
         opMode.telemetry.addData("current distance back", currentDistance);
         opMode.telemetry.update();
-        if (currentDistance > distanceFromBack) back(currentDistance - distanceFromBack);
-        else if (distanceFromBack > currentDistance) forward(distanceFromBack - currentDistance);
+        if (currentDistance > distanceFromBack) {
+            back(currentDistance - distanceFromBack);
+        }
+        else if (currentDistance - distanceFromBack >= maxMovementBack) {
+            strafeRight(maxMovementBack);
+        }
+        else if (distanceFromBack > currentDistance && doForwardInCase) {
+            forward(distanceFromBack - currentDistance);
+        }
         return currentDistance - distanceFromBack;
     }
 

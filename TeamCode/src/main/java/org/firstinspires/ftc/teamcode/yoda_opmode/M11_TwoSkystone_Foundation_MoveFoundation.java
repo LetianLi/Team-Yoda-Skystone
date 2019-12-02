@@ -17,6 +17,7 @@ public class M11_TwoSkystone_Foundation_MoveFoundation extends AutonomousBase {
             strategist.moveAndDropSkystoneOnFoundation(10);
             strategist.goBackGrabDeliverSecondSkystone();
             strategist.moveFoundationBackAndPark();
+            strategist.readyForManual();
 
         }
     }

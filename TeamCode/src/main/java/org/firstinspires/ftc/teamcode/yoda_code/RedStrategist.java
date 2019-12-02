@@ -72,7 +72,7 @@ public class RedStrategist extends StrategistBase {
             forward(Math.abs(forwardOffset));
         }
         turnTo(0);
-        moveRightToDistance(2, 5);
+        moveRightToDistance(2, true, 5);
         moveSkystoneArms(ArmSide.FRONT, ArmStage.GRAB);
         moveAndDropSkystoneOnFoundation(extraMoveForwardsDistance);
     }
