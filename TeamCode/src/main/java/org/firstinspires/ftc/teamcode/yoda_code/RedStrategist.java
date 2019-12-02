@@ -23,13 +23,13 @@ public class RedStrategist extends StrategistBase {
     // 5.5 , -5, 18
     @Override
     public void grabSkyStone() {
-        drive.setPoseEstimate(new Pose2d(33, 63, 0));
+        drive.setPoseEstimate(new Pose2d(-33, -63, Math.toRadians(180)));
         moveSkystoneArms(ArmSide.FRONT, ArmStage.PREPARE);
 
         this.forwardOffset = getForwardOffset(opMode.getSkystonePos(), forwardOffsetsPerPos);
 
         strafeRight(RIGHT_TO_STONE);
-        turnTo(0);
+        turnTo(Math.toRadians(180));
 
         if (forwardOffset > 0) {
             back(Math.abs(forwardOffset));
@@ -49,7 +49,7 @@ public class RedStrategist extends StrategistBase {
     @Override
     public void moveAndDropSkystoneOnFoundation(double extraForwards) {
         strafeLeft(7);
-        turnTo(0);
+        turnTo(Math.toRadians(180));
         drive.followTrajectorySync(drive.trajectoryBuilder()
                 .back(79.5 - forwardOffset + extraForwards)
                 .strafeRight(12.7)
@@ -60,11 +60,11 @@ public class RedStrategist extends StrategistBase {
     @Override
     public void goBackGrabDeliverSecondSkystone() {
         strafeLeft(7);
-        turnTo(0);
+        turnTo(Math.toRadians(180));
         forward(77);
-        double extraMoveForwardsDistance = moveForwardToDistance(6/*11 + forwardOffset*/, false, 30);
+        double extraMoveForwardsDistance = moveForwardToDistance(11 + forwardOffset, false, 30);
         moveSkystoneArms(ArmSide.FRONT, ArmStage.PREPARE);
-        turnTo(0);
+        turnTo(Math.toRadians(180));
         moveRightToDistance(2, true, 5);
         moveSkystoneArms(ArmSide.FRONT, ArmStage.GRAB);
         moveAndDropSkystoneOnFoundation(extraMoveForwardsDistance + forwardOffset - 2);
@@ -74,7 +74,7 @@ public class RedStrategist extends StrategistBase {
     @Override
     public void fromFoundationToPark() {
         strafeLeft(7);
-        turnTo(0);
+        turnTo(Math.toRadians(180));
         forward(55);
         strafeRight(4);
     }
@@ -84,7 +84,7 @@ public class RedStrategist extends StrategistBase {
     public void turnAndMoveFoundationAndPark() {
         strafeLeft(6);
         back(7);
-        turnTo(Math.toRadians(-90));
+        turnTo(Math.toRadians(90));
         forward(5);
         moveFoundationServos(1);
         forward(2);
@@ -93,19 +93,19 @@ public class RedStrategist extends StrategistBase {
         drive.followTrajectorySync(drive.trajectoryBuilder()
                 .back(10)
                 .setReversed(true)
-                .splineTo(new Pose2d(getX() + 25, getY() + 15, Math.toRadians(180)))
+                .splineTo(new Pose2d(getX() - 25, getY() - 15, 0))
                 .build());
-        turnTo(Math.toRadians(180));
+        turnTo(0);
         drive.followTrajectorySync(drive.trajectoryBuilder()
                 .setReversed(false)
                 .forward(20)
                 .build());
-        turnTo(Math.toRadians(180));
+        turnTo(0);
         moveFoundationServos(0);
         updatePose();
         drive.followTrajectorySync(drive.trajectoryBuilder()
                 .setReversed(true)
-                .splineTo(new Pose2d(getX() + 43, getY() - 13.5, Math.toRadians(180)))
+                .splineTo(new Pose2d(getX() - 43, getY() + 13.5, 0))
                 .strafeRight(1)
                 .setReversed(false)
                 .build());
@@ -118,18 +118,18 @@ public class RedStrategist extends StrategistBase {
                 .back(3)
                 .build());
         // turn to face foundation and move
-        turnTo(Math.toRadians(-90));
+        turnTo(Math.toRadians(90));
 
         updatePose();
         drive.followTrajectorySync(drive.trajectoryBuilder()
                 .forward(5)
                 .addMarker(0, () -> { moveFoundationServos(1); return null; })
                 .setReversed(true)
-                .splineTo(new Pose2d(getX() - 20, getY() - 30, Math.toRadians(-50)))
+                .splineTo(new Pose2d(getX() + 20, getY() + 30, Math.toRadians(130)))
                 .setReversed(false)
                 .build());
 
-        turnTo(Math.toRadians(170));
+        turnTo(Math.toRadians(-10));
         drive.followTrajectorySync(drive.trajectoryBuilder()
                 .forward(5)
                 .addMarker(0, () -> { moveFoundationServos(0); return null;})
