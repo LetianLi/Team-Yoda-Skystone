@@ -26,7 +26,7 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
     public Servo skystoneGrabberFront, skystoneArmFront, skystoneGrabberBack, skystoneArmBack;
     public Servo capstoneArm, intakeGrabber;
     public Rev2mDistanceSensor frontLeftDistance, frontRightDistance, rightDistance;
-    public ModernRoboticsI2cRangeSensor backDistance;
+    public ModernRoboticsI2cRangeSensor backDistance, frontDistance;
 
     public DcMotor leftEncoder, rightEncoder, frontEncoder;
 
@@ -52,6 +52,7 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         frontRightDistance = hardwareMap.get(Rev2mDistanceSensor.class, "front right distance");
         rightDistance = hardwareMap.get(Rev2mDistanceSensor.class, "right distance");
         backDistance = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "back distance");
+        frontDistance = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "front distance");
 
         verticalExtender.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         verticalExtender.setTargetPosition(0);
@@ -175,7 +176,25 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         return backDistance.getDistance(DistanceUnit.INCH);
     }
 
+    public double getFrontDistance() {
+        return frontDistance.getDistance(DistanceUnit.INCH);
+    }
 
     public void resetServos() {
+        // Skystone Arms
+        skystoneArmFront.setPosition(0);
+        skystoneArmBack.setPosition(0);
+        skystoneGrabberFront.setPosition(0);
+        skystoneGrabberBack.setPosition(0);
+
+        // Foundation Movers
+        foundationMoverLeft.setPosition(0);
+        foundationMoverRight.setPosition(0);
+
+        // Intake Grabber
+        intakeGrabber.setPosition(0.45);
+
+        // Horizontal Extender
+        horizontalExtender.setPosition(0);
     }
 }
