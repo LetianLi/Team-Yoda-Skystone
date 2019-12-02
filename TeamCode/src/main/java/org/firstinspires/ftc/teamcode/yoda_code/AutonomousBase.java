@@ -57,6 +57,9 @@ public abstract class AutonomousBase extends LinearOpMode {
             telemetry.addData("Values", detector.getValues());
             skystonePos = detector.getSkystonePos();
             telemetry.addData("Skystone Pos", skystonePos);
+            telemetry.addData("Front Distance", drive.getFrontDistance());
+            telemetry.addData("Right Distance", drive.getRightDistance());
+            telemetry.addData("Back Distance", drive.getBackDistance());
             telemetry.update();
             idle();
             sleep(200);
