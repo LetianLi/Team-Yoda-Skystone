@@ -86,15 +86,17 @@ public class BlueStrategist extends StrategistBase {
         turnTo(Math.toRadians(-90));
 
         updatePose();
+        // turn almost 90 degree to drag it
         drive.followTrajectorySync(drive.trajectoryBuilder()
                 .forward(5) // forward
                 .addMarker(0, () -> { moveFoundationServos(1); return null; }) //put mover down while moving
                 .setReversed(true)
-                .splineTo(new Pose2d(getX() - 20, getY() + 30, Math.toRadians(-50)))// turn
+                .splineTo(new Pose2d(getX() - 20, getY() + 25, Math.toRadians(-50)))// turn
                 .setReversed(false)
                 .build());
 
-        turnTo(Math.toRadians(10)); // make another turn
+        turnTo(Math.toRadians(0)); // make another turn
+        // moving away to park
         drive.followTrajectorySync(drive.trajectoryBuilder()
                 .forward(5) // push foundation to wall
                 .addMarker(0, () -> { moveFoundationServos(0); return null;}) // open mover
