@@ -46,31 +46,32 @@ public abstract class StrategistBase {
     protected void moveSkystoneArms(ArmSide side, ArmStage stage) {
         Servo targetArm = (side == ArmSide.FRONT) ? drive.skystoneArmFront : drive.skystoneArmBack;
         Servo targetGrabber = (side == ArmSide.FRONT) ? drive.skystoneGrabberFront : drive.skystoneGrabberBack;
-        Servo secondaryArm = (side == ArmSide.BACK) ? drive.skystoneArmFront : drive.skystoneArmBack;
-        Servo secondaryGrabber = (side == ArmSide.BACK) ? drive.skystoneGrabberFront : drive.skystoneGrabberBack;
+        // also control the other arm/grabber in prepare stage to be at stored position
+        Servo theOtherArm = (side == ArmSide.BACK) ? drive.skystoneArmFront : drive.skystoneArmBack;
+        Servo theOtherGrabber = (side == ArmSide.BACK) ? drive.skystoneGrabberFront : drive.skystoneGrabberBack;
 
         switch (stage) {
             case PREPARE:
-                secondaryArm.setPosition(0);
-                secondaryGrabber.setPosition(0);
+                theOtherArm.setPosition(0);
+                theOtherGrabber.setPosition(0);
 
                 targetArm.setPosition(0);
-                targetGrabber.setPosition(1);
+                targetGrabber.setPosition(1); // open grabber
                 break;
             case GRAB:
-                targetArm.setPosition(1);
+                targetArm.setPosition(1); // put down arm
                 opMode.sleep(400);
-                targetGrabber.setPosition(0);
+                targetGrabber.setPosition(0); // grab it
                 opMode.sleep(500);
-                targetArm.setPosition(0);
+                targetArm.setPosition(0); // put arm up. No need for sleep as next step is moving robot away
                 break;
             case DROP:
-                targetArm.setPosition(1 - 0.15);
-                targetGrabber.setPosition(1);
+                targetArm.setPosition(1 - 0.15); // This attempts to put arm down, but no wait before opening grabber, can be deleted?
+                targetGrabber.setPosition(1); // open grabber
                 opMode.sleep(200);
-                targetArm.setPosition(0);
-                opMode.sleep(100);
-                targetGrabber.setPosition(0);
+                targetArm.setPosition(0); // Put arm up
+                opMode.sleep(100); // Do we need this wait? can be deleted?
+                targetGrabber.setPosition(0); // close grabber
                 break;
         }
     }

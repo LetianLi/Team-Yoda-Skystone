@@ -24,14 +24,16 @@ public class BlueStrategist extends StrategistBase {
     // 5.5 , -5, 18
     @Override
     public void grabSkyStone() {
+        // tell road runner of our initial position, so that it can draw position in dashboard
         drive.setPoseEstimate(new Pose2d(-33, 63, 0));
         moveSkystoneArms(ArmSide.BACK, ArmStage.PREPARE);
 
+
+        strafeRight(RIGHT_TO_STONE); // Move right to be close to stone
+        turnTo(0); // adjust in case robot drift
+
+        // Depends on position, move forward/backward to stone position
         this.forwardOffset = getForwardOffset(opMode.getSkystonePos(), forwardOffsetsPerPos);
-
-        strafeRight(RIGHT_TO_STONE);
-        turnTo(0);
-
         if (forwardOffset > 0) {
             forward(Math.abs(forwardOffset));
         }
@@ -48,30 +50,63 @@ public class BlueStrategist extends StrategistBase {
 
     @Override
     public void moveAndDropSkystoneOnFoundation(double extraForwards) {
-        strafeLeft(7);
-        turnTo(0);
+        strafeLeft(7); // move away from the stone, so that we do not hit bridge
+        turnTo(0); // adjust in case robot drift
+        // Move forward, then move right to be closer to foundation
         drive.followTrajectorySync(drive.trajectoryBuilder()
                 .forward(70 - forwardOffset + extraForwards)
                 .strafeRight(15)
                 .build());
-        moveSkystoneArms(ArmSide.BACK, ArmStage.DROP);
+        moveSkystoneArms(ArmSide.BACK, ArmStage.DROP); // Drop the stone on foundation
     }
 
     @Override
     public void goBackGrabDeliverSecondSkystone() {
-        strafeLeft(7);
+        strafeLeft(7); // move away from the foundation, so that we do not hit bridge
         turnTo(0);
-        back(87);
+        back(87); // Back, we may want to add offsite directly here to reduce one step
+        // use sensor to read distance to back, and move to 2nd skystone positions
         double extraMoveBackDistance = moveBackToDistance(11 + forwardOffset, false, 30);
         moveSkystoneArms(ArmSide.BACK, ArmStage.PREPARE);
         turnTo(0);
+        // move right until 2" close to the skystone
         moveRightToDistance(2, true, 5);
         moveSkystoneArms(ArmSide.BACK, ArmStage.GRAB);
+        // move forward and drop stone to foundation again
         moveAndDropSkystoneOnFoundation(extraMoveBackDistance + forwardOffset - 2);
+    }
+
+    public void moveFoundationBackAndPark() {
+        // adjust position
+        drive.followTrajectorySync(drive.trajectoryBuilder()
+                .strafeLeft(3)// away from foundation, avoid hitting it when turning
+                .forward(3) // forward a little for positions
+                .build());
+        // turn to face foundation and move
+        turnTo(Math.toRadians(-90));
+
+        updatePose();
+        drive.followTrajectorySync(drive.trajectoryBuilder()
+                .forward(5) // forward
+                .addMarker(0, () -> { moveFoundationServos(1); return null; }) //put mover down while moving
+                .setReversed(true)
+                .splineTo(new Pose2d(getX() - 20, getY() + 30, Math.toRadians(-50)))// turn
+                .setReversed(false)
+                .build());
+
+        turnTo(Math.toRadians(10)); // make another turn
+        drive.followTrajectorySync(drive.trajectoryBuilder()
+                .forward(5) // push foundation to wall
+                .addMarker(0, () -> { moveFoundationServos(0); return null;}) // open mover
+                .back(5)// away from foundation, avoid hitting it
+                .strafeRight(15)// right to position of parking
+                .back(45) // back to parking position
+                .build());
     }
 
 
     @Override
+    // Used in M4 and M9
     public void fromFoundationToPark() {
         strafeLeft(7);
         turnTo(0);
@@ -110,33 +145,4 @@ public class BlueStrategist extends StrategistBase {
                 .build());
     }
 
-    public void moveFoundationBackAndPark() {
-        // adjust position
-        drive.followTrajectorySync(drive.trajectoryBuilder()
-                .strafeLeft(3)
-                .forward(3)
-                .build());
-        // turn to face foundation and move
-        turnTo(Math.toRadians(-90));
-
-        updatePose();
-        drive.followTrajectorySync(drive.trajectoryBuilder()
-                .forward(5)
-                .addMarker(0, () -> { moveFoundationServos(1); return null; })
-                .setReversed(true)
-                .splineTo(new Pose2d(getX() - 20, getY() + 30, Math.toRadians(-50)))
-                .setReversed(false)
-                .build());
-
-        turnTo(Math.toRadians(10));
-        drive.followTrajectorySync(drive.trajectoryBuilder()
-                .forward(5)
-                .addMarker(0, () -> { moveFoundationServos(0); return null;})
-                .back(5)
-                .strafeRight(15)
-                .back(45)
-//                .addMarker(1  , () -> {readyForManual(); return null;})
-                .build());
-
-    }
 }
