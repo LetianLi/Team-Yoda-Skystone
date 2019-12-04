@@ -48,6 +48,10 @@ public abstract class AutonomousBase extends LinearOpMode {
         telemetry.log().add("Ready!");
         telemetry.update();
         detectStoneWhileWaiting();
+        drive.resetTimer();
+        drive.setLogTag("initialize");
+        drive.log("Skystone position:" + getSkystonePos());
+        drive.log("Team color:" + teamColor);
     }
 
     protected void detectStoneWhileWaiting() {

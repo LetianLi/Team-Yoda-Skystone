@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.yoda_code;
 
+import android.util.Log;
+
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -17,6 +19,7 @@ import org.openftc.revextensions2.ExpansionHubMotor;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
     public ExpansionHubEx hub2;
@@ -29,9 +32,14 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
     public ModernRoboticsI2cRangeSensor backDistance, frontDistance;
 
     public DcMotor leftEncoder, rightEncoder, frontEncoder;
+    ElapsedTime global_timer;
+    String last_tag_for_logging;
 
     public YodaMecanumDrive(HardwareMap hardwareMap) {
         super(hardwareMap);
+
+        global_timer = new ElapsedTime();
+        last_tag_for_logging = "";
 
         hub2 = hardwareMap.get(ExpansionHubEx.class, "Secondary Hub id: 2");
 
@@ -93,34 +101,61 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         foundationMoverRight.scaleRange(0.5, 1);
     }
 
+    public void resetTimer() {
+        global_timer.reset();
+    }
+
+    public void log(String message) {
+        Log.i("Yoda(" + global_timer.time(TimeUnit.MILLISECONDS) + "ms)", last_tag_for_logging + " | " + message);
+    }
+
+    public void setLogTag(String tag) {
+        last_tag_for_logging = tag;
+    }
 
     public void strafeRight(double inches) {
+        log("strafeRight:" + inches);
         followTrajectorySync(this.trajectoryBuilder()
                 .strafeRight(inches)
                 .build());
     }
 
     public void strafeLeft(double inches) {
+        log("strafeLeft:" + inches);
         followTrajectorySync(this.trajectoryBuilder()
                 .strafeLeft(inches)
                 .build());
     }
 
     public void forward(double inches) {
+        log("forward:" + inches);
         followTrajectorySync(this.trajectoryBuilder()
                 .forward(inches)
                 .build());
     }
 
     public void back(double inches) {
+        log("back:" + inches);
         followTrajectorySync(this.trajectoryBuilder()
                 .back(inches)
                 .build());
     }
 
-    /*public double getFrontDistance(DistanceUnit unit) {
-        return frontDistance.getDistance(unit);
-    }*/
+    public void turnTo(double angle) {
+        turnTo(angle, getRawExternalHeading());
+    }
+    protected void turnTo(double angle, double currentAngle) {
+        log("turnTo: angle" + Math.toDegrees(angle) + ", currentAngle:" + Math.toDegrees(currentAngle));
+        angle = Math.toDegrees(angle) - Math.toDegrees(currentAngle);
+        while (angle < -180) {
+            angle += 360;
+        }
+        while (angle > 180) {
+            angle -= 360;
+        }
+        log("turnTo: actual turning angle: " + angle);
+        turnSync(Math.toRadians(angle));
+    }
 
     public void setMotorsZeroPowerBehavior(DcMotor.ZeroPowerBehavior zeroPowerBehavior) {
         for (ExpansionHubMotor motor : getMotors()) {

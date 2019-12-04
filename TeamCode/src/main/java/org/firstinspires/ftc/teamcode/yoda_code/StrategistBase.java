@@ -23,9 +23,11 @@ public abstract class StrategistBase {
     }
 
     public void readyForManual() {
+        drive.setLogTag("readyForManual");
         drive.horizontalExtender.setPosition(1);
         drive.intakeGrabber.setPosition(0.4);
         moveFoundationServos(0);
+        drive.log("move horizontal extender out");
         opMode.sleep(3000);
     }
 
@@ -84,41 +86,23 @@ public abstract class StrategistBase {
     }
 
     public double moveRightToDistance(double distanceFromRight, boolean doLeftInCase, double maxMovementRight) {
+        drive.setLogTag("moveRightToDistance");
         double currentDistance = drive.getRightDistance();
-        opMode.telemetry.addData("current distance right", currentDistance);
-        opMode.telemetry.update();
+        drive.log("current distance right:" + currentDistance);
         if (currentDistance > distanceFromRight && currentDistance - distanceFromRight <= maxMovementRight) {
-            strafeRight(currentDistance - distanceFromRight);
+            drive.strafeRight(currentDistance - distanceFromRight);
         }
         else if (currentDistance - distanceFromRight >= maxMovementRight) {
-            strafeRight(maxMovementRight);
+            drive.strafeRight(maxMovementRight);
             return maxMovementRight;
         }
         else if (distanceFromRight > currentDistance && doLeftInCase) {
-            strafeLeft(distanceFromRight - currentDistance);
+            drive.strafeLeft(distanceFromRight - currentDistance);
         }
         return currentDistance - distanceFromRight;
     }
 
-    public double moveForwardToDistance(double distanceFromFront, boolean doBackwardInCase, double maxMovementForward) {
-        distanceFromFront -= 3;
-        double currentDistance = drive.getFrontDistance() - 3;
-        opMode.telemetry.addData("current distance front", currentDistance);
-        opMode.telemetry.update();
-        if (currentDistance > distanceFromFront && currentDistance - distanceFromFront <= maxMovementForward) {
-            forward(currentDistance - distanceFromFront);
-        }
-        else if (currentDistance - distanceFromFront >= maxMovementForward) {
-            forward(maxMovementForward);
-            return maxMovementForward;
-        }
-        else if (distanceFromFront > currentDistance && doBackwardInCase) {
-            back(distanceFromFront - currentDistance);
-        }
-        return currentDistance - distanceFromFront;
-    }
-
-    public double getForwardOffset(SkystonePos skystonePos, double[] forwardOffsetsPerPos) {
+    protected double getForwardOffset(SkystonePos skystonePos, double[] forwardOffsetsPerPos) {
         switch(skystonePos) {
             case LEFT:
                 return forwardOffsetsPerPos[0];
@@ -132,39 +116,6 @@ public abstract class StrategistBase {
         return forwardOffsetsPerPos[1];
     }
 
-    protected void turnTo(double angle) {
-        turnTo(angle, drive.getRawExternalHeading());
-    }
-    protected void turnTo(double angle, double currentAngle) {
-        angle = Math.toDegrees(angle) - Math.toDegrees(currentAngle);
-        while (angle < -180) {
-            angle += 360;
-        }
-        while (angle > 180) {
-            angle -= 360;
-        }
-        drive.turnSync(Math.toRadians(angle));
-    }
-    protected void forward(double distance) {
-        drive.followTrajectorySync(drive.trajectoryBuilder()
-                .forward(distance)
-                .build());
-    }
-    protected void strafeRight(double distance) {
-        drive.followTrajectorySync(drive.trajectoryBuilder()
-                .strafeRight(distance)
-                .build());
-    }
-    protected void back(double distance) {
-        drive.followTrajectorySync(drive.trajectoryBuilder()
-                .back(distance)
-                .build());
-    }
-    protected void strafeLeft(double distance) {
-        drive.followTrajectorySync(drive.trajectoryBuilder()
-                .strafeLeft(distance)
-                .build());
-    }
     protected double getX() {
         return drive.getPoseEstimate().getX();
     }
