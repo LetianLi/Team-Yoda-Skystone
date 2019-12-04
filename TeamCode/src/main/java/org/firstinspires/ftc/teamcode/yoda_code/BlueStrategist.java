@@ -1,14 +1,15 @@
 package org.firstinspires.ftc.teamcode.yoda_code;
 
+import android.util.Log;
+
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.yoda_enum.ArmSide;
 import org.firstinspires.ftc.teamcode.yoda_enum.ArmStage;
+import org.firstinspires.ftc.teamcode.yoda_enum.SkystonePos;
 
-import kotlin.Unit;
-import kotlin.jvm.functions.Function0;
+import java.util.concurrent.TimeUnit;
 
 public class BlueStrategist extends StrategistBase {
     private double forwardOffset = 0;
@@ -50,13 +51,16 @@ public class BlueStrategist extends StrategistBase {
 
     @Override
     public void moveAndDropSkystoneOnFoundation(double extraForwards) {
-        strafeLeft(7); // move away from the stone, so that we do not hit bridge
+        strafeLeft(8); // move away from the stone, so that we do not hit bridge
         turnTo(0); // adjust in case robot drift
         // Move forward, then move right to be closer to foundation
+        double forward_distance = 80 - forwardOffset + extraForwards;
         drive.followTrajectorySync(drive.trajectoryBuilder()
-                .forward(70 - forwardOffset + extraForwards)
-                .strafeRight(15)
+                .forward(forward_distance)
+                .strafeRight(16)
                 .build());
+        Log.i("Yoda", "forward: " + forward_distance);
+
         moveSkystoneArms(ArmSide.BACK, ArmStage.DROP); // Drop the stone on foundation
     }
 
@@ -64,18 +68,69 @@ public class BlueStrategist extends StrategistBase {
     public void goBackGrabDeliverSecondSkystone() {
         strafeLeft(7); // move away from the foundation, so that we do not hit bridge
         turnTo(0);
-        back(87); // Back, we may want to add offsite directly here to reduce one step
+        // Back, we move forward 80 - forwardOffset previously, now need to go back that much,
+        // plus 3 stones distance 8*3, plus some extra 8", because of loss in accurancy
+        double driving_back_distance = 80 - forwardOffset + 8 * 3 + 8;
+        Log.i("Yoda", "back: " + driving_back_distance);
+
+        back(driving_back_distance);
         // use sensor to read distance to back, and move to 2nd skystone positions
-        double extraMoveBackDistance = moveBackToDistance(11 + forwardOffset, false, 30);
+        double distance_to_back = getExpectedDistanceToBackWall(opMode.getSkystonePos());
+        double extraMoveBackDistance = moveBackToDistance(distance_to_back, true, 10);
+
         moveSkystoneArms(ArmSide.BACK, ArmStage.PREPARE);
         turnTo(0);
         // move right until 2" close to the skystone
         moveRightToDistance(2, true, 5);
         moveSkystoneArms(ArmSide.BACK, ArmStage.GRAB);
         // move forward and drop stone to foundation again
-        moveAndDropSkystoneOnFoundation(extraMoveBackDistance + forwardOffset - 2);
+        moveAndDropSkystoneOnFoundation(8 * 3 + 8 - 20);
     }
 
+    private double getExpectedDistanceToBackWall(SkystonePos skystonePos) {
+        double offset = 2; // for right most pos, what's the distance we want to the wall
+        switch(skystonePos) {
+            case LEFT:
+                return offset + 16;
+            case MIDDLE:
+                return offset + 8;
+            case RIGHT:
+                return offset;
+            case UNKNOW:
+                return offset + 8;
+            default:
+                return offset + 8;
+        }
+    }
+
+    private double moveBackToDistance(double expectedDistanceToBack, boolean doForwardInCase, double maxMovementBack) {
+        double currentDistance = drive.getBackDistance();
+        Log.i("Yoda", "current distance to back: " + currentDistance);
+        Log.i("Yoda", "expected distance to back: " + expectedDistanceToBack);
+        if (currentDistance < 0) {
+            Log.i("Yoda", "sensor broken. Do not move");
+        }
+        if (Math.abs(expectedDistanceToBack - currentDistance) < 1.5) { // do not need to move
+            Log.i("Yoda", "Do not need to move." );
+            return 0;
+        }
+        if (currentDistance > expectedDistanceToBack && currentDistance - expectedDistanceToBack <= maxMovementBack) {
+            back(currentDistance - expectedDistanceToBack);
+            Log.i("Yoda", "move distance back: " + (currentDistance - expectedDistanceToBack));
+        }
+        else if (currentDistance - expectedDistanceToBack >= maxMovementBack) {
+            Log.i("Yoda", "move maximum distance back: " + maxMovementBack);
+            back(maxMovementBack);
+            return maxMovementBack;
+        }
+        else if (expectedDistanceToBack > currentDistance && doForwardInCase) {
+            forward(expectedDistanceToBack - currentDistance);
+            Log.i("Yoda", "forward: " + (expectedDistanceToBack - currentDistance));
+        }
+        return currentDistance - expectedDistanceToBack;
+    }
+
+    @Override
     public void moveFoundationBackAndPark() {
         // adjust position
         drive.followTrajectorySync(drive.trajectoryBuilder()
