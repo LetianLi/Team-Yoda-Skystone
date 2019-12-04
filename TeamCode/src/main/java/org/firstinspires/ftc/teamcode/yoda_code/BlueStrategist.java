@@ -9,20 +9,30 @@ import org.firstinspires.ftc.teamcode.yoda_enum.ArmSide;
 import org.firstinspires.ftc.teamcode.yoda_enum.ArmStage;
 import org.firstinspires.ftc.teamcode.yoda_enum.SkystonePos;
 
-import java.util.concurrent.TimeUnit;
-
 public class BlueStrategist extends StrategistBase {
     private double forwardOffset = 0;
     private double[] forwardOffsetsPerPos = {10, 3, -4}; // left, middle, right
     private static double RIGHT_TO_STONE = 30;
+    private double firstForwardDistance = 0;
+    private double backDistanceFromFoundation = 0;
+    private double secondForwardDistance = 0;
 
     public BlueStrategist(
             YodaMecanumDrive drive, ElapsedTime op_timer, AutonomousBase opMode) {
         super(drive, op_timer, opMode);
     }
 
+    public void calculateDistance() {
+        this.forwardOffset = getForwardOffset(opMode.getSkystonePos(), forwardOffsetsPerPos);
+        this.firstForwardDistance = 80 - forwardOffset;
+        // Back, we move forward 80 - forwardOffset previously, now need to go back that much,
+        // plus 3 stones distance 8*3, plus some extra 8", because of loss in accuracy
+        this.backDistanceFromFoundation = firstForwardDistance + 8 * 3 + 8;
+        // move forward and drop stone to foundation again, move 20" less so that we have room to
+        // drop 2nd stone
+        this.secondForwardDistance = this.backDistanceFromFoundation - 20;
+    }
 
-    // 5.5 , -5, 18
     @Override
     public void grabSkyStone() {
         // tell road runner of our initial position, so that it can draw position in dashboard
@@ -46,15 +56,14 @@ public class BlueStrategist extends StrategistBase {
 
     @Override
     public void moveAndDropSkystoneOnFoundation() {
-        moveAndDropSkystoneOnFoundation(0);
+        moveAndDropSkystoneOnFoundationWithForwardDistance(this.firstForwardDistance);
     }
 
     @Override
-    public void moveAndDropSkystoneOnFoundation(double extraForwards) {
+    public void moveAndDropSkystoneOnFoundationWithForwardDistance(double forward_distance) {
         strafeLeft(8); // move away from the stone, so that we do not hit bridge
         turnTo(0); // adjust in case robot drift
         // Move forward, then move right to be closer to foundation
-        double forward_distance = 80 - forwardOffset + extraForwards;
         drive.followTrajectorySync(drive.trajectoryBuilder()
                 .forward(forward_distance)
                 .strafeRight(16)
@@ -68,12 +77,9 @@ public class BlueStrategist extends StrategistBase {
     public void goBackGrabDeliverSecondSkystone() {
         strafeLeft(7); // move away from the foundation, so that we do not hit bridge
         turnTo(0);
-        // Back, we move forward 80 - forwardOffset previously, now need to go back that much,
-        // plus 3 stones distance 8*3, plus some extra 8", because of loss in accurancy
-        double driving_back_distance = 80 - forwardOffset + 8 * 3 + 8;
-        Log.i("Yoda", "back: " + driving_back_distance);
 
-        back(driving_back_distance);
+        Log.i("Yoda", "back: " + backDistanceFromFoundation);
+        back(backDistanceFromFoundation);
         // use sensor to read distance to back, and move to 2nd skystone positions
         double distance_to_back = getExpectedDistanceToBackWall(opMode.getSkystonePos());
         double extraMoveBackDistance = moveBackToDistance(distance_to_back, true, 10);
@@ -83,8 +89,7 @@ public class BlueStrategist extends StrategistBase {
         // move right until 2" close to the skystone
         moveRightToDistance(2, true, 5);
         moveSkystoneArms(ArmSide.BACK, ArmStage.GRAB);
-        // move forward and drop stone to foundation again
-        moveAndDropSkystoneOnFoundation(8 * 3 + 8 - 20);
+        moveAndDropSkystoneOnFoundationWithForwardDistance( secondForwardDistance);
     }
 
     private double getExpectedDistanceToBackWall(SkystonePos skystonePos) {

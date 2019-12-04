@@ -173,7 +173,14 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
     }
 
     public double getBackDistance() {
-        return backDistance.getDistance(DistanceUnit.INCH);
+
+        double distance = backDistance.getDistance(DistanceUnit.INCH);
+        if (distance > 1000) {
+            //something is wrong
+            return -1; // todo, add log
+        }
+        // 3.5 is sensor distance to robot border
+        return distance - 3.5;
     }
 
     public double getFrontDistance() {

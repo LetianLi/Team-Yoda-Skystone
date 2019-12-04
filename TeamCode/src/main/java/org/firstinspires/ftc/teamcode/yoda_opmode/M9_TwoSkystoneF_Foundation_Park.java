@@ -13,7 +13,7 @@ public class M9_TwoSkystoneF_Foundation_Park extends AutonomousBase {
         if (isStopRequested()) return;
         if (strategist != null) {
             strategist.grabSkyStone();
-            strategist.moveAndDropSkystoneOnFoundation(10);
+            strategist.moveAndDropSkystoneOnFoundation();
             strategist.goBackGrabDeliverSecondSkystone();
             //strategist.turnAndMoveFoundationAndPark();
             strategist.fromFoundationToPark();

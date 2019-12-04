@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.yoda_code;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.yoda_enum.ArmSide;
@@ -43,11 +42,11 @@ public class RedStrategist extends StrategistBase {
 
     @Override
     public void moveAndDropSkystoneOnFoundation() {
-        moveAndDropSkystoneOnFoundation(0);
+        moveAndDropSkystoneOnFoundationWithForwardDistance(0);
     }
 
     @Override
-    public void moveAndDropSkystoneOnFoundation(double extraForwards) {
+    public void moveAndDropSkystoneOnFoundationWithForwardDistance(double extraForwards) {
         strafeLeft(7);
         turnTo(Math.toRadians(180));
         drive.followTrajectorySync(drive.trajectoryBuilder()
@@ -67,7 +66,7 @@ public class RedStrategist extends StrategistBase {
         turnTo(Math.toRadians(180));
         moveRightToDistance(2, true, 5);
         moveSkystoneArms(ArmSide.FRONT, ArmStage.GRAB);
-        moveAndDropSkystoneOnFoundation(extraMoveForwardsDistance + forwardOffset - 2);
+        moveAndDropSkystoneOnFoundationWithForwardDistance(extraMoveForwardsDistance + forwardOffset - 2);
     }
 
 

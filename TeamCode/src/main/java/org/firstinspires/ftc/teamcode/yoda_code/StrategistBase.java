@@ -33,7 +33,7 @@ public abstract class StrategistBase {
 
     public abstract void moveAndDropSkystoneOnFoundation();
 
-    public abstract void moveAndDropSkystoneOnFoundation(double extraForwards);
+    public abstract void moveAndDropSkystoneOnFoundationWithForwardDistance(double extraForwards);
 
     public abstract void fromFoundationToPark();
 
@@ -98,24 +98,6 @@ public abstract class StrategistBase {
         return currentDistance - distanceFromRight;
     }
 
-    public double moveBackToDistance(double distanceFromBack, boolean doForwardInCase, double maxMovementBack) {
-        distanceFromBack -= 3.5;
-        double currentDistance = drive.getBackDistance() - 3.5;
-        opMode.telemetry.addData("current distance back", currentDistance);
-        opMode.telemetry.update();
-        if (currentDistance > distanceFromBack && currentDistance - distanceFromBack <= maxMovementBack) {
-            back(currentDistance - distanceFromBack);
-        }
-        else if (currentDistance - distanceFromBack >= maxMovementBack) {
-            strafeRight(maxMovementBack);
-            return maxMovementBack;
-        }
-        else if (distanceFromBack > currentDistance && doForwardInCase) {
-            forward(distanceFromBack - currentDistance);
-        }
-        return currentDistance - distanceFromBack;
-    }
-
     public double moveForwardToDistance(double distanceFromFront, boolean doBackwardInCase, double maxMovementForward) {
         distanceFromFront -= 3;
         double currentDistance = drive.getFrontDistance() - 3;
@@ -133,8 +115,6 @@ public abstract class StrategistBase {
         }
         return currentDistance - distanceFromFront;
     }
-
-
 
     public double getForwardOffset(SkystonePos skystonePos, double[] forwardOffsetsPerPos) {
         switch(skystonePos) {

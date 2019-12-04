@@ -24,7 +24,7 @@ public class SegmentTesting extends AutonomousBase {
                 strategist.moveRightToDistance(1, true, 100);
             }
             if (gamepad2.b) {
-                strategist.moveBackToDistance(1, true, 100);
+                //strategist.moveBackToDistance(1, true, 100);
             }
             if (gamepad2.x) {
                 drive.followTrajectorySync(drive.trajectoryBuilder()
