@@ -22,7 +22,9 @@ public class BlueStrategist extends StrategistBase {
         super(drive, op_timer, opMode);
     }
 
+    @Override
     public void calculateDistance() {
+        // Depends on position, move forward/backward to stone position
         this.forwardOffset = getForwardOffset(opMode.getSkystonePos(), forwardOffsetsPerPos);
         this.firstForwardDistance = 80 - forwardOffset;
         // Back, we move forward 80 - forwardOffset previously, now need to go back that much,
@@ -35,16 +37,14 @@ public class BlueStrategist extends StrategistBase {
 
     @Override
     public void grabSkyStone() {
+
         // tell road runner of our initial position, so that it can draw position in dashboard
         drive.setPoseEstimate(new Pose2d(-33, 63, 0));
         moveSkystoneArms(ArmSide.BACK, ArmStage.PREPARE);
 
-
         strafeRight(RIGHT_TO_STONE); // Move right to be close to stone
         turnTo(0); // adjust in case robot drift
 
-        // Depends on position, move forward/backward to stone position
-        this.forwardOffset = getForwardOffset(opMode.getSkystonePos(), forwardOffsetsPerPos);
         if (forwardOffset > 0) {
             forward(Math.abs(forwardOffset));
         }

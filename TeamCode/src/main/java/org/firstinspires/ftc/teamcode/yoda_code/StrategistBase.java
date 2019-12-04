@@ -29,6 +29,8 @@ public abstract class StrategistBase {
         opMode.sleep(3000);
     }
 
+    public abstract void calculateDistance();
+
     public abstract void grabSkyStone();
 
     public abstract void moveAndDropSkystoneOnFoundation();

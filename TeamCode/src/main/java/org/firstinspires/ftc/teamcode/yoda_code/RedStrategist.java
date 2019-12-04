@@ -18,8 +18,11 @@ public class RedStrategist extends StrategistBase {
         super(drive, op_timer, opMode);
     }
 
+    @Override
+    public void calculateDistance() {
 
-    // 5.5 , -5, 18
+    }
+
     @Override
     public void grabSkyStone() {
         drive.setPoseEstimate(new Pose2d(-33, -63, Math.toRadians(180)));
@@ -110,6 +113,7 @@ public class RedStrategist extends StrategistBase {
                 .build());
     }
 
+    @Override
     public void moveFoundationBackAndPark() {
         // adjust position
         drive.followTrajectorySync(drive.trajectoryBuilder()
