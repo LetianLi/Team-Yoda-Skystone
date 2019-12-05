@@ -24,7 +24,7 @@ public class ManualDrive extends LinearOpMode {
     private double TURNING_SPEED = 1;
     private double DPAD_SPEED = 0.2;
 
-    private String skystoneGrabberMode = "|| \n|";
+    private String stoneGrabberMode = "|| \n|";
     private String capstoneArmMode = "Stored";
 
     private double verticalPosition = 0;
@@ -60,7 +60,8 @@ public class ManualDrive extends LinearOpMode {
             op_timer.reset();
 
             moveRobot();
-            intake();
+            controlIntakeGrabber();
+            controlCapstone();
             controlVerticalExtender();
             controlHorizontalExtender();
             moveFoundationServo();
@@ -73,7 +74,7 @@ public class ManualDrive extends LinearOpMode {
 //            telemetry.addData("Distance", "Left %.2f, Right %.2f", drive.frontLeftDistance.getDistance(DistanceUnit.INCH), drive.frontRightDistance.getDistance(DistanceUnit.INCH));
 //            telemetry.addData("Front Angle", Math.toDegrees(drive.getAngleToFront()));
             telemetry.addData("Capstone Arm", capstoneArmMode);
-            telemetry.addData("Skystone Grabber", "\n" + skystoneGrabberMode + "\n|");
+            telemetry.addData("Stone Grabber", "\n" + stoneGrabberMode + "\n|");
             telemetry.addData("Horizontal Pos", drive.horizontalExtender.getPosition());
             telemetry.addData("Vertical Pos", drive.verticalExtender.getCurrentPosition());
             telemetry.addData("Vertical Pow", drive.verticalExtender.getPower());
@@ -174,10 +175,12 @@ public class ManualDrive extends LinearOpMode {
         else telemetry.addData("Wheel Powers", "Turning");
     }
 
-    private void intake() {
+    private void controlIntakeGrabber() {
         if (gamepad2.a) drive.intakeGrabber.setPosition(0);
         if (gamepad2.b) drive.intakeGrabber.setPosition(0.4);
+    }
 
+    private void controlCapstone() {
         if (gamepad2.x && !pressed[3]) {
             if (capstoneArmMode == "Stored") capstoneArmMode = "Ready";
             else if (capstoneArmMode == "Ready") capstoneArmMode = "Dropping";
@@ -240,39 +243,39 @@ public class ManualDrive extends LinearOpMode {
 
     private void controlSkystoneGrabbers() {
         if (gamepad1.y && !pressed[2]) {
-            if (skystoneGrabberMode == "|| \n|") skystoneGrabberMode = "|-- \n|";
-            else if (skystoneGrabberMode == "|-- \n|") skystoneGrabberMode = "\n----|";
-            else if (skystoneGrabberMode == "\n----|") skystoneGrabberMode = "\n--[]";
-            else if (skystoneGrabberMode == "\n--[]") skystoneGrabberMode = "|[] \n|";
-            else if (skystoneGrabberMode == "|[] \n|") skystoneGrabberMode = "\n--[_]";
-            else if (skystoneGrabberMode == "\n--[_]") skystoneGrabberMode = "\n--_--";
-            else if (skystoneGrabberMode == "\n--_--") skystoneGrabberMode = "|| \n|";
+            if (stoneGrabberMode == "|| \n|") stoneGrabberMode = "|-- \n|";
+            else if (stoneGrabberMode == "|-- \n|") stoneGrabberMode = "\n----|";
+            else if (stoneGrabberMode == "\n----|") stoneGrabberMode = "\n--[]";
+            else if (stoneGrabberMode == "\n--[]") stoneGrabberMode = "|[] \n|";
+            else if (stoneGrabberMode == "|[] \n|") stoneGrabberMode = "\n--[_]";
+            else if (stoneGrabberMode == "\n--[_]") stoneGrabberMode = "\n--_--";
+            else if (stoneGrabberMode == "\n--_--") stoneGrabberMode = "|| \n|";
             pressed[2] = true;
         } else if (!gamepad1.y && pressed[2]) {
             pressed[2] = false;
         }
 
-        if (skystoneGrabberMode == "|| \n|") { // Stored
+        if (stoneGrabberMode == "|| \n|") { // Stored
             drive.skystoneArmFront.setPosition(0);
             drive.skystoneGrabberFront.setPosition(0);
             drive.skystoneArmBack.setPosition(0);
             drive.skystoneGrabberBack.setPosition(0);
-        } else if (skystoneGrabberMode == "|-- \n|") { // Open grabbers
+        } else if (stoneGrabberMode == "|-- \n|") { // Open grabbers
             drive.skystoneGrabberFront.setPosition(1);
             drive.skystoneGrabberBack.setPosition(1);
-        } else if (skystoneGrabberMode == "\n----|") { // Move arm down
+        } else if (stoneGrabberMode == "\n----|") { // Move arm down
             drive.skystoneArmFront.setPosition(1);
             drive.skystoneArmBack.setPosition(1);
-        } else if (skystoneGrabberMode == "\n--[]") { // Grab
+        } else if (stoneGrabberMode == "\n--[]") { // Grab
             drive.skystoneGrabberFront.setPosition(0);
             drive.skystoneGrabberBack.setPosition(0);
-        } else if (skystoneGrabberMode == "|[] \n|") { // Move arm back up
+        } else if (stoneGrabberMode == "|[] \n|") { // Move arm back up
             drive.skystoneArmFront.setPosition(0);
             drive.skystoneArmBack.setPosition(0);
-        } else if (skystoneGrabberMode == "\n--[_]") { // Move arm back down
+        } else if (stoneGrabberMode == "\n--[_]") { // Move arm back down
             drive.skystoneArmFront.setPosition(1 - 0.15);
             drive.skystoneArmBack.setPosition(1 - 0.15);
-        } else if (skystoneGrabberMode == "\n--_--") { // Release grabbers
+        } else if (stoneGrabberMode == "\n--_--") { // Release grabbers
             drive.skystoneGrabberFront.setPosition(1);
             drive.skystoneGrabberBack.setPosition(1);
         }
