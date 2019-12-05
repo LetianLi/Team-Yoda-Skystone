@@ -37,8 +37,6 @@ public abstract class StrategistBase {
 
     public abstract void moveAndDropSkystoneOnFoundation();
 
-    public abstract void moveAndDropSkystoneOnFoundationWithForwardDistance(double extraForwards);
-
     public abstract void fromFoundationToPark();
 
     public abstract void goBackGrabDeliverSecondSkystone();

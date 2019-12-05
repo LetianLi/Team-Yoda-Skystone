@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.yoda_code;
 
-import android.util.Log;
-
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -49,7 +47,7 @@ public class BlueStrategist extends StrategistBase {
         moveSkystoneArms(ArmSide.BACK, ArmStage.PREPARE);
 
         drive.strafeRight(RIGHT_TO_STONE); // Move right to be close to stone
-        drive.turnTo(0); // adjust in case robot drift
+        drive.turnToRadians(0); // adjust in case robot drift
 
         if (forwardOffset > 0) {
             drive.forward(Math.abs(forwardOffset));
@@ -65,11 +63,10 @@ public class BlueStrategist extends StrategistBase {
         moveAndDropSkystoneOnFoundationWithForwardDistance(this.firstForwardDistance);
     }
 
-    @Override
-    public void moveAndDropSkystoneOnFoundationWithForwardDistance(double forward_distance) {
+    private void moveAndDropSkystoneOnFoundationWithForwardDistance(double forward_distance) {
         drive.setLogTag("moveAndDropSkystoneOnFoundationWithForwardDistance");
         drive.strafeLeft(8); // move away from the stone, so that we do not hit bridge
-        drive.turnTo(0); // adjust in case robot drift
+        drive.turnToRadians(0); // adjust in case robot drift
         // Move forward, then move right to be closer to foundation
         double strafe_right_distance =  16;
         drive.log("followTrajectory: forward " + forward_distance + "+ strafeRight " + strafe_right_distance);
@@ -84,21 +81,21 @@ public class BlueStrategist extends StrategistBase {
     public void goBackGrabDeliverSecondSkystone() {
         drive.setLogTag("goBackGrabDeliverSecondSkystone");
         drive.strafeLeft(7); // move away from the foundation, so that we do not hit bridge
-        drive.turnTo(0);
+        drive.turnToRadians(0);
         drive.back(backDistanceFromFoundation);
-        // use sensor to read distance to back, and move to 2nd skystone positions
-        double distance_to_back = getExpectedDistanceToBackWall(opMode.getSkystonePos());
-        moveBackToDistance(distance_to_back, true, 10);
+        // use sensor to read distance to wall, and move to 2nd skystone positions
+        double distance_to_back = getExpectedDistanceToWall(opMode.getSkystonePos());
+        moveBackToDistance(distance_to_back, 10);
 
         moveSkystoneArms(ArmSide.BACK, ArmStage.PREPARE);
-        drive.turnTo(0);
+        drive.turnToRadians(0);
         // move right until 2" close to the skystone
         moveRightToDistance(2, true, 5);
         moveSkystoneArms(ArmSide.BACK, ArmStage.GRAB);
         moveAndDropSkystoneOnFoundationWithForwardDistance( secondForwardDistance);
     }
 
-    private double getExpectedDistanceToBackWall(SkystonePos skystonePos) {
+    private double getExpectedDistanceToWall(SkystonePos skystonePos) {
         double offset = 2; // for right most pos, what's the distance we want to the wall
         switch(skystonePos) {
             case LEFT:
@@ -114,11 +111,11 @@ public class BlueStrategist extends StrategistBase {
         }
     }
 
-    private void moveBackToDistance(double expectedDistanceToBack, boolean doForwardInCase, double maxMovementBack) {
+    private void moveBackToDistance(double expectedDistanceToBack, double maxMovementBack) {
         drive.setLogTag("moveBackToDistance");
         double currentDistance = drive.getBackDistance();
-        drive.log("current distance to back: " + currentDistance);
-        drive.log("expected distance to back: " + expectedDistanceToBack);
+        drive.log("current distance to wall: " + currentDistance);
+        drive.log("expected distance to wall: " + expectedDistanceToBack);
         if (currentDistance < 0) {
             drive.log("sensor broken. Do not move");
         }
@@ -126,19 +123,10 @@ public class BlueStrategist extends StrategistBase {
             drive.log("Do not need to move." );
             return;
         }
-        if (currentDistance > expectedDistanceToBack && currentDistance - expectedDistanceToBack <= maxMovementBack) {
-            drive.back(currentDistance - expectedDistanceToBack);
-            drive.log( "move distance back: " + (currentDistance - expectedDistanceToBack));
-            return;
-        }
-        else if (currentDistance - expectedDistanceToBack >= maxMovementBack) {
-            drive.log("move maximum distance back: " + maxMovementBack);
-            drive.back(maxMovementBack);
-            return;
-        }
-        else if (expectedDistanceToBack > currentDistance && doForwardInCase) {
-            drive.forward(expectedDistanceToBack - currentDistance);
-            return;
+        if (currentDistance > expectedDistanceToBack) {
+            drive.back(Math.min(currentDistance - expectedDistanceToBack, maxMovementBack));
+        } else {
+            drive.forward(Math.min(expectedDistanceToBack - currentDistance, maxMovementBack));
         }
     }
 
@@ -152,7 +140,7 @@ public class BlueStrategist extends StrategistBase {
                 .forward(3) // forward a little for positions
                 .build());
         // turn to face foundation and move
-        drive.turnTo(Math.toRadians(-90));
+        drive.turnToRadians(Math.toRadians(-90));
 
         updatePose();
         // turn almost 90 degree to drag it
@@ -165,7 +153,7 @@ public class BlueStrategist extends StrategistBase {
                 .setReversed(false)
                 .build());
 
-        drive.turnTo(Math.toRadians(0)); // make another turn
+        drive.turnToRadians(Math.toRadians(0)); // make another turn
         // moving away to park
         drive.log("followTrajectory to move away to park");
         drive.followTrajectorySync(drive.trajectoryBuilder()
@@ -182,7 +170,7 @@ public class BlueStrategist extends StrategistBase {
     // Used in M4 and M9
     public void fromFoundationToPark() {
         drive.strafeLeft(7);
-        drive.turnTo(0);
+        drive.turnToRadians(0);
         drive.back(50);
         drive.strafeRight(6);
     }
@@ -192,7 +180,7 @@ public class BlueStrategist extends StrategistBase {
     public void turnAndMoveFoundationAndPark() {
         drive.strafeLeft(6);
         drive.forward(3);
-        drive.turnTo(Math.toRadians(-90));
+        drive.turnToRadians(Math.toRadians(-90));
         drive.forward(5);
         moveFoundationServos(1);
         drive.forward(2);
@@ -203,7 +191,7 @@ public class BlueStrategist extends StrategistBase {
                 .setReversed(true)
                 .splineTo(new Pose2d(getX() - 25, getY() + 15, 0))
                 .build());
-        drive.turnTo(0);
+        drive.turnToRadians(0);
         drive.followTrajectorySync(drive.trajectoryBuilder()
                 .setReversed(false)
                 .forward(20)

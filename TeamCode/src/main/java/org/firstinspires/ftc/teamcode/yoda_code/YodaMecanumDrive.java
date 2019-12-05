@@ -4,7 +4,6 @@ import android.util.Log;
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -106,7 +105,7 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
     }
 
     public void log(String message) {
-        Log.i("Yoda(" + global_timer.time(TimeUnit.MILLISECONDS) + "ms)", last_tag_for_logging + " | " + message);
+        Log.i("Yoda","(" + global_timer.time(TimeUnit.MILLISECONDS) + "ms)"+last_tag_for_logging + " | " + message);
     }
 
     public void setLogTag(String tag) {
@@ -141,11 +140,11 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
                 .build());
     }
 
-    public void turnTo(double angle) {
-        turnTo(angle, getRawExternalHeading());
+    public void turnToRadians(double angle) {
+        turnToRadians(angle, getRawExternalHeading());
     }
-    protected void turnTo(double angle, double currentAngle) {
-        log("turnTo: angle" + Math.toDegrees(angle) + ", currentAngle:" + Math.toDegrees(currentAngle));
+    protected void turnToRadians(double angle, double currentAngle) {
+        log("turnToRadians: angle" + Math.toDegrees(angle) + ", currentAngle:" + Math.toDegrees(currentAngle));
         angle = Math.toDegrees(angle) - Math.toDegrees(currentAngle);
         while (angle < -180) {
             angle += 360;
@@ -153,7 +152,7 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         while (angle > 180) {
             angle -= 360;
         }
-        log("turnTo: actual turning angle: " + angle);
+        log("turnToRadians: actual turning angle: " + angle);
         turnSync(Math.toRadians(angle));
     }
 
@@ -219,7 +218,13 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
     }
 
     public double getFrontDistance() {
-        return frontDistance.getDistance(DistanceUnit.INCH);
+        double distance = frontDistance.getDistance(DistanceUnit.INCH);
+        if (distance > 1000) {
+            //something is wrong
+            return -1; // todo, add log
+        }
+        // 1.5 is sensor distance to robot border
+        return distance - 1.5;
     }
 
     public void resetServos() {
@@ -234,9 +239,9 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         foundationMoverRight.setPosition(0);
 
         // Intake Grabber
-        intakeGrabber.setPosition(0.45);
+//        intakeGrabber.setPosition(0.6);
 
         // Horizontal Extender
-        horizontalExtender.setPosition(0);
+//        horizontalExtender.setPosition(0);
     }
 }
