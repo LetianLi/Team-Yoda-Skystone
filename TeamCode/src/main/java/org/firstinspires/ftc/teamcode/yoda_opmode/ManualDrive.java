@@ -61,7 +61,8 @@ public class ManualDrive extends LinearOpMode {
 
             moveRobot();
             intake();
-            controlExtenders();
+            controlVerticalExtender();
+            controlHorizontalExtender();
             moveFoundationServo();
             controlSkystoneGrabbers();
 
@@ -203,13 +204,26 @@ public class ManualDrive extends LinearOpMode {
 
     }
 
-    private void controlExtenders() {
+    private void controlVerticalExtender() {
         if (gamepad2.dpad_up && !pressed[4]) {
             verticalPosition += ticksPerUpBlock;
             pressed[4] = true;
         } else if (!gamepad2.dpad_up && pressed[4]) {
             pressed[4] = false;
         }
+
+        if (gamepad2.dpad_left) verticalPosition -= 10;
+        if (gamepad2.dpad_right) verticalPosition += 10;
+        if (gamepad2.right_stick_button) verticalPosition = bottomVerticalLim;
+
+        verticalPosition = Math.min(Math.max(verticalPosition - gamepad2.right_stick_y * 25, bottomVerticalLim), topVerticalLim);
+
+        if (verticalPosition != previousVerticalPos) drive.verticalExtender.setTargetPosition((int) verticalPosition);
+        previousVerticalPos = verticalPosition;
+    }
+
+    private void controlHorizontalExtender() {
+
         if (gamepad2.dpad_down && !pressed[5]) {
             verticalPosition -= ticksPerDownBlock;
             pressed[5] = true;
@@ -217,17 +231,7 @@ public class ManualDrive extends LinearOpMode {
             pressed[5] = false;
         }
 
-        if (gamepad2.dpad_left) verticalPosition -= 10;
-        if (gamepad2.dpad_right) verticalPosition += 10;
-
-
-        if (gamepad2.right_stick_button) verticalPosition = bottomVerticalLim;
         if (gamepad2.left_stick_button) horizontalPosition = placingHorizontalPos;
-
-
-        verticalPosition = Math.min(Math.max(verticalPosition - gamepad2.right_stick_y * 25, bottomVerticalLim), topVerticalLim);
-        if (verticalPosition != previousVerticalPos) drive.verticalExtender.setTargetPosition((int) verticalPosition);
-        previousVerticalPos = verticalPosition;
 
         horizontalPosition = Math.min(Math.max(horizontalPosition - gamepad2.left_stick_y / 25, 0), 1);
         if (horizontalPosition != previousHorizontalPos) drive.horizontalExtender.setPosition(horizontalPosition);
