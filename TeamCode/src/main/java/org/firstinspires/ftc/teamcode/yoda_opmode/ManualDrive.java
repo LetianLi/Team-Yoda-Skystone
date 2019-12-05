@@ -42,6 +42,7 @@ public class ManualDrive extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         drive = new YodaMecanumDrive(hardwareMap);
         drive.setOpMode(this);
+        drive.resetTimer();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
         horizontalPosition = drive.horizontalExtender.getPosition();
@@ -49,7 +50,7 @@ public class ManualDrive extends LinearOpMode {
         telemetry.addLine("Ready!");
         telemetry.update();
         telemetry.clear();
-        gamepad1.setJoystickDeadzone(0.1f);
+        gamepad1.setJoystickDeadzone(0.15f);
         gamepad2.setJoystickDeadzone(0.15f);
         waitForStart();
 
