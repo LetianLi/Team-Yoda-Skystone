@@ -107,89 +107,87 @@ public class ManualDrive extends LinearOpMode {
         } else if (!gamepad1.x && pressed[0]) {
             pressed[0] = false;
         }
+        // does not work, disable now
         //if (gamepad1.x) drive.turnSync(drive.getAngleToFront(telemetry));
 
-        if (!gamepad1.x) {
-            double leftFrontPower = 0;
-            double rightFrontPower = 0;
-            double leftRearPower = 0;
-            double rightRearPower = 0;
+        double leftFrontPower = 0;
+        double rightFrontPower = 0;
+        double leftRearPower = 0;
+        double rightRearPower = 0;
 
-            double input_x = gamepad1.left_stick_x;
-            double input_y = -gamepad1.left_stick_y;
-            double input_turning = gamepad1.right_stick_x;
+        double input_x = gamepad1.left_stick_x;
+        double input_y = -gamepad1.left_stick_y;
+        double input_turning = gamepad1.right_stick_x;
 
-            telemetry.addData("Initial Input:", "x %.2f, y %.2f, turning %.2f", input_x, input_y, input_turning);
+        telemetry.addData("Initial Input:", "x %.2f, y %.2f, turning %.2f", input_x, input_y, input_turning);
 
-            // Skip too small input from joystick as they might be noise
-            // SetJoystickDeadzone does not work, has to do ourselves.
-            if (Math.abs(input_x) < 0.15) {
-                input_x = 0;
-            }
+        // Skip too small input from joystick as they might be noise
+        // SetJoystickDeadzone does not work, has to do ourselves.
+        if (Math.abs(input_x) < 0.15) {
+            input_x = 0;
+        }
 
-            if (Math.abs(input_y) < 0.15) {
+        if (Math.abs(input_y) < 0.15) {
+            input_y = 0;
+        }
+
+        if (Math.abs(input_turning) < 0.15) {
+            input_turning = 0;
+        }
+
+        boolean dpad_pressed = false;
+        if (gamepad1.dpad_up) {
+            input_y += DPAD_SPEED;
+            dpad_pressed = true;
+        } else if (gamepad1.dpad_down) {
+            input_y -= DPAD_SPEED;
+            dpad_pressed = true;
+        }
+
+        if (gamepad1.dpad_right) {
+            input_x += DPAD_SPEED;
+            dpad_pressed = true;
+        } else if (gamepad1.dpad_left) {
+            input_x -= DPAD_SPEED;
+            dpad_pressed = true;
+        }
+
+        if (gamepad1.left_bumper) {
+            input_turning -= DPAD_SPEED * 0.65;
+            dpad_pressed = true;
+        } else if (gamepad1.right_bumper) {
+            input_turning += DPAD_SPEED * 0.65;
+            dpad_pressed = true;
+        }
+
+        telemetry.addData("Input:", "x %.2f, y %.2f, turning %.2f", input_x, input_y, input_turning);
+
+        if ((isSlowMode && !dpad_pressed)|| gamepad2.y) {
+            speed_multiplier = SLOW_MODE_MULTIPLIER;
+        } else {
+            speed_multiplier = 1;
+        }
+        speed_multiplier = speed_multiplier * GLOBAL_SPEED_MULTIPLIER;
+
+        if ((gamepad2.left_trigger > 0.9 || gamepad2.right_trigger > 0.9) && input_y > 0) {
+            if (drive.frontLeftDistance.getDistance(DistanceUnit.INCH) < 10 || drive.frontRightDistance.getDistance(DistanceUnit.INCH) < 10) {
                 input_y = 0;
             }
-
-            if (Math.abs(input_turning) < 0.15) {
-                input_turning = 0;
-            }
-
-            boolean dpad_pressed = false;
-            if (gamepad1.dpad_up) {
-                input_y += DPAD_SPEED;
-                dpad_pressed = true;
-            } else if (gamepad1.dpad_down) {
-                input_y -= DPAD_SPEED;
-                dpad_pressed = true;
-            }
-
-            if (gamepad1.dpad_right) {
-                input_x += DPAD_SPEED;
-                dpad_pressed = true;
-            } else if (gamepad1.dpad_left) {
-                input_x -= DPAD_SPEED;
-                dpad_pressed = true;
-            }
-
-            if (gamepad1.left_bumper) {
-                input_turning -= DPAD_SPEED * 0.65;
-                dpad_pressed = true;
-            } else if (gamepad1.right_bumper) {
-                input_turning += DPAD_SPEED * 0.65;
-                dpad_pressed = true;
-            }
-
-            telemetry.addData("Input:", "x %.2f, y %.2f, turning %.2f", input_x, input_y, input_turning);
-
-            if ((isSlowMode && !dpad_pressed)|| gamepad2.y) {
-                speed_multiplier = SLOW_MODE_MULTIPLIER;
-            } else {
-                speed_multiplier = 1;
-            }
-            speed_multiplier = speed_multiplier * GLOBAL_SPEED_MULTIPLIER;
-
-            if ((gamepad2.left_trigger > 0.9 || gamepad2.right_trigger > 0.9) && input_y > 0) {
-                if (drive.frontLeftDistance.getDistance(DistanceUnit.INCH) < 10 || drive.frontRightDistance.getDistance(DistanceUnit.INCH) < 10) {
-                    input_y = 0;
-                }
-            }
-
-
-            double r = Math.hypot(input_x, input_y);
-            double robotAngle = Math.atan2(input_y, input_x) - Math.PI / 4;
-
-            leftFrontPower = (r * Math.cos(robotAngle) + TURNING_SPEED * input_turning) * speed_multiplier;
-            rightFrontPower = (r * Math.sin(robotAngle) - TURNING_SPEED * input_turning) * speed_multiplier;
-            leftRearPower = (r * Math.sin(robotAngle) + TURNING_SPEED * input_turning) * speed_multiplier;
-            rightRearPower = (r * Math.cos(robotAngle) - TURNING_SPEED * input_turning) * speed_multiplier;
-
-            List<Double> powersList = drive.scaleDown(leftFrontPower, leftRearPower, rightRearPower, rightFrontPower, 1);
-
-            drive.setMotorPowers(powersList.get(0), powersList.get(1), powersList.get(2), powersList.get(3));
-            telemetry.addData("Wheel Powers", "lf %.2f, lr %.2f, rr %.2f, rf %.2f", leftFrontPower, rightFrontPower, leftRearPower, rightRearPower);
         }
-        else telemetry.addData("Wheel Powers", "Turning");
+
+
+        double r = Math.hypot(input_x, input_y);
+        double robotAngle = Math.atan2(input_y, input_x) - Math.PI / 4;
+
+        leftFrontPower = (r * Math.cos(robotAngle) + TURNING_SPEED * input_turning) * speed_multiplier;
+        rightFrontPower = (r * Math.sin(robotAngle) - TURNING_SPEED * input_turning) * speed_multiplier;
+        leftRearPower = (r * Math.sin(robotAngle) + TURNING_SPEED * input_turning) * speed_multiplier;
+        rightRearPower = (r * Math.cos(robotAngle) - TURNING_SPEED * input_turning) * speed_multiplier;
+
+        List<Double> powersList = drive.scaleDown(leftFrontPower, leftRearPower, rightRearPower, rightFrontPower, 1);
+
+        drive.setMotorPowers(powersList.get(0), powersList.get(1), powersList.get(2), powersList.get(3));
+        telemetry.addData("Wheel Powers", "lf %.2f, lr %.2f, rr %.2f, rf %.2f", leftFrontPower, rightFrontPower, leftRearPower, rightRearPower);
     }
 
     private void controlIntakeGrabber() {
