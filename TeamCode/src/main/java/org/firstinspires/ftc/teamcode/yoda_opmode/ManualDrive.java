@@ -30,13 +30,13 @@ public class ManualDrive extends LinearOpMode {
     private double verticalPosition = 0;
     private double previousVerticalPos = -1;
     private final double bottomVerticalLim = -20;
-    private final double topVerticalLim = 2510;
+    private final double topVerticalLim = 2542;
     private final double ticksPerUpBlock = 300;
     private final double ticksPerDownBlock = 230;
 
     private double horizontalPosition = 0;
     private double previousHorizontalPos = -1;
-    private final double placingHorizontalPos = 1;
+    private final double placingHorizontalPos = 0.9;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -45,13 +45,11 @@ public class ManualDrive extends LinearOpMode {
         drive.resetTimer();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
-        horizontalPosition = drive.horizontalExtender.getPosition();
+        horizontalPosition = placingHorizontalPos;
 
         telemetry.addLine("Ready!");
         telemetry.update();
         telemetry.clear();
-        gamepad1.setJoystickDeadzone(0.15f);
-        gamepad2.setJoystickDeadzone(0.15f);
         waitForStart();
 
         if (isStopRequested()) return;
@@ -121,6 +119,22 @@ public class ManualDrive extends LinearOpMode {
             double input_y = -gamepad1.left_stick_y;
             double input_turning = gamepad1.right_stick_x;
 
+            telemetry.addData("Initial Input:", "x %.2f, y %.2f, turning %.2f", input_x, input_y, input_turning);
+
+            // Skip too small input from joystick as they might be noise
+            // SetJoystickDeadzone does not work, has to do ourselves.
+            if (Math.abs(input_x) < 0.15) {
+                input_x = 0;
+            }
+
+            if (Math.abs(input_y) < 0.15) {
+                input_y = 0;
+            }
+
+            if (Math.abs(input_turning) < 0.15) {
+                input_turning = 0;
+            }
+
             boolean dpad_pressed = false;
             if (gamepad1.dpad_up) {
                 input_y += DPAD_SPEED;
@@ -145,6 +159,8 @@ public class ManualDrive extends LinearOpMode {
                 input_turning += DPAD_SPEED * 0.65;
                 dpad_pressed = true;
             }
+
+            telemetry.addData("Input:", "x %.2f, y %.2f, turning %.2f", input_x, input_y, input_turning);
 
             if ((isSlowMode && !dpad_pressed)|| gamepad2.y) {
                 speed_multiplier = SLOW_MODE_MULTIPLIER;
@@ -198,7 +214,7 @@ public class ManualDrive extends LinearOpMode {
             drive.capstoneArm.setPosition(0.31);
         } else if (capstoneArmMode == "Ready") {
             drive.capstoneArm.setPosition(0.92);
-            drive.intakeGrabber.setPosition(0.5);
+            drive.intakeGrabber.setPosition(0.45);
             drive.horizontalExtender.setPosition(0);
         } else if (capstoneArmMode == "Dropping") {
             drive.capstoneArm.setPosition(drive.capstoneArm.getPosition() + 0.002);
@@ -216,8 +232,8 @@ public class ManualDrive extends LinearOpMode {
             pressed[4] = false;
         }
 
-        if (gamepad2.dpad_left) verticalPosition -= 10;
-        if (gamepad2.dpad_right) verticalPosition += 10;
+        if (gamepad2.dpad_left) verticalPosition -= 2;
+        if (gamepad2.dpad_right) verticalPosition += 2;
         if (gamepad2.right_stick_button) verticalPosition = bottomVerticalLim;
 
         verticalPosition = Math.min(Math.max(verticalPosition - gamepad2.right_stick_y * 25, bottomVerticalLim), topVerticalLim);
