@@ -191,8 +191,8 @@ public class ManualDrive extends LinearOpMode {
     }
 
     private void controlIntakeGrabber() {
-        if (gamepad2.a) drive.intakeGrabber.setPosition(0);
-        if (gamepad2.b) drive.intakeGrabber.setPosition(0.4);
+        if (gamepad2.a) drive.intakeGrabber.setPosition(0); // close
+        if (gamepad2.b) drive.intakeGrabber.setPosition(0.4); // open
     }
 
     private void controlCapstone() {

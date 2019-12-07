@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.yoda_code.AutonomousBase;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
 
-//@Disabled
+@Disabled
 @TeleOp(group = "Test", name = "Segment Testing")
 public class SegmentTesting extends AutonomousBase {
 
