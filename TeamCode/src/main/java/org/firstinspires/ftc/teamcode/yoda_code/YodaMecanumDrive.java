@@ -66,6 +66,7 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         verticalExtender.setPower(1);
         verticalExtender.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         verticalExtender.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        verticalExtender.setTargetPositionTolerance(0);
 
         foundationMoverRight.setDirection(Servo.Direction.REVERSE);
         foundationMoverLeft.setDirection(Servo.Direction.REVERSE);
@@ -237,6 +238,9 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         // Foundation Movers
         foundationMoverLeft.setPosition(0);
         foundationMoverRight.setPosition(0);
+
+        // Capstone Arm
+        capstoneArm.setPosition(0.29);
 
         // Intake Grabber
 //        intakeGrabber.setPosition(0.6);

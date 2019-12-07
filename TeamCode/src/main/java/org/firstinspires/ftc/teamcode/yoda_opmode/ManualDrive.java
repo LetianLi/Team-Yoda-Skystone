@@ -19,7 +19,7 @@ public class ManualDrive extends LinearOpMode {
 
     private double speed_multiplier = 1;
     private boolean isSlowMode = false;
-    private double GLOBAL_SPEED_MULTIPLIER = 1; //change to 1.0 for now but it only get 0.7 power. Try using 1.4, but it disables other directions
+    private double GLOBAL_SPEED_MULTIPLIER = 1.2; //change to 1.0 for now but it only get 0.7 power. Try using 1.4, but it disables other directions
     private double SLOW_MODE_MULTIPLIER = 0.5;
     private double TURNING_SPEED = 1;
     private double DPAD_SPEED = 0.2;
@@ -31,6 +31,7 @@ public class ManualDrive extends LinearOpMode {
     private double previousVerticalPos = -1;
     private final double bottomVerticalLim = -20;
     private final double topVerticalLim = 2542;
+    private double lastTopPosition = 20;
     private final double ticksPerUpBlock = 300;
     private final double ticksPerDownBlock = 230;
 
@@ -45,8 +46,6 @@ public class ManualDrive extends LinearOpMode {
         drive.resetTimer();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
-        horizontalPosition = placingHorizontalPos;
-
         telemetry.addLine("Ready!");
         telemetry.update();
         telemetry.clear();
@@ -54,6 +53,7 @@ public class ManualDrive extends LinearOpMode {
 
         if (isStopRequested()) return;
         ElapsedTime op_timer = new ElapsedTime();
+        horizontalPosition = drive.horizontalExtender.getPosition();
 
         while (!isStopRequested()) {
             op_timer.reset();
@@ -76,7 +76,6 @@ public class ManualDrive extends LinearOpMode {
             telemetry.addData("Stone Grabber", "\n" + stoneGrabberMode + "\n|");
             telemetry.addData("Horizontal Pos", drive.horizontalExtender.getPosition());
             telemetry.addData("Vertical Pos", drive.verticalExtender.getCurrentPosition());
-            telemetry.addData("Vertical Pow", drive.verticalExtender.getPower());
             telemetry.addData("Latency", op_timer.milliseconds());
             telemetry.update();
         }
@@ -165,9 +164,8 @@ public class ManualDrive extends LinearOpMode {
         if ((isSlowMode && !dpad_pressed)|| gamepad2.y) {
             speed_multiplier = SLOW_MODE_MULTIPLIER;
         } else {
-            speed_multiplier = 1;
+            speed_multiplier = 1 * GLOBAL_SPEED_MULTIPLIER;
         }
-        speed_multiplier = speed_multiplier * GLOBAL_SPEED_MULTIPLIER;
 
         if ((gamepad2.left_trigger > 0.9 || gamepad2.right_trigger > 0.9) && input_y > 0) {
             if (drive.frontLeftDistance.getDistance(DistanceUnit.INCH) < 10 || drive.frontRightDistance.getDistance(DistanceUnit.INCH) < 10) {
@@ -191,8 +189,14 @@ public class ManualDrive extends LinearOpMode {
     }
 
     private void controlIntakeGrabber() {
-        if (gamepad2.a) drive.intakeGrabber.setPosition(0); // close
-        if (gamepad2.b) drive.intakeGrabber.setPosition(0.4); // open
+        if (gamepad2.left_bumper || gamepad2.a) drive.intakeGrabber.setPosition(0); // close
+        if (gamepad2.right_bumper || gamepad2.b) {
+            drive.intakeGrabber.setPosition(0.4); // open
+
+            if (verticalPosition >= 20) {
+                lastTopPosition = verticalPosition;
+            }
+        }
     }
 
     private void controlCapstone() {
@@ -209,11 +213,12 @@ public class ManualDrive extends LinearOpMode {
             capstoneArmMode = "Dropped";
 
         if (capstoneArmMode == "Stored") {
-            drive.capstoneArm.setPosition(0.31);
+            drive.capstoneArm.setPosition(0.29);
         } else if (capstoneArmMode == "Ready") {
             drive.capstoneArm.setPosition(0.92);
             drive.intakeGrabber.setPosition(0.45);
             drive.horizontalExtender.setPosition(0);
+            horizontalPosition = 0;
         } else if (capstoneArmMode == "Dropping") {
             drive.capstoneArm.setPosition(drive.capstoneArm.getPosition() + 0.002);
         } else if (capstoneArmMode == "Dropped") {
@@ -224,14 +229,22 @@ public class ManualDrive extends LinearOpMode {
 
     private void controlVerticalExtender() {
         if (gamepad2.dpad_up && !pressed[4]) {
-            verticalPosition += ticksPerUpBlock;
+            verticalPosition = lastTopPosition + ticksPerUpBlock;
             pressed[4] = true;
         } else if (!gamepad2.dpad_up && pressed[4]) {
             pressed[4] = false;
         }
 
+        if (gamepad2.dpad_down && !pressed[5]) {
+            verticalPosition -= ticksPerDownBlock;
+            pressed[5] = true;
+        } else if (!gamepad2.dpad_down && pressed[5]) {
+            pressed[5] = false;
+        }
+
         if (gamepad2.dpad_left) verticalPosition -= 2;
         if (gamepad2.dpad_right) verticalPosition += 2;
+
         if (gamepad2.right_stick_button) verticalPosition = bottomVerticalLim;
 
         verticalPosition = Math.min(Math.max(verticalPosition - gamepad2.right_stick_y * 25, bottomVerticalLim), topVerticalLim);
@@ -241,13 +254,6 @@ public class ManualDrive extends LinearOpMode {
     }
 
     private void controlHorizontalExtender() {
-
-        if (gamepad2.dpad_down && !pressed[5]) {
-            verticalPosition -= ticksPerDownBlock;
-            pressed[5] = true;
-        } else if (!gamepad2.dpad_down && pressed[5]) {
-            pressed[5] = false;
-        }
 
         if (gamepad2.left_stick_button) horizontalPosition = placingHorizontalPos;
 

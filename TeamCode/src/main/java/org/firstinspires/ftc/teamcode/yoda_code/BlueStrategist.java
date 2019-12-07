@@ -137,7 +137,7 @@ public class BlueStrategist extends StrategistBase {
         drive.log("followTrajectory to be away from foundation");
         drive.followTrajectorySync(drive.trajectoryBuilder()
                 .strafeLeft(3)// away from foundation, avoid hitting it when turning
-                .forward(3) // forward a little for positions
+                .forward(1) // forward a little for positions
                 .build());
         // turn to face foundation and move
         drive.turnToRadians(Math.toRadians(-90));
@@ -149,11 +149,11 @@ public class BlueStrategist extends StrategistBase {
                 .forward(5) // forward
                 .addMarker(0, () -> { moveFoundationServos(1); return null; }) //put mover down while moving
                 .setReversed(true)
-                .splineTo(new Pose2d(getX() - 25, getY() + 25, Math.toRadians(-50)))// turn
+                .splineTo(new Pose2d(getX() - 30, getY() + 25, Math.toRadians(-50)))// turn
                 .setReversed(false)
                 .build());
 
-        drive.turnToRadians(Math.toRadians(0)); // make another turn
+        drive.turnToRadians(Math.toRadians(10)); // make another turn
         // moving away to park
         drive.log("followTrajectory to move away to park");
         drive.followTrajectorySync(drive.trajectoryBuilder()
