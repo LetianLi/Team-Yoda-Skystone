@@ -164,16 +164,16 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
     }
 
     public List<Double> scaleDown(double a, double b, double c, double d, double max) {
-        double biggestNumber = a;
-        if (biggestNumber < b) biggestNumber = b;
-        if (biggestNumber < c) biggestNumber = c;
-        if (biggestNumber < d) biggestNumber = d;
+        double biggestNumber = Math.abs(a);
+        if (biggestNumber < Math.abs(b)) biggestNumber = Math.abs(b);
+        if (biggestNumber < Math.abs(c)) biggestNumber = Math.abs(c);
+        if (biggestNumber < Math.abs(d)) biggestNumber = Math.abs(d);
 
-        if (biggestNumber > max) {
-            a = a / biggestNumber * max;
-            b = b / biggestNumber * max;
-            c = c / biggestNumber * max;
-            d = d / biggestNumber * max;
+        if (Math.abs(biggestNumber) > max) {
+            a = a / Math.abs(biggestNumber) * max;
+            b = b / Math.abs(biggestNumber) * max;
+            c = c / Math.abs(biggestNumber) * max;
+            d = d / Math.abs(biggestNumber) * max;
         }
         return Arrays.asList(a, b, c, d);
     }
@@ -184,6 +184,10 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
                 && (opMode == null || !opMode.isStopRequested())) {
             update();
         }
+    }
+
+    public double keepBetweenMaxMin(double number, double max, double min) {
+        return Math.min(Math.max(number, min), max);
     }
 
     public double getAngleToFront(Telemetry telemetry) {

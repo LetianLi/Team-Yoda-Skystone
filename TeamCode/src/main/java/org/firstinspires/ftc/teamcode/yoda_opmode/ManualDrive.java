@@ -19,7 +19,7 @@ public class ManualDrive extends LinearOpMode {
 
     private double speed_multiplier = 1;
     private boolean isSlowMode = false;
-    private double GLOBAL_SPEED_MULTIPLIER = 1.2; //change to 1.0 for now but it only get 0.7 power. Try using 1.4, but it disables other directions
+    private double GLOBAL_SPEED_MULTIPLIER = 1.4; //change to 1.0 for now but it only get 0.7 power. Try using 1.4, but it disables other directions
     private double SLOW_MODE_MULTIPLIER = 0.5;
     private double TURNING_SPEED = 1;
     private double DPAD_SPEED = 0.2;
@@ -44,7 +44,9 @@ public class ManualDrive extends LinearOpMode {
         drive = new YodaMecanumDrive(hardwareMap);
         drive.setOpMode(this);
         drive.resetTimer();
-        telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
+        // telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
+        horizontalPosition = 1;
+        previousHorizontalPos = 1;
 
         telemetry.addLine("Ready!");
         telemetry.update();
@@ -53,7 +55,6 @@ public class ManualDrive extends LinearOpMode {
 
         if (isStopRequested()) return;
         ElapsedTime op_timer = new ElapsedTime();
-        horizontalPosition = drive.horizontalExtender.getPosition();
 
         while (!isStopRequested()) {
             op_timer.reset();
@@ -66,14 +67,14 @@ public class ManualDrive extends LinearOpMode {
             moveFoundationServo();
             controlSkystoneGrabbers();
 
-            telemetry.addData("Encoders", "Left %d, Right %d, Front %d", drive.leftEncoder.getCurrentPosition(), drive.rightEncoder.getCurrentPosition(), drive.frontEncoder.getCurrentPosition());
-            telemetry.addData("Speed co-efficients", "turn %.2f  ||  entire %.2f", TURNING_SPEED, speed_multiplier);
+//            telemetry.addData("Encoders", "Left %d, Right %d, Front %d", drive.leftEncoder.getCurrentPosition(), drive.rightEncoder.getCurrentPosition(), drive.frontEncoder.getCurrentPosition());
+            telemetry.addData("Speed co-efficients", "turn %.2f   ||   entire %.2f", TURNING_SPEED, speed_multiplier);
             telemetry.addData("Encoder values, lf, lr, rr, rf", drive.getWheelPositions());
             //disable because they are slow
 //            telemetry.addData("Distance", "Left %.2f, Right %.2f", drive.frontLeftDistance.getDistance(DistanceUnit.INCH), drive.frontRightDistance.getDistance(DistanceUnit.INCH));
 //            telemetry.addData("Front Angle", Math.toDegrees(drive.getAngleToFront()));
             telemetry.addData("Capstone Arm", capstoneArmMode);
-            telemetry.addData("Stone Grabber", "\n" + stoneGrabberMode + "\n|");
+//            telemetry.addData("Stone Grabber", "\n" + stoneGrabberMode + "\n|");
             telemetry.addData("Horizontal Pos", drive.horizontalExtender.getPosition());
             telemetry.addData("Vertical Pos", drive.verticalExtender.getCurrentPosition());
             telemetry.addData("Latency", op_timer.milliseconds());
@@ -100,13 +101,15 @@ public class ManualDrive extends LinearOpMode {
             pressed[1] = false;
         }
 
-        if (gamepad1.x && !pressed[0]) {
-            drive.turnSync(drive.getAngleToFront(telemetry));
-            pressed[0] = true;
-        } else if (!gamepad1.x && pressed[0]) {
-            pressed[0] = false;
-        }
         // does not work, disable now
+
+        //if (gamepad1.x && !pressed[0]) {
+        //    drive.turnSync(drive.getAngleToFront(telemetry));
+        //    pressed[0] = true;
+        //} else if (!gamepad1.x && pressed[0]) {
+        //    pressed[0] = false;
+        //}
+
         //if (gamepad1.x) drive.turnSync(drive.getAngleToFront(telemetry));
 
         double leftFrontPower = 0;
@@ -118,7 +121,7 @@ public class ManualDrive extends LinearOpMode {
         double input_y = -gamepad1.left_stick_y;
         double input_turning = gamepad1.right_stick_x;
 
-        telemetry.addData("Initial Input:", "x %.2f, y %.2f, turning %.2f", input_x, input_y, input_turning);
+//        telemetry.addData("Initial Input:", "x %.2f, y %.2f, turning %.2f", input_x, input_y, input_turning);
 
         // Skip too small input from joystick as they might be noise
         // SetJoystickDeadzone does not work, has to do ourselves.
@@ -185,7 +188,13 @@ public class ManualDrive extends LinearOpMode {
         List<Double> powersList = drive.scaleDown(leftFrontPower, leftRearPower, rightRearPower, rightFrontPower, 1);
 
         drive.setMotorPowers(powersList.get(0), powersList.get(1), powersList.get(2), powersList.get(3));
-        telemetry.addData("Wheel Powers", "lf %.2f, lr %.2f, rr %.2f, rf %.2f", leftFrontPower, rightFrontPower, leftRearPower, rightRearPower);
+
+//        telemetry.addData("Wheel Powers", "lf %.2f, lr %.2f, rr %.2f, rf %.2f", powersList.get(0), powersList.get(1), powersList.get(2), powersList.get(3));
+//        drive.log("Left Front " + leftFrontPower + " > " + powersList.get(0));
+//        drive.log("Left Rear " + leftRearPower + " > " + powersList.get(1));
+//        drive.log("Right Rear " + rightRearPower + " > " + powersList.get(2));
+//        drive.log("Right Front " + rightFrontPower + " > " + powersList.get(3));
+//        drive.log("");
     }
 
     private void controlIntakeGrabber() {
@@ -256,9 +265,17 @@ public class ManualDrive extends LinearOpMode {
     private void controlHorizontalExtender() {
 
         if (gamepad2.left_stick_button) horizontalPosition = placingHorizontalPos;
+        double input_y = gamepad2.left_stick_y;
+        if (Math.abs(input_y) < 0.1) {
+            // Skip too small input from joystick as there might be noise
+            input_y = 0;
+        }
 
-        horizontalPosition = Math.min(Math.max(horizontalPosition - gamepad2.left_stick_y / 25, 0), 1);
-        if (horizontalPosition != previousHorizontalPos) drive.horizontalExtender.setPosition(horizontalPosition);
+        horizontalPosition = drive.keepBetweenMaxMin(horizontalPosition - input_y / 25, 1, 0);
+        if (horizontalPosition != previousHorizontalPos) {
+            //drive.log("Horizontal Position set to: " + horizontalPosition);
+            drive.horizontalExtender.setPosition(horizontalPosition);
+        }
         previousHorizontalPos = horizontalPosition;
     }
 
