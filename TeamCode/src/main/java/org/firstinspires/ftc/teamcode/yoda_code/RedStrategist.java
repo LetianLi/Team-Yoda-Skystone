@@ -83,6 +83,7 @@ public class RedStrategist extends StrategistBase {
     public void goBackGrabDeliverSecondSkystone() {
         drive.setLogTag("goBackGrabDeliverSecondSkystone");
         drive.strafeLeft(8); // move away from the foundation, so that we do not hit bridge
+        drive.skystoneGrabberFront.setPosition(0);
         drive.turnToRadians(0);
         drive.forward(forwardDistanceFromFoundation);
         // use sensor to read distance to wall, and move to 2nd skystone positions
@@ -154,7 +155,7 @@ public class RedStrategist extends StrategistBase {
                 .splineTo(new Pose2d(getX() - 25, getY() - 20, Math.toRadians(-40)))
                 .setReversed(false)
                 .build());
-
+        drive.skystoneGrabberFront.setPosition(0);
         drive.turnToRadians(Math.toRadians(180)); // make another turn
         // moving away to park
         drive.log("followTrajectory to move away to park");

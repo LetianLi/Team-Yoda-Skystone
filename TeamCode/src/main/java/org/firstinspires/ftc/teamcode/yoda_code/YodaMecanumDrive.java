@@ -27,10 +27,9 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
     public Servo foundationMoverLeft, foundationMoverRight;
     public Servo skystoneGrabberFront, skystoneArmFront, skystoneGrabberBack, skystoneArmBack;
     public Servo capstoneArm, intakeGrabber;
-    public Rev2mDistanceSensor frontLeftDistance, frontRightDistance, rightDistance;
+    public Rev2mDistanceSensor frontLeftDistance, frontRightDistance, rightDistance, leftDistance;
     public ModernRoboticsI2cRangeSensor backDistance, frontDistance;
 
-    public DcMotor leftEncoder, rightEncoder, frontEncoder;
     ElapsedTime global_timer;
     String last_tag_for_logging;
 
@@ -58,6 +57,7 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         frontLeftDistance = hardwareMap.get(Rev2mDistanceSensor.class, "front left distance");
         frontRightDistance = hardwareMap.get(Rev2mDistanceSensor.class, "front right distance");
         rightDistance = hardwareMap.get(Rev2mDistanceSensor.class, "right distance");
+        leftDistance = hardwareMap.get(Rev2mDistanceSensor.class, "left distance");
         backDistance = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "back distance");
         frontDistance = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "front distance");
 
@@ -77,20 +77,6 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         intakeGrabber.setDirection(Servo.Direction.REVERSE);
 
         //setLocalizer(new StandardTrackingWheelLocalizer(hardwareMap));
-
-        leftEncoder = hardwareMap.dcMotor.get("leftEncoder");
-        rightEncoder = hardwareMap.dcMotor.get("rightEncoder");
-        frontEncoder = hardwareMap.dcMotor.get("frontEncoder");
-        leftEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        leftEncoder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rightEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightEncoder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        frontEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        frontEncoder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-
-        rightEncoder.setDirection(DcMotor.Direction.REVERSE);
-        frontEncoder.setDirection(DcMotorSimple.Direction.REVERSE);
 
         horizontalExtender.scaleRange(1 - 0.37, 1 - 0.13); // actually limit 0.37
 
@@ -210,6 +196,8 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
     public double getRightDistance() {
         return rightDistance.getDistance(DistanceUnit.INCH);
     }
+
+    public double getLeftDistance() { return leftDistance.getDistance(DistanceUnit.INCH) - 2;}
 
     public double getBackDistance() {
 

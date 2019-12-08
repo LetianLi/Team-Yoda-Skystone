@@ -34,7 +34,7 @@ public class BlueStrategist extends StrategistBase {
         drive.log("backDistanceFromFoundation:" + backDistanceFromFoundation);
         // move forward and drop stone to foundation again, move 20" less so that we have room to
         // drop 2nd stone
-        this.secondForwardDistance = this.backDistanceFromFoundation - 20;
+        this.secondForwardDistance = this.backDistanceFromFoundation - 21;
         drive.log("secondForwardDistance:" + secondForwardDistance);
     }
 
@@ -81,6 +81,7 @@ public class BlueStrategist extends StrategistBase {
     public void goBackGrabDeliverSecondSkystone() {
         drive.setLogTag("goBackGrabDeliverSecondSkystone");
         drive.strafeLeft(7); // move away from the foundation, so that we do not hit bridge
+        drive.skystoneGrabberBack.setPosition(0);
         drive.turnToRadians(0);
         drive.back(backDistanceFromFoundation);
         // use sensor to read distance to wall, and move to 2nd skystone positions
@@ -166,10 +167,11 @@ public class BlueStrategist extends StrategistBase {
 //                .strafeRight(5)// right to position of parking
 //                .back(45) // back to parking position
                 .build());
+        drive.skystoneGrabberBack.setPosition(0);
         drive.turnToRadians(0);
         drive.followTrajectorySync(drive.trajectoryBuilder()
                 .setReversed(true)
-                .splineTo(new Pose2d( getX() - (72 - drive.getFrontDistance()) + 20, getY() - 15, 0))
+                .splineTo(new Pose2d( getX() - (72 - drive.getFrontDistance()) + 15, getY() - 15, 0))
                 .setReversed(false)
                 .build());
     }

@@ -73,8 +73,8 @@ public abstract class StrategistBase {
                 targetGrabber.setPosition(1); // open grabber
                 opMode.sleep(200);
                 targetArm.setPosition(0); // Put arm up
-                opMode.sleep(100); // Do we need this wait? can be deleted?
-                targetGrabber.setPosition(0); // close grabber
+//                opMode.sleep(100); // Do we need this wait? can be deleted?
+//                targetGrabber.setPosition(0); // close grabber
                 break;
         }
     }
