@@ -98,7 +98,7 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         skystoneArmBack.scaleRange(0, 0.33);
 
         foundationMoverLeft.scaleRange(0.4, 1);
-        foundationMoverRight.scaleRange(0.5, 1);
+        foundationMoverRight.scaleRange(0.4, 1);
     }
 
     public void resetTimer() {
@@ -244,7 +244,7 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         foundationMoverRight.setPosition(0);
 
         // Capstone Arm
-        capstoneArm.setPosition(0.29);
+        capstoneArm.setPosition(0.25);
 
         // Intake Grabber
 //        intakeGrabber.setPosition(0.6);

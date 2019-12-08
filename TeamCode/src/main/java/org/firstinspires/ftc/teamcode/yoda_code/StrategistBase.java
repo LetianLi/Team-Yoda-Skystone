@@ -69,6 +69,7 @@ public abstract class StrategistBase {
                 break;
             case DROP:
                 targetArm.setPosition(1 - 0.15); // This attempts to put arm down, but no wait before opening grabber, can be deleted?
+                opMode.sleep(100);
                 targetGrabber.setPosition(1); // open grabber
                 opMode.sleep(200);
                 targetArm.setPosition(0); // Put arm up

@@ -83,9 +83,10 @@ public class ManualDrive extends LinearOpMode {
     }
 
     private void moveFoundationServo() {
-        if (gamepad1.left_trigger >= 0.95 && gamepad1.right_trigger >= 0.95) {
+        if (gamepad1.left_trigger >= 0.5 || gamepad1.right_trigger >= 0.5) {
             drive.foundationMoverLeft.setPosition(1);
             drive.foundationMoverRight.setPosition(1);
+            drive.intakeGrabber.setPosition(0.52);
         }
         else {
             drive.foundationMoverLeft.setPosition(0);
@@ -222,7 +223,7 @@ public class ManualDrive extends LinearOpMode {
             capstoneArmMode = "Dropped";
 
         if (capstoneArmMode == "Stored") {
-            drive.capstoneArm.setPosition(0.29);
+            drive.capstoneArm.setPosition(0.25);
         } else if (capstoneArmMode == "Ready") {
             drive.capstoneArm.setPosition(0.92);
             drive.intakeGrabber.setPosition(0.45);

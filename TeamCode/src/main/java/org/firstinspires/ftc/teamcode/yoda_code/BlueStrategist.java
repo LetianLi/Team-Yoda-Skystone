@@ -146,22 +146,31 @@ public class BlueStrategist extends StrategistBase {
         // turn almost 90 degree to drag it
         drive.log("followTrajectory to turn 90 degree");
         drive.followTrajectorySync(drive.trajectoryBuilder()
-                .forward(5) // forward
-                .addMarker(0, () -> { moveFoundationServos(1); return null; }) //put mover down while moving
+                .forward(6) // forward
+                .addMarker(0.1, () -> { moveFoundationServos(1); return null; }) //put mover down while moving
                 .setReversed(true)
-                .splineTo(new Pose2d(getX() - 30, getY() + 25, Math.toRadians(-50)))// turn
+                .splineTo(new Pose2d(getX() - 32, getY() + 15, Math.toRadians(45)))// turn
                 .setReversed(false)
                 .build());
 
-        drive.turnToRadians(Math.toRadians(10)); // make another turn
+        drive.turnToRadians(Math.toRadians(0)); // make another turn
         // moving away to park
         drive.log("followTrajectory to move away to park");
         drive.followTrajectorySync(drive.trajectoryBuilder()
-                .forward(8) // push foundation to wall
+                .forward(drive.getFrontDistance() - 20 + 2) // push foundation to wall
                 .addMarker(0, () -> { moveFoundationServos(0); return null;}) // open mover
-                .back(5)// away from foundation, avoid hitting it
-                .strafeRight(18)// right to position of parking
-                .back(45) // back to parking position
+//                .setReversed(true)
+//                .splineTo(new Pose2d(getX() - 40, getY() - 15, 0))
+//
+//                .back(5)// away from foundation, avoid hitting it
+//                .strafeRight(5)// right to position of parking
+//                .back(45) // back to parking position
+                .build());
+        drive.turnToRadians(0);
+        drive.followTrajectorySync(drive.trajectoryBuilder()
+                .setReversed(true)
+                .splineTo(new Pose2d( getX() - (72 - drive.getFrontDistance()) + 20, getY() - 15, 0))
+                .setReversed(false)
                 .build());
     }
 

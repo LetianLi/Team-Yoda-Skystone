@@ -151,7 +151,7 @@ public class RedStrategist extends StrategistBase {
                 .forward(5) // forward
                 .addMarker(0, () -> { moveFoundationServos(1); return null; }) //put mover down while moving
                 .setReversed(true)
-                .splineTo(new Pose2d(getX() - 25, getY() - 20, Math.toRadians(-50)))
+                .splineTo(new Pose2d(getX() - 25, getY() - 20, Math.toRadians(-40)))
                 .setReversed(false)
                 .build());
 
