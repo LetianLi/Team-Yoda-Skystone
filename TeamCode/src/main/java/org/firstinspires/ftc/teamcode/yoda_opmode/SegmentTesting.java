@@ -5,6 +5,7 @@ import com.acmerobotics.roadrunner.path.heading.HeadingInterpolator;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.yoda_code.AutonomousBase;
 
@@ -18,6 +19,7 @@ public class SegmentTesting extends AutonomousBase {
     @Override
     public void runOpMode() throws InterruptedException {
         initialize();
+        drive.setMotorsZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         if (isStopRequested()) return;
         while (!isStopRequested()) {
             if (gamepad2.a) {
@@ -47,8 +49,11 @@ public class SegmentTesting extends AutonomousBase {
                         .build());
 
             }
-            telemetry.addData("Right", drive.getRightDistance());
-            telemetry.addData("Back", drive.getBackDistance());
+
+            telemetry.addData("Left Distance", drive.getLeftDistance());
+            telemetry.addData("Right Distance", drive.getRightDistance());
+            telemetry.addData("Front Distance", drive.getFrontDistance());
+            telemetry.addData("Back Distance", drive.getBackDistance());
             telemetry.update();
         }
     }
