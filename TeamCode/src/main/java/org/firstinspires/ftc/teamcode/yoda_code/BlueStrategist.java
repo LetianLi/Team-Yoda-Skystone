@@ -44,7 +44,7 @@ public class BlueStrategist extends StrategistBase {
 
         // tell road runner of our initial position, so that it can draw position in dashboard
         drive.setPoseEstimate(new Pose2d(-33, 63, 0));
-        moveSkystoneArms(ArmSide.BACK, ArmStage.PREPARE);
+        moveSkystoneArms(ArmSide.BACK, ArmStage.OPENGRABBER);
 
         drive.strafeRight(RIGHT_TO_STONE); // Move right to be close to stone
         drive.turnToRadians(0); // adjust in case robot drift
@@ -88,7 +88,7 @@ public class BlueStrategist extends StrategistBase {
         double distance_to_back = getExpectedDistanceToWall(opMode.getSkystonePos());
         moveBackToDistance(distance_to_back, 10);
 
-        moveSkystoneArms(ArmSide.BACK, ArmStage.PREPARE);
+        moveSkystoneArms(ArmSide.BACK, ArmStage.OPENGRABBER);
         drive.turnToRadians(0);
         // move right until 2" close to the skystone
         moveRightToDistance(2, true, 5);

@@ -3,13 +3,12 @@ package org.firstinspires.ftc.teamcode.yoda_code;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.yoda_enum.ArmSide;
 import org.firstinspires.ftc.teamcode.yoda_enum.ArmStage;
 import org.firstinspires.ftc.teamcode.yoda_enum.SkystonePos;
 
 public abstract class StrategistBase {
-    protected YodaMecanumDrive drive;
+    public YodaMecanumDrive drive;
     protected ElapsedTime op_timer;
     protected AutonomousBase opMode;
 
@@ -45,7 +44,7 @@ public abstract class StrategistBase {
 
     public abstract void moveFoundationBackAndPark();
 
-    protected void moveSkystoneArms(ArmSide side, ArmStage stage) {
+    public void moveSkystoneArms(ArmSide side, ArmStage stage) {
         Servo targetArm = (side == ArmSide.FRONT) ? drive.skystoneArmFront : drive.skystoneArmBack;
         Servo targetGrabber = (side == ArmSide.FRONT) ? drive.skystoneGrabberFront : drive.skystoneGrabberBack;
         // also control the other arm/grabber in prepare stage to be at stored position
@@ -53,16 +52,22 @@ public abstract class StrategistBase {
         Servo theOtherGrabber = (side == ArmSide.BACK) ? drive.skystoneGrabberFront : drive.skystoneGrabberBack;
 
         switch (stage) {
-            case PREPARE:
+            case RESET:
                 theOtherArm.setPosition(0);
                 theOtherGrabber.setPosition(0);
 
                 targetArm.setPosition(0);
+                targetGrabber.setPosition(0);
+                break;
+            case OPENGRABBER:
                 targetGrabber.setPosition(1); // open grabber
+                break;
+            case PREPARE:
+                targetArm.setPosition(0.75);
                 break;
             case GRAB:
                 targetArm.setPosition(1); // put down arm
-                opMode.sleep(400);
+                opMode.sleep(50);
                 targetGrabber.setPosition(0); // grab it
                 opMode.sleep(500);
                 targetArm.setPosition(0); // put arm up. No need for sleep as next step is moving robot away
@@ -79,7 +84,7 @@ public abstract class StrategistBase {
         }
     }
 
-    protected void moveFoundationServos(double position) {
+    public void moveFoundationServos(double position) {
         drive.foundationMoverLeft.setPosition(position);
         drive.foundationMoverRight.setPosition(position);
     }
@@ -101,7 +106,7 @@ public abstract class StrategistBase {
         return currentDistance - distanceFromRight;
     }
 
-    protected double getForwardOffset(SkystonePos skystonePos, double[] forwardOffsetsPerPos) {
+    public double getForwardOffset(SkystonePos skystonePos, double[] forwardOffsetsPerPos) {
         switch(skystonePos) {
             case LEFT:
                 return forwardOffsetsPerPos[0];
@@ -115,16 +120,16 @@ public abstract class StrategistBase {
         return forwardOffsetsPerPos[1];
     }
 
-    protected double getX() {
+    public double getX() {
         return drive.getPoseEstimate().getX();
     }
-    protected double getY() {
+    public double getY() {
         return drive.getPoseEstimate().getY();
     }
-    protected double getHeading() {
+    public double getHeading() {
         return drive.getPoseEstimate().getHeading();
     }
-    protected void updatePose() {
+    public void updatePose() {
         drive.updatePoseEstimate();
     }
 }

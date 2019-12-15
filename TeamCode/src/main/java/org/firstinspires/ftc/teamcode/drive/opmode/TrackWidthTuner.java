@@ -23,7 +23,7 @@ import org.firstinspires.ftc.teamcode.yoda_code.YodaMecanumDrive;
  * this procedure a few times and averages the values for additional accuracy. Note: a relatively
  * accurate track width estimate is important or else the angular constraints will be thrown off.
  */
-@Disabled
+//@Disabled
 @Config
 @Autonomous(group = "drive")
 public class TrackWidthTuner extends LinearOpMode {
@@ -43,6 +43,9 @@ public class TrackWidthTuner extends LinearOpMode {
         telemetry.addLine("Make sure your robot has enough clearance to turn smoothly");
         telemetry.update();
 
+        double rawIMUStart = 0;
+        double rawIMUEnd = 0;
+
         waitForStart();
 
         if (isStopRequested()) return;
@@ -53,12 +56,15 @@ public class TrackWidthTuner extends LinearOpMode {
 
         MovingStatistics trackWidthStats = new MovingStatistics(NUM_TRIALS);
         for (int i = 0; i < NUM_TRIALS; i++) {
+            drive.log("Trial " + (i+1) + " / " + NUM_TRIALS);
             drive.setPoseEstimate(new Pose2d());
 
             // it is important to handle heading wraparounds
             double headingAccumulator = 0;
             double lastHeading = 0;
-
+            drive.log("Starting angle: " + Math.toDegrees(drive.getPoseEstimate().getHeading()) + " deg");
+            rawIMUStart = Math.toDegrees(drive.getRawExternalHeading());
+            drive.log("IMU angle: " + rawIMUStart + " deg");
             drive.turn(Math.toRadians(ANGLE));
 
             while (!isStopRequested() && drive.isBusy()) {
@@ -71,7 +77,11 @@ public class TrackWidthTuner extends LinearOpMode {
 
             double trackWidth = DriveConstants.TRACK_WIDTH * Math.toRadians(ANGLE) / headingAccumulator;
             trackWidthStats.add(trackWidth);
-
+            drive.log("Ending angle: " + Math.toDegrees(drive.getPoseEstimate().getHeading()) + " deg");
+            rawIMUEnd = Math.toDegrees(drive.getRawExternalHeading());
+            drive.log("IMU angle: " + rawIMUEnd + " deg");
+            drive.log("IMU change: " + (rawIMUEnd - rawIMUStart));
+            drive.log("------------------------");
             sleep(DELAY);
         }
 

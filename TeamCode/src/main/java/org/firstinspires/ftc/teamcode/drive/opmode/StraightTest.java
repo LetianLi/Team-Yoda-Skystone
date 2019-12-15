@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.yoda_code.YodaMecanumDrive;
 /*
  * This is a simple routine to test translational drive capabilities.
  */
-@Disabled
+//@Disabled
 @Config
 @Autonomous(group = "drive")
 public class StraightTest extends LinearOpMode {
@@ -29,6 +29,12 @@ public class StraightTest extends LinearOpMode {
 
         if (isStopRequested()) return;
 
-        drive.followTrajectorySync(trajectory);
+        drive.followTrajectory(trajectory);
+        while (!isStopRequested()) {
+            telemetry.addData("IMU", Math.toDegrees(drive.getRawExternalHeading()));
+            telemetry.addData("Heading", Math.toDegrees(drive.getPoseEstimate().getHeading()));
+            telemetry.update();
+            drive.update();
+        }
     }
 }

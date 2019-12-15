@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.yoda_code.YodaMecanumDrive;
  * drives in a DISTANCE-by-DISTANCE square indefinitely.
  */
 @Config
-@Disabled
+//@Disabled
 @Autonomous(group = "drive")
 public class FollowerPIDTuner extends LinearOpMode {
     public static double DISTANCE = 48;
@@ -21,6 +21,7 @@ public class FollowerPIDTuner extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         YodaMecanumDrive drive = new YodaMecanumDrive(hardwareMap);
+        drive.intakeGrabber.setPosition(0.52);
 
         drive.setPoseEstimate(new Pose2d(-DISTANCE / 2, -DISTANCE / 2, 0));
 

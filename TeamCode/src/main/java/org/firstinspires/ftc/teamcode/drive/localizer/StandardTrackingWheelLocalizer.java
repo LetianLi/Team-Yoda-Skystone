@@ -28,26 +28,30 @@ import java.util.List;
  */
 @Config
 public class StandardTrackingWheelLocalizer extends ThreeTrackingWheelLocalizer {
-    public static double TICKS_PER_REV = 1440;
-    public static double WHEEL_RADIUS = 1.9/2.54; // in
+    public static double TICKS_PER_REV = 2880;
+    public static double WHEEL_RADIUS = 2.9/2.54; // in
     public static double GEAR_RATIO = 1; // output (wheel) speed / input (encoder) speed
 
-    public static double LATERAL_DISTANCE = 14.5; // in; distance between the left and right wheels
-    public static double FORWARD_OFFSET = 4; // in; offset of the lateral wheel
+    public static double LATERAL_DISTANCE = 14 + 14/16; // in; distance between the left and right wheels
+    public static double FORWARD_OFFSET = 4 + 14/16; // in; offset of the lateral wheel
 
     private DcMotor leftEncoder, rightEncoder, frontEncoder;
 
     public StandardTrackingWheelLocalizer(HardwareMap hardwareMap) {
         super(Arrays.asList(
-                new Pose2d(4/16, LATERAL_DISTANCE / 2, 0), // left
-                new Pose2d(5/16, -LATERAL_DISTANCE / 2, 0), // right
-                new Pose2d(FORWARD_OFFSET, 0, Math.toRadians(90)) // front
+                new Pose2d(13/16, LATERAL_DISTANCE / 2, 0), // left
+                new Pose2d(13/16, -LATERAL_DISTANCE / 2, 0), // right
+                new Pose2d(FORWARD_OFFSET, -4/16, Math.toRadians(90)) // front
         ));
 
         leftEncoder = hardwareMap.dcMotor.get("leftEncoder");
         rightEncoder = hardwareMap.dcMotor.get("rightEncoder");
         frontEncoder = hardwareMap.dcMotor.get("frontEncoder");
-
+        leftEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        leftEncoder.setDirection(DcMotorSimple.Direction.REVERSE);
+        frontEncoder.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
     public static double encoderTicksToInches(int ticks) {

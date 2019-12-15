@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.drive.localizer.StandardTrackingWheelLocalizer;
 import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveREVOptimized;
 import org.openftc.revextensions2.ExpansionHubEx;
 import org.openftc.revextensions2.ExpansionHubMotor;
@@ -29,6 +30,7 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
     public Servo capstoneArm, intakeGrabber;
     public Rev2mDistanceSensor frontLeftDistance, frontRightDistance, rightDistance, leftDistance;
     public ModernRoboticsI2cRangeSensor backDistance, frontDistance;
+    public DcMotor leftEncoder, rightEncoder, frontEncoder;
 
     ElapsedTime global_timer;
     String last_tag_for_logging;
@@ -61,6 +63,15 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         backDistance = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "back distance");
         frontDistance = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "front distance");
 
+        leftEncoder = hardwareMap.dcMotor.get("leftEncoder");
+        rightEncoder = hardwareMap.dcMotor.get("rightEncoder");
+        frontEncoder = hardwareMap.dcMotor.get("frontEncoder");
+        leftEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        leftEncoder.setDirection(DcMotorSimple.Direction.REVERSE);
+        frontEncoder.setDirection(DcMotorSimple.Direction.REVERSE);
+
         verticalExtender.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         verticalExtender.setTargetPosition(0);
         verticalExtender.setPower(1);
@@ -76,7 +87,7 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         horizontalExtender.setDirection(Servo.Direction.REVERSE);
         intakeGrabber.setDirection(Servo.Direction.REVERSE);
 
-        //setLocalizer(new StandardTrackingWheelLocalizer(hardwareMap));
+        setLocalizer(new StandardTrackingWheelLocalizer(hardwareMap));
 
         horizontalExtender.scaleRange(1 - 0.37, 1 - 0.13); // actually limit 0.37
 
@@ -130,7 +141,7 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
     public void turnToRadians(double angle) {
         turnToRadians(angle, getRawExternalHeading());
     }
-    protected void turnToRadians(double angle, double currentAngle) {
+    public void turnToRadians(double angle, double currentAngle) {
         log("turnToRadians: angle" + Math.toDegrees(angle) + ", currentAngle:" + Math.toDegrees(currentAngle));
         angle = Math.toDegrees(angle) - Math.toDegrees(currentAngle);
         while (angle < -180) {

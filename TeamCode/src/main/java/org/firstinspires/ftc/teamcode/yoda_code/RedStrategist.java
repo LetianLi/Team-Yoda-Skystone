@@ -44,7 +44,7 @@ public class RedStrategist extends StrategistBase {
     public void grabSkyStone() {
         drive.setLogTag("grabSkyStone");
         drive.setPoseEstimate(new Pose2d(-33, -63, Math.toRadians(180)));
-        moveSkystoneArms(ArmSide.FRONT, ArmStage.PREPARE);
+        moveSkystoneArms(ArmSide.FRONT, ArmStage.OPENGRABBER);
 
         drive.strafeRight(RIGHT_TO_STONE);
         drive.turnToRadians(0);
@@ -90,7 +90,7 @@ public class RedStrategist extends StrategistBase {
         double expected_distance_to_wall = getExpectedDistanceToWall(opMode.getSkystonePos());
         moveForwardToDistance(expected_distance_to_wall,  10);
 
-        moveSkystoneArms(ArmSide.FRONT, ArmStage.PREPARE);
+        moveSkystoneArms(ArmSide.FRONT, ArmStage.OPENGRABBER);
         drive.turnToRadians(0);
         // move right until 2" close to the skystone
         moveRightToDistance(2, true, 5);

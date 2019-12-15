@@ -67,7 +67,7 @@ public class ManualDrive extends LinearOpMode {
             moveFoundationServo();
             controlSkystoneGrabbers();
 
-//            telemetry.addData("Encoders", "Left %d, Right %d, Front %d", drive.leftEncoder.getCurrentPosition(), drive.rightEncoder.getCurrentPosition(), drive.frontEncoder.getCurrentPosition());
+            telemetry.addData("Encoders", "Left %d, Right %d, Front %d", drive.leftEncoder.getCurrentPosition(), drive.rightEncoder.getCurrentPosition(), drive.frontEncoder.getCurrentPosition());
             telemetry.addData("Speed co-efficients", "turn %.2f   ||   entire %.2f", TURNING_SPEED, speed_multiplier);
             telemetry.addData("Encoder values, lf, lr, rr, rf", drive.getWheelPositions());
             //disable because they are slow

@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.yoda_code.YodaMecanumDrive;
 /*
  * This is a simple routine to test turning capabilities.
  */
-@Disabled
+//@Disabled
 @Config
 @Autonomous(group = "drive")
 public class TurnTest extends LinearOpMode {
@@ -24,6 +24,12 @@ public class TurnTest extends LinearOpMode {
 
         if (isStopRequested()) return;
 
-        drive.turnSync(Math.toRadians(ANGLE));
+        drive.turn(Math.toRadians(ANGLE));
+        while (!isStopRequested()) {
+            telemetry.addData("IMU", Math.toDegrees(drive.getRawExternalHeading()));
+            telemetry.addData("Heading", Math.toDegrees(drive.getPoseEstimate().getHeading()));
+            telemetry.update();
+            drive.update();
+        }
     }
 }
