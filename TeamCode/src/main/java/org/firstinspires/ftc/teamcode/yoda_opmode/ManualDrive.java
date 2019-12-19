@@ -56,6 +56,8 @@ public class ManualDrive extends LinearOpMode {
         if (isStopRequested()) return;
         ElapsedTime op_timer = new ElapsedTime();
 
+        drive.intakeGrabber.setPosition(0.4); // open, set power so that it does not go down
+
         while (!isStopRequested()) {
             op_timer.reset();
 

@@ -190,11 +190,15 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
 
                 fieldOverlay.setStroke("#F44336");
                 double t = follower.elapsedTime();
-                DashboardUtil.drawRobot(fieldOverlay, trajectory.get(t));
+//                DashboardUtil.drawRobot(fieldOverlay, trajectory.get(t)); // The planned robot location
+                DashboardUtil.drawRobot(fieldOverlay, currentPose); // The current robot location
 
                 fieldOverlay.setStroke("#3F51B5");
-                fieldOverlay.fillCircle(currentPose.getX(), currentPose.getY(), 3);
+//                fieldOverlay.fillCircle(currentPose.getX(), currentPose.getY(), 3); // The current robot location
+                fieldOverlay.fillCircle(trajectory.get(t).getX(), trajectory.get(t).getY(), 3); // The planned robot location
 
+                fieldOverlay.setStroke("#D0D0D0");
+                DashboardUtil.drawHeading(fieldOverlay, trajectory.get(t), 2.5); // Draws heading on the planned location
                 if (!follower.isFollowing()) {
                     mode = Mode.IDLE;
                     setDriveSignal(new DriveSignal());

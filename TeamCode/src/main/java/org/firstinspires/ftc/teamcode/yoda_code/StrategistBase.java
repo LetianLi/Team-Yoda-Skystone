@@ -44,6 +44,13 @@ public abstract class StrategistBase {
 
     public abstract void moveFoundationBackAndPark();
 
+    public void resetSkystoneArms() {
+        drive.skystoneArmFront.setPosition(0);
+        drive.skystoneArmBack.setPosition(0);
+        drive.skystoneGrabberFront.setPosition(0);
+        drive.skystoneGrabberBack.setPosition(0);
+    }
+
     public void moveSkystoneArms(ArmSide side, ArmStage stage) {
         Servo targetArm = (side == ArmSide.FRONT) ? drive.skystoneArmFront : drive.skystoneArmBack;
         Servo targetGrabber = (side == ArmSide.FRONT) ? drive.skystoneGrabberFront : drive.skystoneGrabberBack;

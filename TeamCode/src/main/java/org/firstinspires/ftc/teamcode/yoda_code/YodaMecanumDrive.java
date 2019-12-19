@@ -246,7 +246,7 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         capstoneArm.setPosition(0.25);
 
         // Intake Grabber
-//        intakeGrabber.setPosition(0.6);
+        intakeGrabber.setPosition(0.6);
 
         // Horizontal Extender
 //        horizontalExtender.setPosition(0);
