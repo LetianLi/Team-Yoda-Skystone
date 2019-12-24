@@ -31,10 +31,12 @@ public class StraightTest extends LinearOpMode {
 
         drive.followTrajectory(trajectory);
         while (!isStopRequested()) {
+            drive.update();
             telemetry.addData("IMU", Math.toDegrees(drive.getRawExternalHeading()));
             telemetry.addData("Heading", Math.toDegrees(drive.getPoseEstimate().getHeading()));
+            telemetry.addData("X", drive.getPoseEstimate().getX());
+            telemetry.addData("Y", drive.getPoseEstimate().getY());
             telemetry.update();
-            drive.update();
         }
     }
 }

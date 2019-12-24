@@ -95,6 +95,14 @@ public class OpencvDetector {
         return valLeft+"   "+valMid+"   "+valRight;
     }
 
+    public double getNumberOfSkystones() {
+        double numberOfSkystones = 0;
+        if (valLeft == 0) numberOfSkystones++;
+        if (valMid == 0) numberOfSkystones++;
+        if (valRight == 0) numberOfSkystones++;
+        return numberOfSkystones;
+    }
+
     //detection pipeline
     static class StageSwitchingPipeline extends OpenCvPipeline
     {
@@ -210,27 +218,18 @@ public class OpencvDetector {
                             input.rows()*(rightPos[1]+rectHeight/2)),
                     new Scalar(0, 255, 0), 3);
 
-            switch (stageToRenderToViewport)
-            {
+            switch (stageToRenderToViewport) {
                 case THRESHOLD:
-                {
                     return thresholdMat;
-                }
 
                 case detection:
-                {
                     return all;
-                }
 
                 case RAW_IMAGE:
-                {
                     return input;
-                }
 
                 default:
-                {
                     return input;
-                }
             }
         }
 

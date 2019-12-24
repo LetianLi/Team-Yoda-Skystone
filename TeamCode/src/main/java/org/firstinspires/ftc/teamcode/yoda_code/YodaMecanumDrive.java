@@ -1,9 +1,8 @@
 package org.firstinspires.ftc.teamcode.yoda_code;
 
-import android.util.Log;
-
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
+import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -19,7 +18,6 @@ import org.openftc.revextensions2.ExpansionHubMotor;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
     public ExpansionHubEx hub2;
@@ -27,19 +25,20 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
     public Servo horizontalExtender;
     public Servo foundationMoverLeft, foundationMoverRight;
     public Servo skystoneGrabberFront, skystoneArmFront, skystoneGrabberBack, skystoneArmBack;
-    public Servo capstoneArm, intakeGrabber;
+    public Servo parkingArm, intakeGrabber, capstoneArm;
     public Rev2mDistanceSensor frontLeftDistance, frontRightDistance, rightDistance, leftDistance;
     public ModernRoboticsI2cRangeSensor backDistance, frontDistance;
     public DcMotor leftEncoder, rightEncoder, frontEncoder;
+    public RevBlinkinLedDriver led;
 
-    ElapsedTime global_timer;
-    String last_tag_for_logging;
+//    ElapsedTime global_timer;
+//    String last_tag_for_logging;
 
     public YodaMecanumDrive(HardwareMap hardwareMap) {
         super(hardwareMap);
 
         global_timer = new ElapsedTime();
-        last_tag_for_logging = "";
+//        last_tag_for_logging = "";
 
         hub2 = hardwareMap.get(ExpansionHubEx.class, "Secondary Hub id: 2");
 
@@ -53,8 +52,9 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         skystoneGrabberBack = hardwareMap.get(Servo.class, "back skystone grabber");
         skystoneArmFront = hardwareMap.get(Servo.class, "front skystone arm");
         skystoneArmBack = hardwareMap.get(Servo.class, "back skystone arm");
-        capstoneArm = hardwareMap.get(Servo.class, "capstone arm");
+        parkingArm = hardwareMap.get(Servo.class, "parking arm");
         intakeGrabber = hardwareMap.get(Servo.class, "intake grabber");
+        capstoneArm = hardwareMap.get(Servo.class, "capstone arm");
 
         frontLeftDistance = hardwareMap.get(Rev2mDistanceSensor.class, "front left distance");
         frontRightDistance = hardwareMap.get(Rev2mDistanceSensor.class, "front right distance");
@@ -62,6 +62,16 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         leftDistance = hardwareMap.get(Rev2mDistanceSensor.class, "left distance");
         backDistance = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "back distance");
         frontDistance = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "front distance");
+
+        led = hardwareMap.get(RevBlinkinLedDriver.class, "led");
+/*
+ *      Can't find skystone, or too many skystones: CP2_LARSON_SCANNER,
+ *      Left: RED
+ *      Middle: GREEN
+ *      Right: BLUE
+ *
+ *      Slow mode: RED
+*/
 
         leftEncoder = hardwareMap.dcMotor.get("leftEncoder");
         rightEncoder = hardwareMap.dcMotor.get("rightEncoder");
@@ -81,11 +91,12 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
 
         foundationMoverRight.setDirection(Servo.Direction.REVERSE);
         foundationMoverLeft.setDirection(Servo.Direction.REVERSE);
-        capstoneArm.setDirection(Servo.Direction.REVERSE);
+        parkingArm.setDirection(Servo.Direction.REVERSE);
         skystoneArmFront.setDirection(Servo.Direction.REVERSE);
         skystoneGrabberFront.setDirection(Servo.Direction.REVERSE);
         horizontalExtender.setDirection(Servo.Direction.REVERSE);
         intakeGrabber.setDirection(Servo.Direction.REVERSE);
+        capstoneArm.setDirection(Servo.Direction.REVERSE);
 
         setLocalizer(new StandardTrackingWheelLocalizer(hardwareMap));
 
@@ -93,6 +104,8 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
 
         skystoneArmFront.scaleRange(1 - 0.33, 1);
         skystoneArmBack.scaleRange(0, 0.33);
+
+        capstoneArm.scaleRange(0.65, 1);
 
         foundationMoverLeft.scaleRange(0.4, 1);
         foundationMoverRight.scaleRange(0.4, 1);
@@ -102,13 +115,13 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         global_timer.reset();
     }
 
-    public void log(String message) {
-        Log.i("Yoda","(" + global_timer.time(TimeUnit.MILLISECONDS) + "ms)"+last_tag_for_logging + " | " + message);
-    }
+//    public void log(String message) {
+//        Log.i("Yoda","(" + global_timer.time(TimeUnit.MILLISECONDS) + "ms)"+last_tag_for_logging + " | " + message);
+//    }
 
-    public void setLogTag(String tag) {
-        last_tag_for_logging = tag;
-    }
+//    public void setLogTag(String tag) {
+//        last_tag_for_logging = tag;
+//    }
 
     public void strafeRight(double inches) {
         log("strafeRight:" + inches);
@@ -242,13 +255,20 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         foundationMoverLeft.setPosition(0);
         foundationMoverRight.setPosition(0);
 
+        // Parking Arm
+        parkingArm.setPosition(0.25);
+
         // Capstone Arm
-        capstoneArm.setPosition(0.25);
+        capstoneArm.setPosition(0);
 
         // Intake Grabber
         intakeGrabber.setPosition(0.6);
 
         // Horizontal Extender
 //        horizontalExtender.setPosition(0);
+    }
+
+    public void turnLedOff() {
+        led.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLACK);
     }
 }

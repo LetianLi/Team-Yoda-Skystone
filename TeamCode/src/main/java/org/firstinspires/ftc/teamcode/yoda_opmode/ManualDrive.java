@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode.yoda_opmode;
 
 import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -15,14 +15,14 @@ import java.util.List;
 public class ManualDrive extends LinearOpMode {
     private YodaMecanumDrive drive;
     private FtcDashboard dashboard = FtcDashboard.getInstance();
-    private boolean[] pressed = new boolean[6];
+    private boolean[] pressed = new boolean[7];
 
     private double speed_multiplier = 1;
     private boolean isSlowMode = false;
     private double GLOBAL_SPEED_MULTIPLIER = 1.4; //change to 1.0 for now but it only get 0.7 power. Try using 1.4, but it disables other directions
     private double SLOW_MODE_MULTIPLIER = 0.5;
     private double TURNING_SPEED = 1;
-    private double DPAD_SPEED = 0.2;
+    private double DPAD_SPEED = 0.2 * 5;
 
     private String stoneGrabberMode = "|| \n|";
     private String capstoneArmMode = "Stored";
@@ -37,7 +37,8 @@ public class ManualDrive extends LinearOpMode {
 
     private double horizontalPosition = 0;
     private double previousHorizontalPos = -1;
-    private final double placingHorizontalPos = 0.9;
+    private final double placingHorizontalPos = 0.75;
+    private RevBlinkinLedDriver.BlinkinPattern lastPattern;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -45,8 +46,8 @@ public class ManualDrive extends LinearOpMode {
         drive.setOpMode(this);
         drive.resetTimer();
         // telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
-        horizontalPosition = 1;
-        previousHorizontalPos = 1;
+        horizontalPosition = 0.99;
+        previousHorizontalPos = 0.99;
 
         telemetry.addLine("Ready!");
         telemetry.update();
@@ -68,6 +69,8 @@ public class ManualDrive extends LinearOpMode {
             controlHorizontalExtender();
             moveFoundationServo();
             controlSkystoneGrabbers();
+            controlParkingArm();
+            resetStuff();
 
             telemetry.addData("Encoders", "Left %d, Right %d, Front %d", drive.leftEncoder.getCurrentPosition(), drive.rightEncoder.getCurrentPosition(), drive.frontEncoder.getCurrentPosition());
             telemetry.addData("Speed co-efficients", "turn %.2f   ||   entire %.2f", TURNING_SPEED, speed_multiplier);
@@ -77,22 +80,10 @@ public class ManualDrive extends LinearOpMode {
 //            telemetry.addData("Front Angle", Math.toDegrees(drive.getAngleToFront()));
             telemetry.addData("Capstone Arm", capstoneArmMode);
 //            telemetry.addData("Stone Grabber", "\n" + stoneGrabberMode + "\n|");
-            telemetry.addData("Horizontal Pos", drive.horizontalExtender.getPosition());
+            telemetry.addData("Horizontal Pos", horizontalPosition);
             telemetry.addData("Vertical Pos", drive.verticalExtender.getCurrentPosition());
             telemetry.addData("Latency", op_timer.milliseconds());
             telemetry.update();
-        }
-    }
-
-    private void moveFoundationServo() {
-        if (gamepad1.left_trigger >= 0.5 || gamepad1.right_trigger >= 0.5) {
-            drive.foundationMoverLeft.setPosition(1);
-            drive.foundationMoverRight.setPosition(1);
-            drive.intakeGrabber.setPosition(0.52);
-        }
-        else {
-            drive.foundationMoverLeft.setPosition(0);
-            drive.foundationMoverRight.setPosition(0);
         }
     }
 
@@ -169,16 +160,18 @@ public class ManualDrive extends LinearOpMode {
 
         if ((isSlowMode && !dpad_pressed)|| gamepad2.y) {
             speed_multiplier = SLOW_MODE_MULTIPLIER;
+            setLed(RevBlinkinLedDriver.BlinkinPattern.RED);
         } else {
             speed_multiplier = 1 * GLOBAL_SPEED_MULTIPLIER;
+            setLed(RevBlinkinLedDriver.BlinkinPattern.BLACK);
         }
 
         if ((gamepad2.left_trigger > 0.9 || gamepad2.right_trigger > 0.9) && input_y > 0) {
             if (drive.frontLeftDistance.getDistance(DistanceUnit.INCH) < 10 || drive.frontRightDistance.getDistance(DistanceUnit.INCH) < 10) {
                 input_y = 0;
+                setLed(RevBlinkinLedDriver.BlinkinPattern.DARK_RED);
             }
         }
-
 
         double r = Math.hypot(input_x, input_y);
         double robotAngle = Math.atan2(input_y, input_x) - Math.PI / 4;
@@ -200,6 +193,17 @@ public class ManualDrive extends LinearOpMode {
 //        drive.log("");
     }
 
+    private void moveFoundationServo() {
+        if (gamepad1.left_trigger >= 0.5 || gamepad1.right_trigger >= 0.5) {
+            drive.foundationMoverLeft.setPosition(1);
+            drive.foundationMoverRight.setPosition(1);
+        }
+        else {
+            drive.foundationMoverLeft.setPosition(0);
+            drive.foundationMoverRight.setPosition(0);
+        }
+    }
+
     private void controlIntakeGrabber() {
         if (gamepad2.left_bumper || gamepad2.a) drive.intakeGrabber.setPosition(0); // close
         if (gamepad2.right_bumper || gamepad2.b) {
@@ -212,31 +216,37 @@ public class ManualDrive extends LinearOpMode {
     }
 
     private void controlCapstone() {
-        if (gamepad2.x && !pressed[3]) {
+        if (gamepad1.b && !pressed[6]) {
             if (capstoneArmMode == "Stored") capstoneArmMode = "Ready";
-            else if (capstoneArmMode == "Ready") capstoneArmMode = "Dropping";
-            else if (capstoneArmMode == "Dropping") capstoneArmMode = "Dropped";
+            else if (capstoneArmMode == "Ready") capstoneArmMode = "Dropped";
             else if (capstoneArmMode == "Dropped") capstoneArmMode = "Stored";
+            pressed[6] = true;
+        } else if (!gamepad1.b && pressed[6]) {
+            pressed[6] = false;
+        }
+
+        if (capstoneArmMode == "Stored") {
+            drive.capstoneArm.setPosition(0);
+        } else if (capstoneArmMode == "Ready") {
+            drive.capstoneArm.setPosition(0.8);
+        } else if (capstoneArmMode == "Dropped") {
+            drive.capstoneArm.setPosition(1);
+        }
+    }
+
+    private void controlParkingArm() {
+        if (gamepad2.x && !pressed[3]) {
+            if (drive.parkingArm.getPosition() == 0.99) {
+                drive.parkingArm.setPosition(0.25);
+            }
+            else {
+                drive.parkingArm.setPosition(0.99);
+                drive.intakeGrabber.setPosition(0.52);
+            }
             pressed[3] = true;
         } else if (!gamepad2.x && pressed[3]) {
             pressed[3] = false;
         }
-        if (capstoneArmMode == "Dropping" && drive.capstoneArm.getPosition() >= 0.988)
-            capstoneArmMode = "Dropped";
-
-        if (capstoneArmMode == "Stored") {
-            drive.capstoneArm.setPosition(0.25);
-        } else if (capstoneArmMode == "Ready") {
-            drive.capstoneArm.setPosition(0.92);
-            drive.intakeGrabber.setPosition(0.45);
-            drive.horizontalExtender.setPosition(0);
-            horizontalPosition = 0;
-        } else if (capstoneArmMode == "Dropping") {
-            drive.capstoneArm.setPosition(drive.capstoneArm.getPosition() + 0.002);
-        } else if (capstoneArmMode == "Dropped") {
-            drive.capstoneArm.setPosition(0.99);
-        }
-
     }
 
     private void controlVerticalExtender() {
@@ -321,5 +331,21 @@ public class ManualDrive extends LinearOpMode {
             drive.skystoneGrabberBack.setPosition(1);
         }
 
+    }
+
+    private void setLed(RevBlinkinLedDriver.BlinkinPattern pattern) {
+        if (lastPattern != pattern) drive.led.setPattern(pattern);
+        lastPattern = pattern;
+    }
+
+    private void resetStuff() {
+        if (gamepad2.y) {
+            stoneGrabberMode = "|| \n|";
+            horizontalPosition = 0;
+            drive.parkingArm.setPosition(0.25);
+            drive.intakeGrabber.setPosition(0.6);
+            verticalPosition = 0;
+            capstoneArmMode = "Stored";
+        }
     }
 }

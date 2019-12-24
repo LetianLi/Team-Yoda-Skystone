@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.yoda_code;
 
 
+import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -66,6 +67,17 @@ public abstract class AutonomousBase extends LinearOpMode {
             telemetry.addData("Left Distance", drive.getLeftDistance());
             telemetry.addData("Right Distance", drive.getRightDistance());
             telemetry.update();
+
+            if (detector.getNumberOfSkystones() == 1) {
+                if (skystonePos == SkystonePos.LEFT) drive.led.setPattern(RevBlinkinLedDriver.BlinkinPattern.RED);
+                else if (skystonePos == SkystonePos.MIDDLE) drive.led.setPattern(RevBlinkinLedDriver.BlinkinPattern.GREEN);
+                else if (skystonePos == SkystonePos.RIGHT) drive.led.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE);
+            }
+            else {
+                if (teamColor == TeamColor.RED) drive.led.setPattern(RevBlinkinLedDriver.BlinkinPattern.CP2_LARSON_SCANNER);
+                else if (teamColor == TeamColor.BLUE) drive.led.setPattern(RevBlinkinLedDriver.BlinkinPattern.CP1_LARSON_SCANNER);
+            }
+
             idle();
             sleep(200);
         }

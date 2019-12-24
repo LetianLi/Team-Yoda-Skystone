@@ -28,17 +28,19 @@ public class StrafeTest extends LinearOpMode {
 
         if (isStopRequested()) return;
 
-        drive.followTrajectory(drive.trajectoryBuilder()
-                .strafeTo(new Vector2d(X, Y))
-                .build());
-
         while (!isStopRequested()) {
-            telemetry.addData("IMU", Math.toDegrees(drive.getRawExternalHeading()));
-            telemetry.addData("Heading", Math.toDegrees(drive.getPoseEstimate().getHeading()));
-            telemetry.addData("X", drive.getPoseEstimate().getX());
-            telemetry.addData("Y", drive.getPoseEstimate().getY());
-            telemetry.update();
-            drive.update();
+            drive.followTrajectory(drive.trajectoryBuilder()
+                    .strafeTo(new Vector2d(X, Y))
+                    .build());
+
+            while (!gamepad1.a && !isStopRequested()) {
+                drive.update();
+                telemetry.addData("IMU", Math.toDegrees(drive.getRawExternalHeading()));
+                telemetry.addData("Heading", Math.toDegrees(drive.getPoseEstimate().getHeading()));
+                telemetry.addData("X", drive.getPoseEstimate().getX());
+                telemetry.addData("Y", drive.getPoseEstimate().getY());
+                telemetry.update();
+            }
         }
     }
 }

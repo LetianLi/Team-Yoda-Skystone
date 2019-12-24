@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.drive.mecanum;
 
+import android.util.Log;
+
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.BASE_CONSTRAINTS;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.TRACK_WIDTH;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kA;
@@ -27,10 +29,13 @@ import com.acmerobotics.roadrunner.trajectory.constraints.MecanumConstraints;
 import com.acmerobotics.roadrunner.util.NanoClock;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.util.ElapsedTime;
+
 import org.firstinspires.ftc.teamcode.util.DashboardUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /*
  * Base class with shared functionality for sample mecanum drives. All hardware-specific details are
@@ -39,8 +44,9 @@ import java.util.List;
 @Config
 public abstract class SampleMecanumDriveBase extends MecanumDrive {
     protected LinearOpMode opMode;
-    public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(1.15, 0, 0.1);
-    public static PIDCoefficients HEADING_PID = new PIDCoefficients(0.95, 0, 0);
+    public static PIDCoefficients AXIAL_PID = new PIDCoefficients(1.26, 0, 0.1); // X
+    public static PIDCoefficients LATERAL_PID = new PIDCoefficients(1.7, 0, 0); // Y
+    public static PIDCoefficients HEADING_PID = new PIDCoefficients(3.2, 0, 0); // Heading
 
 
     public enum Mode {
@@ -63,6 +69,8 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
 
     private List<Double> lastWheelPositions;
     private double lastTimestamp;
+    public ElapsedTime global_timer;
+    public String last_tag_for_logging;
 
     public SampleMecanumDriveBase() {
         super(kV, kA, kStatic, TRACK_WIDTH);
@@ -78,7 +86,7 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
         turnController.setInputBounds(0, 2 * Math.PI);
 
         constraints = new MecanumConstraints(BASE_CONSTRAINTS, TRACK_WIDTH);
-        follower = new HolonomicPIDVAFollower(TRANSLATIONAL_PID, TRANSLATIONAL_PID, HEADING_PID);
+        follower = new HolonomicPIDVAFollower(AXIAL_PID, LATERAL_PID, HEADING_PID);
     }
 
     public TrajectoryBuilder trajectoryBuilder() {
@@ -99,8 +107,10 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
     }
 
     public void turnSync(double angle) {
+        log("Turn - Start Position: " + getPoseEstimate().toString());
         turn(angle);
         waitForIdle();
+        log("Turn - End Position: " + getPoseEstimate().toString());
     }
 
     public void followTrajectory(Trajectory trajectory) {
@@ -109,8 +119,10 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
     }
 
     public void followTrajectorySync(Trajectory trajectory) {
+        log("Trajectory - Start Position: " + getPoseEstimate().toString() + " --- IMU " + getRawExternalHeading());
         followTrajectory(trajectory);
         waitForIdle();
+        log("Trajectory - End Position: " + getPoseEstimate().toString() + " --- IMU " + getRawExternalHeading());
     }
 
     public Pose2d getLastError() {
@@ -251,5 +263,11 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
 
     public abstract void setPIDCoefficients(DcMotor.RunMode runMode, PIDCoefficients coefficients);
 
+    public void log(String message) {
+        Log.i("Yoda","(" + global_timer.time(TimeUnit.MILLISECONDS) + "ms)" + last_tag_for_logging + " | " + message);
+    }
 
+    public void setLogTag(String tag) {
+        last_tag_for_logging = tag;
+    }
 }
