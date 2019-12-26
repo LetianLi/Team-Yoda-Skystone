@@ -26,6 +26,9 @@ public class LocalizationTest extends LinearOpMode {
     public static double VY_WEIGHT = 1;
     public static double OMEGA_WEIGHT = 1;
     public static double DISTANCE = 10;
+    public static double STARTINGX = -32;
+    public static double STARTINGY = 61.5;
+    public static double STARTINGHEADINGDEG = 0;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -33,7 +36,7 @@ public class LocalizationTest extends LinearOpMode {
         boolean braking = false;
 
         YodaMecanumDrive drive = new YodaMecanumDrive(hardwareMap);
-        drive.setPoseEstimate(new Pose2d());
+        drive.setPoseEstimate(new Pose2d(STARTINGX, STARTINGY, Math.toRadians(STARTINGHEADINGDEG)));
         drive.resetServos();
         waitForStart();
 
@@ -86,6 +89,7 @@ public class LocalizationTest extends LinearOpMode {
 //            telemetry.addData("Encoder values, lf, lr, rr, rf", drive.getWheelPositions());
             telemetry.addData("x", poseEstimate.getX());
             telemetry.addData("y", poseEstimate.getY());
+            telemetry.addData("Calculated Y", STARTINGY - drive.getLeftDistance() * Math.cos(Math.abs(drive.getPoseEstimate().getHeading())) + (5 + 3.0/4.0) * Math.sin(Math.abs(drive.getPoseEstimate().getHeading())));
             telemetry.addData("heading", Math.toDegrees(poseEstimate.getHeading()));
             telemetry.addData("IMU", Math.toDegrees(drive.getRawExternalHeading()));
             telemetry.addData("Braking", braking);

@@ -26,8 +26,9 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
     public Servo foundationMoverLeft, foundationMoverRight;
     public Servo skystoneGrabberFront, skystoneArmFront, skystoneGrabberBack, skystoneArmBack;
     public Servo parkingArm, intakeGrabber, capstoneArm;
-    public Rev2mDistanceSensor frontLeftDistance, frontRightDistance, rightDistance, leftDistance;
-    public ModernRoboticsI2cRangeSensor backDistance, frontDistance;
+//    public Rev2mDistanceSensor frontLeftDistance, frontRightDistance;
+    public Rev2mDistanceSensor rightDistance, leftDistance;
+//    public ModernRoboticsI2cRangeSensor backDistance, frontDistance;
     public DcMotor leftEncoder, rightEncoder, frontEncoder;
     public RevBlinkinLedDriver led;
 
@@ -38,6 +39,7 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         super(hardwareMap);
 
         global_timer = new ElapsedTime();
+        latency_timer = new ElapsedTime();
 //        last_tag_for_logging = "";
 
         hub2 = hardwareMap.get(ExpansionHubEx.class, "Secondary Hub id: 2");
@@ -56,12 +58,12 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         intakeGrabber = hardwareMap.get(Servo.class, "intake grabber");
         capstoneArm = hardwareMap.get(Servo.class, "capstone arm");
 
-        frontLeftDistance = hardwareMap.get(Rev2mDistanceSensor.class, "front left distance");
-        frontRightDistance = hardwareMap.get(Rev2mDistanceSensor.class, "front right distance");
+//        frontLeftDistance = hardwareMap.get(Rev2mDistanceSensor.class, "front left distance");
+//        frontRightDistance = hardwareMap.get(Rev2mDistanceSensor.class, "front right distance");
         rightDistance = hardwareMap.get(Rev2mDistanceSensor.class, "right distance");
         leftDistance = hardwareMap.get(Rev2mDistanceSensor.class, "left distance");
-        backDistance = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "back distance");
-        frontDistance = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "front distance");
+//        backDistance = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "back distance");
+//        frontDistance = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "front distance");
 
         led = hardwareMap.get(RevBlinkinLedDriver.class, "led");
 /*
@@ -108,11 +110,14 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         capstoneArm.scaleRange(0.65, 1);
 
         foundationMoverLeft.scaleRange(0.4, 1);
-        foundationMoverRight.scaleRange(0.4, 1);
+        foundationMoverRight.scaleRange(0.4, 0.8);
     }
 
     public void resetTimer() {
         global_timer.reset();
+    }
+    public void resetLatencyTimer() {
+        latency_timer.reset();
     }
 
 //    public void log(String message) {
@@ -201,47 +206,50 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
     }
 
     public double getAngleToFront(Telemetry telemetry) {
-        double adjacent =  10 + 1/16; // Distance between sensors, in.
-        double right = frontRightDistance.getDistance(DistanceUnit.INCH);
-        double left = frontLeftDistance.getDistance(DistanceUnit.INCH);
-
-        double opposite = right - left;
-        telemetry.addData("Distance", "Left %.2f, Right %.2f", left, right);
-        if (left > 200 || right > 200) return 0;
-
-        double angle = Math.atan(Math.abs(opposite) / adjacent);
-
-        if (opposite < 0) angle = -angle;
-
-        telemetry.addData("Angle", angle);
-        return angle;
+//        double adjacent =  10 + 1/16; // Distance between sensors, in.
+//        double right = frontRightDistance.getDistance(DistanceUnit.INCH);
+//        double left = frontLeftDistance.getDistance(DistanceUnit.INCH);
+//
+//        double opposite = right - left;
+//        telemetry.addData("Distance", "Left %.2f, Right %.2f", left, right);
+//        if (left > 200 || right > 200) return 0;
+//
+//        double angle = Math.atan(Math.abs(opposite) / adjacent);
+//
+//        if (opposite < 0) angle = -angle;
+//
+//        telemetry.addData("Angle", angle);
+//        return angle;
+        return 0;
     }
 
     public double getRightDistance() {
         return rightDistance.getDistance(DistanceUnit.INCH);
     }
 
-    public double getLeftDistance() { return leftDistance.getDistance(DistanceUnit.INCH) - 2;}
+    public double getLeftDistance() { return leftDistance.getDistance(DistanceUnit.INCH) - 1.8;}
 
     public double getBackDistance() {
-
-        double distance = backDistance.getDistance(DistanceUnit.INCH);
-        if (distance > 1000) {
-            //something is wrong
-            return -1; // todo, add log
-        }
-        // 3.5 is sensor distance to robot border
-        return distance - 3.5;
+//
+//        double distance = backDistance.getDistance(DistanceUnit.INCH);
+//        if (distance > 1000) {
+//            //something is wrong
+//            return -1; // todo, add log
+//        }
+//        // 3.5 is sensor distance to robot border
+//        return distance - 3.5;
+        return 0;
     }
 
     public double getFrontDistance() {
-        double distance = frontDistance.getDistance(DistanceUnit.INCH);
-        if (distance > 1000) {
-            //something is wrong
-            return -1; // todo, add log
-        }
-        // 1.5 is sensor distance to robot border
-        return distance - 1.5;
+//        double distance = frontDistance.getDistance(DistanceUnit.INCH);
+//        if (distance > 1000) {
+//            //something is wrong
+//            return -1; // todo, add log
+//        }
+//        // 1.5 is sensor distance to robot border
+//        return distance - 1.5;
+        return 0;
     }
 
     public void resetServos() {

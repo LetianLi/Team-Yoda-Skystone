@@ -22,7 +22,7 @@ public class ManualDrive extends LinearOpMode {
     private double GLOBAL_SPEED_MULTIPLIER = 1.4; //change to 1.0 for now but it only get 0.7 power. Try using 1.4, but it disables other directions
     private double SLOW_MODE_MULTIPLIER = 0.5;
     private double TURNING_SPEED = 1;
-    private double DPAD_SPEED = 0.2 * 5;
+    private double DPAD_SPEED = 0.2;
 
     private String stoneGrabberMode = "|| \n|";
     private String capstoneArmMode = "Stored";
@@ -166,12 +166,12 @@ public class ManualDrive extends LinearOpMode {
             setLed(RevBlinkinLedDriver.BlinkinPattern.BLACK);
         }
 
-        if ((gamepad2.left_trigger > 0.9 || gamepad2.right_trigger > 0.9) && input_y > 0) {
-            if (drive.frontLeftDistance.getDistance(DistanceUnit.INCH) < 10 || drive.frontRightDistance.getDistance(DistanceUnit.INCH) < 10) {
-                input_y = 0;
-                setLed(RevBlinkinLedDriver.BlinkinPattern.DARK_RED);
-            }
-        }
+//        if ((gamepad2.left_trigger > 0.9 || gamepad2.right_trigger > 0.9) && input_y > 0) {
+//            if (drive.frontLeftDistance.getDistance(DistanceUnit.INCH) < 10 || drive.frontRightDistance.getDistance(DistanceUnit.INCH) < 10) {
+//                input_y = 0;
+//                setLed(RevBlinkinLedDriver.BlinkinPattern.DARK_RED);
+//            }
+//        }
 
         double r = Math.hypot(input_x, input_y);
         double robotAngle = Math.atan2(input_y, input_x) - Math.PI / 4;

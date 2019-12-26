@@ -44,8 +44,8 @@ import java.util.concurrent.TimeUnit;
 @Config
 public abstract class SampleMecanumDriveBase extends MecanumDrive {
     protected LinearOpMode opMode;
-    public static PIDCoefficients AXIAL_PID = new PIDCoefficients(1.26, 0, 0.1); // X
-    public static PIDCoefficients LATERAL_PID = new PIDCoefficients(1.7, 0, 0); // Y
+    public static PIDCoefficients AXIAL_PID = new PIDCoefficients(1.75, 0, 0.07); // X
+    public static PIDCoefficients LATERAL_PID = new PIDCoefficients(1, 0, 0); // Y
     public static PIDCoefficients HEADING_PID = new PIDCoefficients(3.2, 0, 0); // Heading
 
 
@@ -70,6 +70,7 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
     private List<Double> lastWheelPositions;
     private double lastTimestamp;
     public ElapsedTime global_timer;
+    public ElapsedTime latency_timer;
     public String last_tag_for_logging;
 
     public SampleMecanumDriveBase() {
@@ -109,6 +110,7 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
     public void turnSync(double angle) {
         log("Turn - Start Position: " + getPoseEstimate().toString());
         turn(angle);
+        latency_timer.reset();
         waitForIdle();
         log("Turn - End Position: " + getPoseEstimate().toString());
     }
@@ -121,6 +123,7 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
     public void followTrajectorySync(Trajectory trajectory) {
         log("Trajectory - Start Position: " + getPoseEstimate().toString() + " --- IMU " + getRawExternalHeading());
         followTrajectory(trajectory);
+        latency_timer.reset();
         waitForIdle();
         log("Trajectory - End Position: " + getPoseEstimate().toString() + " --- IMU " + getRawExternalHeading());
     }
@@ -155,6 +158,21 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
         packet.put("xError", lastError.getX());
         packet.put("yError", lastError.getY());
         packet.put("headingError", Math.toDegrees(lastError.getHeading()));
+        packet.put("Latency", latency_timer.milliseconds());
+/*
+        setLogTag("update");
+        log("Latency:" + (int)(latency_timer.milliseconds())
+                + ",x:"+currentPose.getX()
+                +",y:"+currentPose.getY()
+                + ",heading:"+Math.toDegrees(currentPose.getHeading())
+                + ",xError:"+lastError.getX()
+                + ",yError:"+lastError.getY()
+                + ",headingError:"+ Math.toDegrees(lastError.getHeading())
+        );
+
+ */
+
+        latency_timer.reset();
 
 
         switch (mode) {

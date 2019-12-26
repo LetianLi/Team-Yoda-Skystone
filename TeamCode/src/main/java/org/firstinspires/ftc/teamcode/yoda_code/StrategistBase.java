@@ -69,7 +69,7 @@ public abstract class StrategistBase {
             case OPENGRABBER:
                 targetGrabber.setPosition(1); // open grabber
                 break;
-            case PREPARE:
+            case PREPAREARM:
                 targetArm.setPosition(0.75);
                 break;
             case GRAB:

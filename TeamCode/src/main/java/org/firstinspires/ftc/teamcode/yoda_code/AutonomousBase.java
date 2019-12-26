@@ -12,6 +12,7 @@ public abstract class AutonomousBase extends LinearOpMode {
 
     public YodaMecanumDrive drive;
     ElapsedTime op_timer;
+    ElapsedTime timer_for_led;
     protected StrategistBase strategist;
     protected TeamColor teamColor = TeamColor.UNKNOWN;
     protected boolean askTeamColor = true;
@@ -29,6 +30,7 @@ public abstract class AutonomousBase extends LinearOpMode {
         drive.setOpMode(this);
 
         op_timer = new ElapsedTime();
+        timer_for_led = new ElapsedTime();
         drive.resetServos();
 
         if (askTeamColor) {
@@ -60,18 +62,28 @@ public abstract class AutonomousBase extends LinearOpMode {
             telemetry.addData("Status", "Initialized. Wait to start");
             telemetry.addData("TeamColor", teamColor.toString());
             telemetry.addData("Values", detector.getValues());
+            if (skystonePos != detector.getSkystonePos()) {
+                timer_for_led.reset();
+            }
             skystonePos = detector.getSkystonePos();
             telemetry.addData("Skystone Pos", skystonePos);
-            telemetry.addData("Front Distance", drive.getFrontDistance());
-            telemetry.addData("Back Distance", drive.getBackDistance());
+//            telemetry.addData("Front Distance", drive.getFrontDistance());
+//            telemetry.addData("Back Distance", drive.getBackDistance());
             telemetry.addData("Left Distance", drive.getLeftDistance());
             telemetry.addData("Right Distance", drive.getRightDistance());
             telemetry.update();
 
             if (detector.getNumberOfSkystones() == 1) {
-                if (skystonePos == SkystonePos.LEFT) drive.led.setPattern(RevBlinkinLedDriver.BlinkinPattern.RED);
-                else if (skystonePos == SkystonePos.MIDDLE) drive.led.setPattern(RevBlinkinLedDriver.BlinkinPattern.GREEN);
-                else if (skystonePos == SkystonePos.RIGHT) drive.led.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE);
+                if (timer_for_led.seconds() <= 3) {
+                    if (skystonePos == SkystonePos.LEFT)
+                        drive.led.setPattern(RevBlinkinLedDriver.BlinkinPattern.RED);
+                    else if (skystonePos == SkystonePos.MIDDLE)
+                        drive.led.setPattern(RevBlinkinLedDriver.BlinkinPattern.GREEN);
+                    else if (skystonePos == SkystonePos.RIGHT)
+                        drive.led.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE);
+                } else {
+                    drive.led.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLACK);
+                }
             }
             else {
                 if (teamColor == TeamColor.RED) drive.led.setPattern(RevBlinkinLedDriver.BlinkinPattern.CP2_LARSON_SCANNER);
@@ -79,9 +91,8 @@ public abstract class AutonomousBase extends LinearOpMode {
             }
 
             idle();
-            sleep(200);
+            sleep(50);
         }
-//        detector.deactivate();
     }
 
     public SkystonePos getSkystonePos() {
@@ -93,6 +104,7 @@ public abstract class AutonomousBase extends LinearOpMode {
     }
 
     protected void askTeamColor() {
+        drive.led.setPattern(RevBlinkinLedDriver.BlinkinPattern.WHITE);
         telemetry.log().clear();
         telemetry.log().add("Please pick team color?");
         telemetry.log().add("Press (X) for BLUE, (B) for RED");
@@ -118,5 +130,8 @@ public abstract class AutonomousBase extends LinearOpMode {
             idle();
         }
         telemetry.log().clear();
+    }
+    public void deactivateDetector() {
+        detector.deactivate();
     }
 }

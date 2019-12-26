@@ -50,8 +50,8 @@ public class DashboardUtil {
         canvas.strokeLine(rightRear[0], rightRear[1], rightFront[0], rightFront[1]);
         canvas.strokeLine(rightFront[0], rightFront[1], leftFront[0], leftFront[1]);
 
-        canvas.strokeLine(leftFront[0], leftFront[1], rightRear[0], rightRear[1]);
-        canvas.strokeLine(leftRear[0], leftRear[1], rightFront[0], rightFront[1]);
+//        canvas.strokeLine(leftFront[0], leftFront[1], rightRear[0], rightRear[1]);
+//        canvas.strokeLine(leftRear[0], leftRear[1], rightFront[0], rightFront[1]);
 
         drawHeading(canvas, pose, ROBOT_RADIUS);
 //        canvas.strokeCircle(pose.getX(), pose.getY(), 2);
