@@ -16,7 +16,7 @@ import org.firstinspires.ftc.teamcode.yoda_code.YodaMecanumDrive;
 //@Disabled
 @Config
 @TeleOp(group = "drive")
-public class MadMaxTest extends LinearOpMode {
+public class ContinuousStrafeTest extends LinearOpMode {
     public static int repetitions = 10;
     public static double distance = 60;
     private YodaMecanumDrive drive;

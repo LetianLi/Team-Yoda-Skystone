@@ -72,7 +72,7 @@ public class MX_ThreeSkystone_Foundation_MoveFoundation extends AutonomousBase {
             foundationToGrab(-49 - forwardOffset + armOrder[1], getArmSide(armOrder[1]), 0);
             logCurrentPos("Grabbed 2nd stone");
 
-            shiftPoseY(1);
+            shiftPoseY(4);
             moveAndDrop(52 + armOrder[1], getArmSide(armOrder[1]));
             logCurrentPos("After dropping 2nd stone");
 
@@ -80,7 +80,7 @@ public class MX_ThreeSkystone_Foundation_MoveFoundation extends AutonomousBase {
             foundationToGrab(-26 - thirdStoneOffset + armOrder[2], getArmSide(armOrder[2]), 0);
             logCurrentPos("Grabbed 3rd stone");
 
-            moveAndDrop(43 + armOrder[2], getArmSide(armOrder[2]));
+            moveAndDrop(39 + armOrder[2], getArmSide(armOrder[2]));
 
 //            sleep(1000);
 
@@ -90,8 +90,9 @@ public class MX_ThreeSkystone_Foundation_MoveFoundation extends AutonomousBase {
 
             strategist.resetSkystoneArms(); // get arm back to position.
             drive.followTrajectorySync(drive.trajectoryBuilder()
+                    .strafeLeft(4)
                     .forward(6) // forward
-                    .addMarker(0.2, () -> { strategist.moveFoundationServos(1); return null; }) //put mover down while moving
+                    .addMarker(0.3, () -> { strategist.moveFoundationServos(1); return null; }) //put mover down while moving
                     .setReversed(true)
                     .splineTo(new Pose2d(35, 50 * negativeMultiplier, Math.toRadians(45 * negativeMultiplier))) // turn
                     .setReversed(false)
@@ -178,7 +179,7 @@ public class MX_ThreeSkystone_Foundation_MoveFoundation extends AutonomousBase {
 //                .splineTo(buildingZone)
 //                .splineTo(loadingZone)
                 .splineTo(centerLine)
-                .addMarker(centerLine.vec().minus(new Vector2d(getArmOffset(arm) + 7)), () -> { strategist.moveSkystoneArms(arm, ArmStage.OPENGRABBER); strategist.moveSkystoneArms(arm, ArmStage.PREPAREARM); return null;})
+                .addMarker(centerLine.vec().plus(new Vector2d(getArmOffset(arm) - 5)), () -> { strategist.moveSkystoneArms(arm, ArmStage.OPENGRABBER); strategist.moveSkystoneArms(arm, ArmStage.PREPAREARM); return null;})
                 .splineTo(new Pose2d(stoneX, (stoneY + 5 + y_offset) * negativeMultiplier, 0))
                 .setReversed(false)
                 .strafeTo(new Vector2d(stoneX, (stoneY) * negativeMultiplier))

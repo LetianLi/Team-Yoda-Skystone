@@ -6,7 +6,6 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.yoda_code.YodaMecanumDrive;
 
 import java.util.List;
@@ -14,12 +13,11 @@ import java.util.List;
 @TeleOp(group = "drive")
 public class ManualDrive extends LinearOpMode {
     private YodaMecanumDrive drive;
-    private FtcDashboard dashboard = FtcDashboard.getInstance();
     private boolean[] pressed = new boolean[7];
 
     private double speed_multiplier = 1;
     private boolean isSlowMode = false;
-    private double GLOBAL_SPEED_MULTIPLIER = 1.4; //change to 1.0 for now but it only get 0.7 power. Try using 1.4, but it disables other directions
+    private double FAST_MODE_MULTIPLIER = 1.4; //change to 1.0 for now but it only get 0.7 power. Try using 1.4, but it disables other directions
     private double SLOW_MODE_MULTIPLIER = 0.5;
     private double TURNING_SPEED = 1;
     private double DPAD_SPEED = 0.2;
@@ -38,7 +36,6 @@ public class ManualDrive extends LinearOpMode {
     private double horizontalPosition = 0;
     private double previousHorizontalPos = -1;
     private final double placingHorizontalPos = 0.75;
-    private RevBlinkinLedDriver.BlinkinPattern lastPattern;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -55,6 +52,7 @@ public class ManualDrive extends LinearOpMode {
         waitForStart();
 
         if (isStopRequested()) return;
+        drive.setMotorNoEncoder();
         ElapsedTime op_timer = new ElapsedTime();
 
         drive.intakeGrabber.setPosition(0.4); // open, set power so that it does not go down
@@ -141,10 +139,10 @@ public class ManualDrive extends LinearOpMode {
         }
 
         if (gamepad1.dpad_right) {
-            input_x += DPAD_SPEED;
+            input_x += 2 * DPAD_SPEED;
             dpad_pressed = true;
         } else if (gamepad1.dpad_left) {
-            input_x -= DPAD_SPEED;
+            input_x -= 2 * DPAD_SPEED;
             dpad_pressed = true;
         }
 
@@ -158,13 +156,11 @@ public class ManualDrive extends LinearOpMode {
 
         telemetry.addData("Input:", "x %.2f, y %.2f, turning %.2f", input_x, input_y, input_turning);
 
-        if ((isSlowMode && !dpad_pressed)|| gamepad2.y) {
-            speed_multiplier = SLOW_MODE_MULTIPLIER;
-            setLed(RevBlinkinLedDriver.BlinkinPattern.RED);
-        } else {
-            speed_multiplier = 1 * GLOBAL_SPEED_MULTIPLIER;
-            setLed(RevBlinkinLedDriver.BlinkinPattern.BLACK);
-        }
+        if (isSlowMode && !dpad_pressed) speed_multiplier = SLOW_MODE_MULTIPLIER;
+        else speed_multiplier = FAST_MODE_MULTIPLIER;
+
+        if (isSlowMode) drive.setLed(RevBlinkinLedDriver.BlinkinPattern.RED);
+        else drive.setLed(RevBlinkinLedDriver.BlinkinPattern.BLACK);
 
 //        if ((gamepad2.left_trigger > 0.9 || gamepad2.right_trigger > 0.9) && input_y > 0) {
 //            if (drive.frontLeftDistance.getDistance(DistanceUnit.INCH) < 10 || drive.frontRightDistance.getDistance(DistanceUnit.INCH) < 10) {
@@ -235,7 +231,7 @@ public class ManualDrive extends LinearOpMode {
     }
 
     private void controlParkingArm() {
-        if (gamepad2.x && !pressed[3]) {
+        if (gamepad2.y && !pressed[3]) {
             if (drive.parkingArm.getPosition() == 0.99) {
                 drive.parkingArm.setPosition(0.25);
             }
@@ -244,7 +240,7 @@ public class ManualDrive extends LinearOpMode {
                 drive.intakeGrabber.setPosition(0.52);
             }
             pressed[3] = true;
-        } else if (!gamepad2.x && pressed[3]) {
+        } else if (!gamepad2.y && pressed[3]) {
             pressed[3] = false;
         }
     }
@@ -333,13 +329,11 @@ public class ManualDrive extends LinearOpMode {
 
     }
 
-    private void setLed(RevBlinkinLedDriver.BlinkinPattern pattern) {
-        if (lastPattern != pattern) drive.led.setPattern(pattern);
-        lastPattern = pattern;
-    }
-
     private void resetStuff() {
-        if (gamepad2.y) {
+        if (gamepad1.x) {
+            stoneGrabberMode = "|| \n|";
+        }
+        if (gamepad2.x) {
             stoneGrabberMode = "|| \n|";
             horizontalPosition = 0;
             drive.parkingArm.setPosition(0.25);

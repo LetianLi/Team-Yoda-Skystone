@@ -13,7 +13,6 @@ import com.acmerobotics.roadrunner.profile.MotionProfileGenerator;
 import com.acmerobotics.roadrunner.profile.MotionState;
 import com.acmerobotics.roadrunner.util.NanoClock;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.RobotLog;
@@ -42,6 +41,10 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kV;
 @Autonomous(group = "drive")
 public class DriveVelocityPIDTuner extends LinearOpMode {
     public static double DISTANCE = 72;
+    public static double DELAY = 0.5;
+    public static boolean ZABSOLUTE = false;
+    public static double ZTOP = DriveConstants.BASE_CONSTRAINTS.maxVel + 10;
+    public static double ZBOTTOM = -DriveConstants.BASE_CONSTRAINTS.maxVel - 10;
 
     private static final String PID_VAR_NAME = "VELO_PID";
 
@@ -139,7 +142,7 @@ public class DriveVelocityPIDTuner extends LinearOpMode {
         addPidVariable();
 
         NanoClock clock = NanoClock.system();
-        drive.intakeGrabber.setPosition(0.52);
+        drive.intakeGrabber.setPosition(0.6);
 
         telemetry.addLine("Ready!");
         telemetry.update();
@@ -158,7 +161,7 @@ public class DriveVelocityPIDTuner extends LinearOpMode {
             // calculate and set the motor power
             double profileTime = clock.seconds() - profileStart;
 
-            if (profileTime > activeProfile.duration()) {
+            if (profileTime > activeProfile.duration() + DELAY) {
                 // generate a new profile
                 movingForwards = !movingForwards;
                 activeProfile = generateProfile(movingForwards);
@@ -171,12 +174,16 @@ public class DriveVelocityPIDTuner extends LinearOpMode {
 
             List<Double> velocities = drive.getWheelVelocities();
 
+            double absoluter = (ZABSOLUTE ? (movingForwards ? 1 : -1) : 1);
             // update telemetry
-            telemetry.addData("targetVelocity", motionState.getV());
+            telemetry.addData("targetVelocity", motionState.getV() * absoluter);
             for (int i = 0; i < velocities.size(); i++) {
-                telemetry.addData("velocity" + i, velocities.get(i));
+                telemetry.addData("velocity" + i, velocities.get(i) * absoluter);
                 telemetry.addData("error" + i, motionState.getV() - velocities.get(i));
             }
+            telemetry.addData("zero", 0);
+            telemetry.addData("zTop", ZTOP);
+            telemetry.addData("zBottom", ZBOTTOM);
             telemetry.update();
         }
 

@@ -20,10 +20,17 @@ public class StraightTest extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         YodaMecanumDrive drive = new YodaMecanumDrive(hardwareMap);
-
-        Trajectory trajectory = drive.trajectoryBuilder()
-                .forward(DISTANCE)
-                .build();
+        Trajectory trajectory;
+        if (DISTANCE < 0) {
+            trajectory = drive.trajectoryBuilder()
+                    .back(Math.abs(DISTANCE))
+                    .build();
+        }
+        else {
+            trajectory = drive.trajectoryBuilder()
+                    .forward(DISTANCE)
+                    .build();
+        }
 
         waitForStart();
 
@@ -36,6 +43,9 @@ public class StraightTest extends LinearOpMode {
             telemetry.addData("Heading", Math.toDegrees(drive.getPoseEstimate().getHeading()));
             telemetry.addData("X", drive.getPoseEstimate().getX());
             telemetry.addData("Y", drive.getPoseEstimate().getY());
+            telemetry.addData("Left Encoder", drive.leftEncoder.getCurrentPosition());
+            telemetry.addData("Right Encoder", drive.rightEncoder.getCurrentPosition());
+            telemetry.addData("Front Encoder", drive.frontEncoder.getCurrentPosition());
             telemetry.update();
         }
     }

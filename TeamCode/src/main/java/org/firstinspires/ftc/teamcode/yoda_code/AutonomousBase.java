@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.yoda_code;
 
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.yoda_enum.SkystonePos;
@@ -32,7 +33,7 @@ public abstract class AutonomousBase extends LinearOpMode {
         op_timer = new ElapsedTime();
         timer_for_led = new ElapsedTime();
         drive.resetServos();
-
+        drive.setMotorsZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         if (askTeamColor) {
             askTeamColor();
         }
@@ -47,7 +48,7 @@ public abstract class AutonomousBase extends LinearOpMode {
             requestOpModeStop();
             return;
         }
-
+        drive.setMotorsZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         telemetry.log().add("Ready!");
         telemetry.update();
         detectStoneWhileWaiting();
@@ -58,17 +59,19 @@ public abstract class AutonomousBase extends LinearOpMode {
     }
 
     protected void detectStoneWhileWaiting() {
+        String previousDetectorValues = "";
         while (!isStarted() && !isStopRequested()) {
             telemetry.addData("Status", "Initialized. Wait to start");
             telemetry.addData("TeamColor", teamColor.toString());
             telemetry.addData("Values", detector.getValues());
-            if (skystonePos != detector.getSkystonePos()) {
+            if (detector.getValues() != previousDetectorValues) {
                 timer_for_led.reset();
+                previousDetectorValues = detector.getValues();
             }
             skystonePos = detector.getSkystonePos();
             telemetry.addData("Skystone Pos", skystonePos);
-//            telemetry.addData("Front Distance", drive.getFrontDistance());
-//            telemetry.addData("Back Distance", drive.getBackDistance());
+            telemetry.addData("Front Distance", drive.getFrontDistance());
+            telemetry.addData("Back Distance", drive.getBackDistance());
             telemetry.addData("Left Distance", drive.getLeftDistance());
             telemetry.addData("Right Distance", drive.getRightDistance());
             telemetry.update();
@@ -76,18 +79,18 @@ public abstract class AutonomousBase extends LinearOpMode {
             if (detector.getNumberOfSkystones() == 1) {
                 if (timer_for_led.seconds() <= 3) {
                     if (skystonePos == SkystonePos.LEFT)
-                        drive.led.setPattern(RevBlinkinLedDriver.BlinkinPattern.RED);
+                        drive.setLed(RevBlinkinLedDriver.BlinkinPattern.RED);
                     else if (skystonePos == SkystonePos.MIDDLE)
-                        drive.led.setPattern(RevBlinkinLedDriver.BlinkinPattern.GREEN);
+                        drive.setLed(RevBlinkinLedDriver.BlinkinPattern.GREEN);
                     else if (skystonePos == SkystonePos.RIGHT)
-                        drive.led.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE);
+                        drive.setLed(RevBlinkinLedDriver.BlinkinPattern.BLUE);
                 } else {
-                    drive.led.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLACK);
+                    drive.setLed(RevBlinkinLedDriver.BlinkinPattern.BLACK);
                 }
             }
             else {
-                if (teamColor == TeamColor.RED) drive.led.setPattern(RevBlinkinLedDriver.BlinkinPattern.CP2_LARSON_SCANNER);
-                else if (teamColor == TeamColor.BLUE) drive.led.setPattern(RevBlinkinLedDriver.BlinkinPattern.CP1_LARSON_SCANNER);
+                if (teamColor == TeamColor.RED) drive.setLed(RevBlinkinLedDriver.BlinkinPattern.CP2_LARSON_SCANNER);
+                else if (teamColor == TeamColor.BLUE) drive.setLed(RevBlinkinLedDriver.BlinkinPattern.CP1_LARSON_SCANNER);
             }
 
             idle();

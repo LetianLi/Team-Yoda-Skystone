@@ -28,6 +28,9 @@ public class TurnTest extends LinearOpMode {
         while (!isStopRequested()) {
             telemetry.addData("IMU", Math.toDegrees(drive.getRawExternalHeading()));
             telemetry.addData("Heading", Math.toDegrees(drive.getPoseEstimate().getHeading()));
+            telemetry.addData("Left Encoder", drive.leftEncoder.getCurrentPosition());
+            telemetry.addData("Right Encoder", drive.rightEncoder.getCurrentPosition());
+            telemetry.addData("Front Encoder", drive.frontEncoder.getCurrentPosition());
             telemetry.update();
             drive.update();
         }

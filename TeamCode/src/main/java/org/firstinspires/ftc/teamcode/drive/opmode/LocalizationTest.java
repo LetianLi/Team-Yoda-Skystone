@@ -22,20 +22,22 @@ import org.firstinspires.ftc.teamcode.yoda_code.YodaMecanumDrive;
 @Config
 @TeleOp(group = "drive")
 public class LocalizationTest extends LinearOpMode {
-    public static double VX_WEIGHT = 1;
-    public static double VY_WEIGHT = 1;
-    public static double OMEGA_WEIGHT = 1;
+    private double VX_WEIGHT = 1;
+    private double VY_WEIGHT = 1;
+    private double OMEGA_WEIGHT = 1;
     public static double DISTANCE = 10;
     public static double STARTINGX = -32;
     public static double STARTINGY = 61.5;
     public static double STARTINGHEADINGDEG = 0;
 
+    private YodaMecanumDrive drive;
+
     @Override
     public void runOpMode() throws InterruptedException {
 //        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-        boolean braking = false;
+        boolean braking = true;
 
-        YodaMecanumDrive drive = new YodaMecanumDrive(hardwareMap);
+        drive = new YodaMecanumDrive(hardwareMap);
         drive.setPoseEstimate(new Pose2d(STARTINGX, STARTINGY, Math.toRadians(STARTINGHEADINGDEG)));
         drive.resetServos();
         waitForStart();
@@ -52,17 +54,24 @@ public class LocalizationTest extends LinearOpMode {
             if (gamepad1.x) drive.setPoseEstimate(new Pose2d());
 
             double bumperTurn = 0;
+            double extraX = 0;
+            double extraY = 0;
 
-            if (gamepad1.dpad_up) drive.forward(DISTANCE);
-            if (gamepad1.dpad_down) drive.back(DISTANCE);
-            if (gamepad1.dpad_right) drive.strafeRight(DISTANCE);
-            if (gamepad1.dpad_left) drive.strafeLeft(DISTANCE);
+//            if (gamepad1.dpad_up) drive.forward(DISTANCE);
+//            if (gamepad1.dpad_down) drive.back(DISTANCE);
+//            if (gamepad1.dpad_right) drive.strafeRight(DISTANCE);
+//            if (gamepad1.dpad_left) drive.strafeLeft(DISTANCE);
+
+            if (gamepad1.dpad_up) extraY += 0.1;
+            if (gamepad1.dpad_down) extraY-= 0.1;
+            if (gamepad1.dpad_right) extraX += 0.1;
+            if (gamepad1.dpad_left) extraX -= 0.1;
             if (gamepad1.right_bumper) bumperTurn += 0.1;
             if (gamepad1.left_bumper) bumperTurn -= 0.1;
 
             Pose2d baseVel = new Pose2d(
-                    -gamepad1.left_stick_y,
-                    -gamepad1.left_stick_x,
+                    -gamepad1.left_stick_y + extraY,
+                    -gamepad1.left_stick_x - extraX,
                     -gamepad1.right_stick_x - bumperTurn
             );
 
@@ -86,14 +95,37 @@ public class LocalizationTest extends LinearOpMode {
             drive.update();
 
             Pose2d poseEstimate = drive.getPoseEstimate();
+            double calcY = getCalculatedY(STARTINGY);
 //            telemetry.addData("Encoder values, lf, lr, rr, rf", drive.getWheelPositions());
             telemetry.addData("x", poseEstimate.getX());
             telemetry.addData("y", poseEstimate.getY());
-            telemetry.addData("Calculated Y", STARTINGY - drive.getLeftDistance() * Math.cos(Math.abs(drive.getPoseEstimate().getHeading())) + (5 + 3.0/4.0) * Math.sin(Math.abs(drive.getPoseEstimate().getHeading())));
+            telemetry.addData("Calculated y", calcY);
+            telemetry.addData("Y error", calcY - poseEstimate.getY());
             telemetry.addData("heading", Math.toDegrees(poseEstimate.getHeading()));
             telemetry.addData("IMU", Math.toDegrees(drive.getRawExternalHeading()));
             telemetry.addData("Braking", braking);
+            telemetry.addData("Left Encoder", encoderTicksToInches(drive.leftEncoder.getCurrentPosition()));
+            telemetry.addData("Right Encoder", encoderTicksToInches(drive.rightEncoder.getCurrentPosition()));
+            telemetry.addData("Front Encoder", encoderTicksToInches(drive.frontEncoder.getCurrentPosition()));
             telemetry.update();
         }
+    }
+    public static double encoderTicksToInches(int ticks) {
+        return 2.9/2.54 * 2 * Math.PI * 1 * ticks / 2880;
+    }
+
+    public double getCalculatedY(double startingY) {
+        double heading = Math.abs(drive.getPoseEstimate().getHeading());
+        double leftDist = drive.getLeftDistance();
+        double negativeMultiplier = startingY < 0 ? -1 : 1;
+        startingY += drive.middleToLeft * negativeMultiplier;
+//        if (Math.toDegrees(heading) > 30 || leftDist > 300) return getPoseEstimate().getY();
+
+        double robotToWall = (leftDist + Math.abs(drive.sensorYOffset)) * Math.cos(heading) + drive.sensorXOffset * Math.sin(heading);
+        telemetry.addData("negative", negativeMultiplier);
+        telemetry.addData("robot to wall", robotToWall);
+        telemetry.addData("sensor", leftDist);
+
+        return startingY - (robotToWall * negativeMultiplier);
     }
 }

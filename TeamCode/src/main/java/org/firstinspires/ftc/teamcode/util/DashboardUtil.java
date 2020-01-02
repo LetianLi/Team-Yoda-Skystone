@@ -44,7 +44,7 @@ public class DashboardUtil {
         leftRear = returnRotatedPoint(leftRear, pose.getHeading(), pose);
         rightRear = returnRotatedPoint(rightRear, pose.getHeading(), pose);
         rightFront = returnRotatedPoint(rightFront, pose.getHeading(), pose);
-
+        canvas.setStrokeWidth(1);
         canvas.strokeLine(leftFront[0], leftFront[1], leftRear[0], leftRear[1]);
         canvas.strokeLine(leftRear[0], leftRear[1], rightRear[0], rightRear[1]);
         canvas.strokeLine(rightRear[0], rightRear[1], rightFront[0], rightFront[1]);
@@ -52,7 +52,7 @@ public class DashboardUtil {
 
 //        canvas.strokeLine(leftFront[0], leftFront[1], rightRear[0], rightRear[1]);
 //        canvas.strokeLine(leftRear[0], leftRear[1], rightFront[0], rightFront[1]);
-
+        canvas.setStrokeWidth(2);
         drawHeading(canvas, pose, ROBOT_RADIUS);
 //        canvas.strokeCircle(pose.getX(), pose.getY(), 2);
     }

@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.yoda_code;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
@@ -19,6 +20,9 @@ import org.openftc.revextensions2.ExpansionHubMotor;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.RUN_USING_ENCODER;
+
+@Config
 public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
     public ExpansionHubEx hub2;
     public ExpansionHubMotor verticalExtender;
@@ -27,10 +31,16 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
     public Servo skystoneGrabberFront, skystoneArmFront, skystoneGrabberBack, skystoneArmBack;
     public Servo parkingArm, intakeGrabber, capstoneArm;
 //    public Rev2mDistanceSensor frontLeftDistance, frontRightDistance;
-    public Rev2mDistanceSensor rightDistance, leftDistance;
+    public Rev2mDistanceSensor rightDistance;
 //    public ModernRoboticsI2cRangeSensor backDistance, frontDistance;
+    public ModernRoboticsI2cRangeSensor leftDistance;
     public DcMotor leftEncoder, rightEncoder, frontEncoder;
     public RevBlinkinLedDriver led;
+    private RevBlinkinLedDriver.BlinkinPattern lastPattern;
+    public static double leftSensorToWall = 0;
+    public static double sensorXOffset = 0.5;
+    public static double sensorYOffset = -6;
+    public static double middleToLeft = 7.61;
 
 //    ElapsedTime global_timer;
 //    String last_tag_for_logging;
@@ -61,19 +71,11 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
 //        frontLeftDistance = hardwareMap.get(Rev2mDistanceSensor.class, "front left distance");
 //        frontRightDistance = hardwareMap.get(Rev2mDistanceSensor.class, "front right distance");
         rightDistance = hardwareMap.get(Rev2mDistanceSensor.class, "right distance");
-        leftDistance = hardwareMap.get(Rev2mDistanceSensor.class, "left distance");
+        leftDistance = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "left distance");
 //        backDistance = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "back distance");
 //        frontDistance = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "front distance");
 
         led = hardwareMap.get(RevBlinkinLedDriver.class, "led");
-/*
- *      Can't find skystone, or too many skystones: CP2_LARSON_SCANNER,
- *      Left: RED
- *      Middle: GREEN
- *      Right: BLUE
- *
- *      Slow mode: RED
-*/
 
         leftEncoder = hardwareMap.dcMotor.get("leftEncoder");
         rightEncoder = hardwareMap.dcMotor.get("rightEncoder");
@@ -109,8 +111,8 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
 
         capstoneArm.scaleRange(0.65, 1);
 
-        foundationMoverLeft.scaleRange(0.4, 1);
-        foundationMoverRight.scaleRange(0.4, 0.8);
+        foundationMoverLeft.scaleRange(0.5, 1);
+        foundationMoverRight.scaleRange(0.5, 1);
     }
 
     public void resetTimer() {
@@ -223,11 +225,11 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         return 0;
     }
 
-    public double getRightDistance() {
-        return rightDistance.getDistance(DistanceUnit.INCH);
-    }
+    public void resetLeftSensorToWall() { leftSensorToWall = leftDistance.getDistance(DistanceUnit.INCH);}
 
-    public double getLeftDistance() { return leftDistance.getDistance(DistanceUnit.INCH) - 1.8;}
+    public double getRightDistance() { return rightDistance.getDistance(DistanceUnit.INCH);}
+
+    public double getLeftDistance() { return leftDistance.getDistance(DistanceUnit.INCH) - leftSensorToWall;}
 
     public double getBackDistance() {
 //
@@ -276,7 +278,31 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
 //        horizontalExtender.setPosition(0);
     }
 
+    public void setMotorNoEncoder() {
+        for (ExpansionHubMotor motor : getMotors()) {
+            motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        }
+    }
+
     public void turnLedOff() {
         led.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLACK);
+    }
+
+    public void setLed(RevBlinkinLedDriver.BlinkinPattern pattern) {
+        if (lastPattern != pattern) led.setPattern(pattern);
+        lastPattern = pattern;
+    }
+
+    @Override
+    public double getCalculatedY(double startingY) {
+        double heading = Math.abs(getPoseEstimate().getHeading());
+        double leftDist = getLeftDistance();
+        double negativeMultiplier = startingY < 0 ? -1 : 1;
+        startingY += middleToLeft * negativeMultiplier;
+//        if (Math.toDegrees(heading) > 30 || leftDist > 300) return getPoseEstimate().getY();
+
+        double robotToWall = (leftDist + Math.abs(sensorYOffset)) * Math.cos(heading) + sensorXOffset * Math.sin(heading);
+        return startingY - (robotToWall * negativeMultiplier);
     }
 }

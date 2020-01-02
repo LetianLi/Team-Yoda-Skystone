@@ -41,12 +41,11 @@ import java.util.concurrent.TimeUnit;
  * Base class with shared functionality for sample mecanum drives. All hardware-specific details are
  * handled in subclasses.
  */
-@Config
 public abstract class SampleMecanumDriveBase extends MecanumDrive {
     protected LinearOpMode opMode;
-    public static PIDCoefficients AXIAL_PID = new PIDCoefficients(1.75, 0, 0.07); // X
-    public static PIDCoefficients LATERAL_PID = new PIDCoefficients(1, 0, 0); // Y
-    public static PIDCoefficients HEADING_PID = new PIDCoefficients(3.2, 0, 0); // Heading
+    public static PIDCoefficients AXIAL_PID = new PIDCoefficients(1.75, 0, 0.07); // X    9, 0, 0
+    public static PIDCoefficients LATERAL_PID = new PIDCoefficients(1, 0, 0); // Y 10, 0, 0
+    public static PIDCoefficients HEADING_PID = new PIDCoefficients(3.2, 0, 0); // Heading 7, 0, 0
 
 
     public enum Mode {
@@ -153,6 +152,8 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
 
         packet.put("x", currentPose.getX());
         packet.put("y", currentPose.getY());
+        packet.put("Calculated y", getCalculatedY(61.5));
+        packet.put("Y error", getCalculatedY(61.5) - currentPose.getY());
         packet.put("heading", Math.toDegrees(currentPose.getHeading()));
 
         packet.put("xError", lastError.getX());
@@ -218,17 +219,13 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
                 fieldOverlay.setStroke("4CAF50");
                 DashboardUtil.drawSampledPath(fieldOverlay, trajectory.getPath());
 
-                fieldOverlay.setStroke("#F44336");
+                fieldOverlay.setStroke("#4F61C5");
                 double t = follower.elapsedTime();
-//                DashboardUtil.drawRobot(fieldOverlay, trajectory.get(t)); // The planned robot location
+                DashboardUtil.drawRobot(fieldOverlay, trajectory.get(t));
+
+                fieldOverlay.setStroke("#F44336");
                 DashboardUtil.drawRobot(fieldOverlay, currentPose); // The current robot location
 
-                fieldOverlay.setStroke("#3F51B5");
-//                fieldOverlay.fillCircle(currentPose.getX(), currentPose.getY(), 3); // The current robot location
-                fieldOverlay.fillCircle(trajectory.get(t).getX(), trajectory.get(t).getY(), 3); // The planned robot location
-
-                fieldOverlay.setStroke("#D0D0D0");
-                DashboardUtil.drawHeading(fieldOverlay, trajectory.get(t), 2.5); // Draws heading on the planned location
                 if (!follower.isFollowing()) {
                     mode = Mode.IDLE;
                     setDriveSignal(new DriveSignal());
@@ -287,5 +284,10 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
 
     public void setLogTag(String tag) {
         last_tag_for_logging = tag;
+    }
+
+    public double getCalculatedY(double startingY) {
+        // Overriden in YodaMecanumDrive
+        return getPoseEstimate().getY();
     }
 }

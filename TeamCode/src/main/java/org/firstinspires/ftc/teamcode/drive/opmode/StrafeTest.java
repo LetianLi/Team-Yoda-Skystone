@@ -39,8 +39,14 @@ public class StrafeTest extends LinearOpMode {
                 telemetry.addData("Heading", Math.toDegrees(drive.getPoseEstimate().getHeading()));
                 telemetry.addData("X", drive.getPoseEstimate().getX());
                 telemetry.addData("Y", drive.getPoseEstimate().getY());
+                telemetry.addData("Left Encoder", encoderTicksToInches(drive.leftEncoder.getCurrentPosition()));
+                telemetry.addData("Right Encoder", encoderTicksToInches(drive.rightEncoder.getCurrentPosition()));
+                telemetry.addData("Front Encoder", encoderTicksToInches(drive.frontEncoder.getCurrentPosition()));
                 telemetry.update();
             }
         }
+    }
+    public static double encoderTicksToInches(int ticks) {
+        return 2.9/2.54 * 2 * Math.PI * 1 * ticks / 2880;
     }
 }
