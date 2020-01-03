@@ -299,7 +299,7 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         double leftDist = getLeftDistance();
         double negativeMultiplier = startingY < 0 ? -1 : 1;
         startingY += middleToLeft * negativeMultiplier;
-//        if (Math.toDegrees(heading) > 30 || leftDist > 300) return getY();
+        if ((60 < Math.toDegrees(heading) && Math.toDegrees(heading) < 360 - 60) || leftDist > 300) return getY();
 
         double robotToWall = (leftDist + Math.abs(sensorYOffset)) * Math.cos(heading) + sensorXOffset * Math.sin(heading);
 

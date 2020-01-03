@@ -231,7 +231,7 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
 
                 fieldOverlay.setStrokeWidth(1);
                 fieldOverlay.setStroke("4CAF50");
-                if (trajectory.getPath().length() > 100) {
+                if (trajectory.getPath().length() > 10000) {
                     log("trajectory length:" + trajectory.getPath().length());
                 }
                 DashboardUtil.drawSampledPath(fieldOverlay, trajectory.getPath());

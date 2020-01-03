@@ -232,12 +232,11 @@ public class ManualDrive extends LinearOpMode {
 
     private void controlParkingArm() {
         if (gamepad2.y && !pressed[3]) {
-            if (drive.parkingArm.getPosition() == 0.99) {
-                drive.parkingArm.setPosition(0.25);
+            if (drive.parkingArm.getPosition() == 1) {
+                drive.parkingArm.setPosition(0);
             }
             else {
-                drive.parkingArm.setPosition(0.99);
-                drive.intakeGrabber.setPosition(0.52);
+                drive.parkingArm.setPosition(1);
             }
             pressed[3] = true;
         } else if (!gamepad2.y && pressed[3]) {
@@ -336,7 +335,7 @@ public class ManualDrive extends LinearOpMode {
         if (gamepad2.x) {
             stoneGrabberMode = "|| \n|";
             horizontalPosition = 0;
-            drive.parkingArm.setPosition(0.25);
+            drive.parkingArm.setPosition(0);
             drive.intakeGrabber.setPosition(0.6);
             verticalPosition = 0;
             capstoneArmMode = "Stored";
