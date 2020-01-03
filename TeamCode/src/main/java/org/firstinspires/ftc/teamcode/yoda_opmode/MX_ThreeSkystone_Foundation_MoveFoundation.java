@@ -83,7 +83,7 @@ public class MX_ThreeSkystone_Foundation_MoveFoundation extends AutonomousBase {
             logCurrentPos("After dropping 2nd stone");
 
             // Grabbing 3rd stone
-            foundationToGrab(3, -26 - thirdStoneOffset + armOrder[2] * neg, getArmSide(armOrder[2]), 0);
+            foundationToGrab(3, -26 - thirdStoneOffset + armOrder[2] * neg, getArmSide(armOrder[2]), 2);
             logCurrentPos("Grabbed 3rd stone");
 
             moveAndDrop(3, 39 + armOrder[2] * neg, getArmSide(armOrder[2]));
