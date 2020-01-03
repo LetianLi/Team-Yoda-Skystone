@@ -57,7 +57,7 @@ public abstract class StrategistBase {
         // also control the other arm/grabber in prepare stage to be at stored position
         Servo theOtherArm = (side == ArmSide.BACK) ? drive.skystoneArmFront : drive.skystoneArmBack;
         Servo theOtherGrabber = (side == ArmSide.BACK) ? drive.skystoneGrabberFront : drive.skystoneGrabberBack;
-
+        drive.log("Move Skystone Arms - " + stage.toString() + " - at " + drive.getPoseEstimate().toString());
         switch (stage) {
             case RESET:
                 theOtherArm.setPosition(0);
