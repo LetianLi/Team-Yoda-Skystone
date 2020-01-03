@@ -320,8 +320,8 @@ public class ManualDrive extends LinearOpMode {
             drive.skystoneArmFront.setPosition(0);
             drive.skystoneArmBack.setPosition(0);
         } else if (stoneGrabberMode == "\n--[_]") { // Move arm back down
-            drive.skystoneArmFront.setPosition(1 - 0.15);
-            drive.skystoneArmBack.setPosition(1 - 0.15);
+            drive.skystoneArmFront.setPosition(1 - 0.14);
+            drive.skystoneArmBack.setPosition(1 - 0.14);
         } else if (stoneGrabberMode == "\n--_--") { // Release grabbers
             drive.skystoneGrabberFront.setPosition(1);
             drive.skystoneGrabberBack.setPosition(1);

@@ -119,7 +119,7 @@ public class LocalizationTest extends LinearOpMode {
         double leftDist = drive.getLeftDistance();
         double negativeMultiplier = startingY < 0 ? -1 : 1;
         startingY += drive.middleToLeft * negativeMultiplier;
-//        if (Math.toDegrees(heading) > 30 || leftDist > 300) return getPoseEstimate().getY();
+//        if (Math.toDegrees(heading) > 30 || leftDist > 300) return drive.getY();
 
         double robotToWall = (leftDist + Math.abs(drive.sensorYOffset)) * Math.cos(heading) + drive.sensorXOffset * Math.sin(heading);
         telemetry.addData("negative", negativeMultiplier);

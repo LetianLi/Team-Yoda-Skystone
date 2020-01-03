@@ -120,11 +120,27 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
     }
 
     public void followTrajectorySync(Trajectory trajectory) {
-        log("Trajectory - Start Position: " + getPoseEstimate().toString() + " --- IMU " + getRawExternalHeading());
+        log("Trajectory - Start Position: " + getPoseEstimate().toString());
+                //+ String.format("--- IMU:%.3f", Math.toDegrees(getRawExternalHeading())));
         followTrajectory(trajectory);
         latency_timer.reset();
         waitForIdle();
-        log("Trajectory - End Position: " + getPoseEstimate().toString() + " --- IMU " + getRawExternalHeading());
+        log("Trajectory - End Position: " + getPoseEstimate().toString());
+                //+ String.format("--- IMU:%.3f", Math.toDegrees(getRawExternalHeading())));
+    }
+
+    public void followTrajectorySync(Trajectory trajectory, double xTolerance, double yTolerance) {
+        log("Trajectory - Start Position: " + getPoseEstimate().toString());
+        //+ String.format("--- IMU:%.3f", Math.toDegrees(getRawExternalHeading())));
+        followTrajectory(trajectory);
+        latency_timer.reset();
+        while (!Thread.currentThread().isInterrupted() && isBusy() && !opMode.isStopRequested()) {
+            update();
+            if (xTolerance != 0) { if (getLastError().getX() > xTolerance) opMode.requestOpModeStop();}
+            if (yTolerance != 0) { if (getLastError().getY() > yTolerance) opMode.requestOpModeStop();}
+        }
+        log("Trajectory - End Position: " + getPoseEstimate().toString());
+        //+ String.format("--- IMU:%.3f", Math.toDegrees(getRawExternalHeading())));
     }
 
     public Pose2d getLastError() {
@@ -152,8 +168,6 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
 
         packet.put("x", currentPose.getX());
         packet.put("y", currentPose.getY());
-        packet.put("Calculated y", getCalculatedY(61.5));
-        packet.put("Y error", getCalculatedY(61.5) - currentPose.getY());
         packet.put("heading", Math.toDegrees(currentPose.getHeading()));
 
         packet.put("xError", lastError.getX());
@@ -217,6 +231,9 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
 
                 fieldOverlay.setStrokeWidth(1);
                 fieldOverlay.setStroke("4CAF50");
+                if (trajectory.getPath().length() > 100) {
+                    log("trajectory length:" + trajectory.getPath().length());
+                }
                 DashboardUtil.drawSampledPath(fieldOverlay, trajectory.getPath());
 
                 fieldOverlay.setStroke("#4F61C5");

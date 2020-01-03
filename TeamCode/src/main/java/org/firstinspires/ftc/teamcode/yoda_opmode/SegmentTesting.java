@@ -10,16 +10,14 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.yoda_code.AutonomousBase;
+import org.firstinspires.ftc.teamcode.yoda_enum.ArmSide;
 import org.firstinspires.ftc.teamcode.yoda_enum.TeamColor;
-
-import kotlin.Unit;
-import kotlin.jvm.functions.Function0;
 
 //@Disabled
 @Config
 @TeleOp(group = "Test", name = "Segment Testing")
 public class SegmentTesting extends AutonomousBase {
-
+    public static double position;
     @Override
     public void runOpMode() throws InterruptedException {
         askTeamColor = false;
@@ -37,6 +35,7 @@ public class SegmentTesting extends AutonomousBase {
             if (gamepad2.x) {
 
             }
+            drive.skystoneArmBack.setPosition(position);
 
             telemetry.addData("Left Distance", drive.getLeftDistance());
             telemetry.addData("Left Distance Raw", drive.leftDistance.getDistance(DistanceUnit.INCH));

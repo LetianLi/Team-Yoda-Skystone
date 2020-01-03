@@ -14,6 +14,7 @@ public abstract class AutonomousBase extends LinearOpMode {
     public YodaMecanumDrive drive;
     ElapsedTime op_timer;
     ElapsedTime timer_for_led;
+    public ElapsedTime auto_timer;
     protected StrategistBase strategist;
     protected TeamColor teamColor = TeamColor.UNKNOWN;
     protected boolean askTeamColor = true;
@@ -32,6 +33,7 @@ public abstract class AutonomousBase extends LinearOpMode {
 
         op_timer = new ElapsedTime();
         timer_for_led = new ElapsedTime();
+        auto_timer = new ElapsedTime();
         drive.resetServos();
         drive.setMotorsZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         if (askTeamColor) {
@@ -96,6 +98,7 @@ public abstract class AutonomousBase extends LinearOpMode {
             idle();
             sleep(50);
         }
+        drive.setLed(RevBlinkinLedDriver.BlinkinPattern.BLACK);
     }
 
     public SkystonePos getSkystonePos() {

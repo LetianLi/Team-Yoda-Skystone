@@ -40,7 +40,7 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
     public static double leftSensorToWall = 0;
     public static double sensorXOffset = 0.5;
     public static double sensorYOffset = -6;
-    public static double middleToLeft = 7.61;
+    public static double middleToLeft = 8.214;
 
 //    ElapsedTime global_timer;
 //    String last_tag_for_logging;
@@ -95,7 +95,6 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
 
         foundationMoverRight.setDirection(Servo.Direction.REVERSE);
         foundationMoverLeft.setDirection(Servo.Direction.REVERSE);
-        parkingArm.setDirection(Servo.Direction.REVERSE);
         skystoneArmFront.setDirection(Servo.Direction.REVERSE);
         skystoneGrabberFront.setDirection(Servo.Direction.REVERSE);
         horizontalExtender.setDirection(Servo.Direction.REVERSE);
@@ -106,13 +105,13 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
 
         horizontalExtender.scaleRange(1 - 0.37, 1 - 0.13); // actually limit 0.37
 
-        skystoneArmFront.scaleRange(1 - 0.33, 1);
-        skystoneArmBack.scaleRange(0, 0.33);
+        skystoneArmFront.scaleRange(1 - 0.28, 1);
+        skystoneArmBack.scaleRange(0, 0.28);
 
         capstoneArm.scaleRange(0.65, 1);
 
         foundationMoverLeft.scaleRange(0.5, 1);
-        foundationMoverRight.scaleRange(0.5, 1);
+        foundationMoverRight.scaleRange(0.55, 1);
     }
 
     public void resetTimer() {
@@ -207,8 +206,8 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         return Math.min(Math.max(number, min), max);
     }
 
-    public double getAngleToFront(Telemetry telemetry) {
-//        double adjacent =  10 + 1/16; // Distance between sensors, in.
+//    public double getAngleToFront(Telemetry telemetry) {
+//        double adjacent =  10 + 1.0/16.0; // Distance between sensors, in.
 //        double right = frontRightDistance.getDistance(DistanceUnit.INCH);
 //        double left = frontLeftDistance.getDistance(DistanceUnit.INCH);
 //
@@ -222,13 +221,13 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
 //
 //        telemetry.addData("Angle", angle);
 //        return angle;
-        return 0;
-    }
-
-    public void resetLeftSensorToWall() { leftSensorToWall = leftDistance.getDistance(DistanceUnit.INCH);}
-
+//    }
+//
+//    public double getGreatestBottomFrontDistance() { return Math.max(getFrontLeftDistance(), getFrontRightDistance());}
+//
+//    public double getFrontLeftDistance() { return frontLeftDistance.getDistance(DistanceUnit.INCH);}
+//    public double getFrontRightDistance() { return frontRightDistance.getDistance(DistanceUnit.INCH);}
     public double getRightDistance() { return rightDistance.getDistance(DistanceUnit.INCH);}
-
     public double getLeftDistance() { return leftDistance.getDistance(DistanceUnit.INCH) - leftSensorToWall;}
 
     public double getBackDistance() {
@@ -266,7 +265,7 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         foundationMoverRight.setPosition(0);
 
         // Parking Arm
-        parkingArm.setPosition(0.25);
+//        parkingArm.setPosition(0);
 
         // Capstone Arm
         capstoneArm.setPosition(0);
@@ -296,13 +295,24 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
 
     @Override
     public double getCalculatedY(double startingY) {
-        double heading = Math.abs(getPoseEstimate().getHeading());
+        double heading = getHeading();
         double leftDist = getLeftDistance();
         double negativeMultiplier = startingY < 0 ? -1 : 1;
         startingY += middleToLeft * negativeMultiplier;
-//        if (Math.toDegrees(heading) > 30 || leftDist > 300) return getPoseEstimate().getY();
+//        if (Math.toDegrees(heading) > 30 || leftDist > 300) return getY();
 
         double robotToWall = (leftDist + Math.abs(sensorYOffset)) * Math.cos(heading) + sensorXOffset * Math.sin(heading);
+
         return startingY - (robotToWall * negativeMultiplier);
     }
+
+    public void resetLeftSensorToWall(double startingY, double extra) {
+        leftSensorToWall = getLeftDistance() + Math.abs(sensorYOffset);
+        if (startingY >= 0) leftSensorToWall += extra;
+        else if (startingY < 0) leftSensorToWall -= extra;
+    }
+
+    public double getX() { return getPoseEstimate().getX();}
+    public double getY() { return getPoseEstimate().getY(); }
+    public double getHeading() { return getPoseEstimate().getHeading();}
 }

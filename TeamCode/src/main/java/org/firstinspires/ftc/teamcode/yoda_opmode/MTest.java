@@ -41,7 +41,7 @@ public class MTest extends AutonomousBase {
         if (strategist != null) {
 
             setUpVariables();
-            strategist.moveSkystoneArms(getArmSide(armOrder[0]), ArmStage.PREPAREARM);
+            strategist.moveSkystoneArms(getArmSide(armOrder[0]), ArmStage.LOWERARM);
             strategist.moveSkystoneArms(getArmSide(armOrder[0]), ArmStage.OPENGRABBER);
 
             drive.setLogTag("main");
@@ -173,7 +173,7 @@ public class MTest extends AutonomousBase {
 //                .splineTo(buildingZone)
 //                .splineTo(loadingZone)
                 .splineTo(centerLine)
-                .addMarker(loadingZone.vec(), () -> { strategist.moveSkystoneArms(arm, ArmStage.OPENGRABBER); strategist.moveSkystoneArms(arm, ArmStage.PREPAREARM); return null;})
+                .addMarker(loadingZone.vec(), () -> { strategist.moveSkystoneArms(arm, ArmStage.OPENGRABBER); strategist.moveSkystoneArms(arm, ArmStage.LOWERARM); return null;})
                 .splineTo(new Pose2d(stoneX, (stoneY + 5) * negativeMultiplier, 0))
                 .setReversed(false)
                 .strafeTo(new Vector2d(stoneX, stoneY * negativeMultiplier))

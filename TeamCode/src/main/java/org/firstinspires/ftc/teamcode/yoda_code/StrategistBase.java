@@ -69,19 +69,33 @@ public abstract class StrategistBase {
             case OPENGRABBER:
                 targetGrabber.setPosition(1); // open grabber
                 break;
-            case PREPAREARM:
-                targetArm.setPosition(0.75);
-                break;
-            case GRAB:
+            case LOWERARM:
                 targetArm.setPosition(1); // put down arm
-                opMode.sleep(50);
+                break;
+            case CLOSEGRABBER:
+                targetGrabber.setPosition(0);
+                break;
+            case RETRACTARM:
+                targetArm.setPosition(0);
+                break;
+            case PREPDROP:
+                targetArm.setPosition(0.45);
+                break;
+            case PREPARM:
+                targetArm.setPosition(0.8);
+                break;
+//            case PREPGRAB:
+//                targetGrabber.setPosition(0.4);
+//                break;
+
+            case GRAB:
+                targetArm.setPosition(1);
                 targetGrabber.setPosition(0); // grab it
-                opMode.sleep(500);
+                opMode.sleep(250);
                 targetArm.setPosition(0); // put arm up. No need for sleep as next step is moving robot away
                 break;
             case DROP:
-                targetArm.setPosition(1 - 0.15); // This attempts to put arm down, but no wait before opening grabber, can be deleted?
-                opMode.sleep(100);
+                targetArm.setPosition(1 - 0.16); // This attempts to put arm down
                 targetGrabber.setPosition(1); // open grabber
                 opMode.sleep(200);
                 targetArm.setPosition(0); // Put arm up
@@ -108,7 +122,7 @@ public abstract class StrategistBase {
             return maxMovementRight;
         }
         else if (distanceFromRight > currentDistance && doLeftInCase) {
-            drive.strafeLeft(distanceFromRight - currentDistance);
+            drive.strafeLeft(Math.abs(currentDistance - distanceFromRight));
         }
         return currentDistance - distanceFromRight;
     }
@@ -127,16 +141,8 @@ public abstract class StrategistBase {
         return forwardOffsetsPerPos[1];
     }
 
-    public double getX() {
-        return drive.getPoseEstimate().getX();
-    }
-    public double getY() {
-        return drive.getPoseEstimate().getY();
-    }
-    public double getHeading() {
-        return drive.getPoseEstimate().getHeading();
-    }
-    public void updatePose() {
-        drive.updatePoseEstimate();
-    }
+    public double getX() { return drive.getX();}
+    public double getY() { return drive.getY();}
+    public double getHeading() { return drive.getHeading();}
+    public void updatePose() { drive.updatePoseEstimate();}
 }
