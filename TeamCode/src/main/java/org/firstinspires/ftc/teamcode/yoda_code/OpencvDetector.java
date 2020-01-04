@@ -47,10 +47,13 @@ public class OpencvDetector {
     private static float offsetX = 0f/8f;//changing this moves the three rects and the three circles left or right, range : (-2, 2) not inclusive
     private static float offsetY = 0f/8f;//changing this moves the three rects and circles up or down, range: (-4, 4) not inclusive
 
-    private static float[] midPos = {4f/8f + offsetX, 4f/8f + offsetY};//0 = col, 1 = row
-    private static float[] leftPos = {2f/8f + offsetX, 4f/8f + offsetY};
-    private static float[] rightPos = {6f/8f + offsetX, 4f/8f + offsetY};
+    public static float[] midPos = {4f/8f + offsetX, 4f/8f + offsetY};//0 = col, 1 = row
+    public static float[] leftPos = {2f/8f + offsetX, 4f/8f + offsetY};
+    public static float[] rightPos = {6f/8f + offsetX, 4f/8f + offsetY};
     //moves all rectangles right or left by amount. units are in ratio to monitor
+
+    public static int movablePos = -1;
+    public static double movingResolution = 0.01;
 
     private final int rows = 640;
     private final int cols = 480;
@@ -190,6 +193,8 @@ public class OpencvDetector {
             if (valRight == 0) Imgproc.putText(all, "S", new Point((int)(input.cols()* rightPos[0]) - 24, (int)(input.rows()* rightPos[1]) - 30), 1, 5, new Scalar(255, 0, 0, 1));
 
             //draw 3 rectangles
+            Scalar movableScalar = new Scalar(255, 0, 0);
+            Scalar notMovableScalar = new Scalar(0, 255, 0);
             Imgproc.rectangle(//1-3
                     all,
                     new Point(
@@ -198,7 +203,7 @@ public class OpencvDetector {
                     new Point(
                             input.cols()*(leftPos[0]+rectWidth/2),
                             input.rows()*(leftPos[1]+rectHeight/2)),
-                    new Scalar(0, 255, 0), 3);
+                    (movablePos == 0)? movableScalar:notMovableScalar, 3);
             Imgproc.rectangle(//3-5
                     all,
                     new Point(
@@ -207,7 +212,7 @@ public class OpencvDetector {
                     new Point(
                             input.cols()*(midPos[0]+rectWidth/2),
                             input.rows()*(midPos[1]+rectHeight/2)),
-                    new Scalar(0, 255, 0), 3);
+                    (movablePos == 1)? movableScalar:notMovableScalar, 3);
             Imgproc.rectangle(//5-7
                     all,
                     new Point(
@@ -216,7 +221,7 @@ public class OpencvDetector {
                     new Point(
                             input.cols()*(rightPos[0]+rectWidth/2),
                             input.rows()*(rightPos[1]+rectHeight/2)),
-                    new Scalar(0, 255, 0), 3);
+                    (movablePos == 2)? movableScalar:notMovableScalar, 3);
 
             switch (stageToRenderToViewport) {
                 case THRESHOLD:
@@ -232,6 +237,34 @@ public class OpencvDetector {
                     return input;
             }
         }
+    }
+    public void incrementMovablePos() {
+        movablePos += 1;
+        if (movablePos > 2) movablePos = -1;
+    }
+    public void decrementMovablePos() {
+        movablePos -= 1;
+        if (movablePos < -1) movablePos = 2;
+    }
+    public void stopMovable() {movablePos = -1;}
 
+    public void movePoint(double x, double y) {
+        if (movablePos == 0) {
+            leftPos[0] = limit(leftPos[0] + x * movingResolution);
+            leftPos[1] = limit(leftPos[1] + y * movingResolution);
+        }
+        else if (movablePos == 1) {
+            midPos[0] = limit(midPos[0] + x * movingResolution);
+            midPos[1] = limit(midPos[1] + y * movingResolution);
+        }
+        else if (movablePos == 2) {
+            rightPos[0] = limit(rightPos[0] + x * movingResolution);
+            rightPos[1] = limit(rightPos[1] + y * movingResolution);
+        }
+    }
+    private float limit(double number) {
+        while (number < 0) number += 1;
+        while (number > 1) number -= 1;
+        return (float) number;
     }
 }

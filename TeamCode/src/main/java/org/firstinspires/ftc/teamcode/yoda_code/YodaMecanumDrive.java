@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.yoda_code;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
@@ -154,6 +155,12 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         log("back:" + inches);
         followTrajectorySync(this.trajectoryBuilder()
                 .back(inches)
+                .build());
+    }
+
+    public void strafeTo(Vector2d position) {
+        followTrajectorySync(trajectoryBuilder()
+                .strafeTo(position)
                 .build());
     }
 

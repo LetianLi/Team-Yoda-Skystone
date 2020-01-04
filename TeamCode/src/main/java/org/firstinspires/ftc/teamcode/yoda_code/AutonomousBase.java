@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.yoda_code;
 
 
+import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -20,7 +21,8 @@ public abstract class AutonomousBase extends LinearOpMode {
     protected boolean askTeamColor = true;
 
     private SkystonePos skystonePos = SkystonePos.UNKNOW;
-    private OpencvDetector detector;
+    public OpencvDetector detector;
+    private boolean bumpersPressed = false;
 
     protected void initialize() {
         telemetry.addData("Status", "Initializing, please wait");
@@ -63,6 +65,7 @@ public abstract class AutonomousBase extends LinearOpMode {
     protected void detectStoneWhileWaiting() {
         String previousDetectorValues = "";
         while (!isStarted() && !isStopRequested()) {
+            movePoints();
             telemetry.addData("Status", "Initialized. Wait to start");
             telemetry.addData("TeamColor", teamColor.toString());
             telemetry.addData("Values", detector.getValues());
@@ -137,7 +140,50 @@ public abstract class AutonomousBase extends LinearOpMode {
         }
         telemetry.log().clear();
     }
+
+    protected void logError(String context, double x, double y) {
+        drive.update();
+        Pose2d currentPos = drive.getPoseEstimate();
+        double imu = Math.toDegrees(drive.getRawExternalHeading());
+
+        drive.log(context
+                + String.format("\nX expected:%.3f, actual: %.3f, error: %.3f",x, currentPos.getX(),  (currentPos.getX() - x))
+                + String.format("\nY expected:%.3f, actual: %.3f, error: %.3f",y, currentPos.getY(),  (currentPos.getY() - y))
+                + String.format("\nHeading:%.3f", Math.toDegrees(currentPos.getHeading()))
+                + String.format("\nimu:%.3f", imu));
+    }
+
     public void deactivateDetector() {
         detector.deactivate();
+    }
+
+    public void movePoints() {
+        if (detector != null) {
+            double xMove = 0;
+            double yMove = 0;
+            if (!bumpersPressed) {
+                if (gamepad1.right_bumper || gamepad2.right_bumper) {
+                    detector.incrementMovablePos();
+                    bumpersPressed = true;
+                }
+                if (gamepad1.left_bumper || gamepad2.left_bumper) {
+                    detector.decrementMovablePos();
+                    bumpersPressed = true;
+                }
+            }
+            else if (!(gamepad1.left_bumper || gamepad2.left_bumper || gamepad1.right_bumper || gamepad2.right_bumper)) {
+                bumpersPressed = false;
+            }
+
+            if (gamepad1.a || gamepad2.a) detector.stopMovable();
+
+            if (gamepad1.dpad_left || gamepad2.dpad_left) xMove += -1;
+            if (gamepad1.dpad_right || gamepad2.dpad_right) xMove += 1;
+
+            if (gamepad1.dpad_down || gamepad2.dpad_down) yMove -= -1;
+            if (gamepad1.dpad_up || gamepad2.dpad_up) yMove -= 1;
+
+            detector.movePoint(xMove, yMove);
+        }
     }
 }
