@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.yoda_opmode;
 
-import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -13,7 +12,7 @@ import java.util.List;
 @TeleOp(group = "drive")
 public class ManualDrive extends LinearOpMode {
     private YodaMecanumDrive drive;
-    private boolean[] pressed = new boolean[7];
+    private boolean[] pressed = new boolean[8];
 
     private double speed_multiplier = 1;
     private boolean isSlowMode = false;
@@ -21,13 +20,17 @@ public class ManualDrive extends LinearOpMode {
     private double SLOW_MODE_MULTIPLIER = 0.5;
     private double TURNING_SPEED = 1;
     private double DPAD_SPEED = 0.2;
+    private boolean isGlobalHeading = false;
 
     private String stoneGrabberMode = "|| \n|";
     private String capstoneArmMode = "Stored";
+    private double capstonePosition = 0;
+
+    private double intakeGrabberPosition = 0;
 
     private double verticalPosition = 0;
     private double previousVerticalPos = -1;
-    private final double bottomVerticalLim = -20;
+    private final double bottomVerticalLim = -2;
     private final double topVerticalLim = 2542;
     private double lastTopPosition = 20;
     private final double ticksPerUpBlock = 300;
@@ -77,6 +80,7 @@ public class ManualDrive extends LinearOpMode {
 //            telemetry.addData("Distance", "Left %.2f, Right %.2f", drive.frontLeftDistance.getDistance(DistanceUnit.INCH), drive.frontRightDistance.getDistance(DistanceUnit.INCH));
 //            telemetry.addData("Front Angle", Math.toDegrees(drive.getAngleToFront()));
             telemetry.addData("Capstone Arm", capstoneArmMode);
+            telemetry.addData("Capstone Pos", capstonePosition);
 //            telemetry.addData("Stone Grabber", "\n" + stoneGrabberMode + "\n|");
             telemetry.addData("Horizontal Pos", horizontalPosition);
             telemetry.addData("Vertical Pos", drive.verticalExtender.getCurrentPosition());
@@ -169,8 +173,20 @@ public class ManualDrive extends LinearOpMode {
 //            }
 //        }
 
+        if (gamepad1.b && !pressed[7]) {
+            isGlobalHeading = !isGlobalHeading;
+            pressed[7] = true;
+        } else if (!gamepad1.b && pressed[7]) {
+            pressed[7] = false;
+        }
+
+        double globalHeading = 0;
+        if (isGlobalHeading) {
+            globalHeading = drive.getIMUHeading();
+        }
+
         double r = Math.hypot(input_x, input_y);
-        double robotAngle = Math.atan2(input_y, input_x) - Math.PI / 4;
+        double robotAngle = Math.atan2(input_y, input_x) - Math.PI / 4 - globalHeading; // Math.PI/4 is the equivalent of 45 degrees
 
         leftFrontPower = (r * Math.cos(robotAngle) + TURNING_SPEED * input_turning) * speed_multiplier;
         rightFrontPower = (r * Math.sin(robotAngle) - TURNING_SPEED * input_turning) * speed_multiplier;
@@ -193,6 +209,7 @@ public class ManualDrive extends LinearOpMode {
         if (gamepad1.left_trigger >= 0.5 || gamepad1.right_trigger >= 0.5) {
             drive.foundationMoverLeft.setPosition(1);
             drive.foundationMoverRight.setPosition(1);
+            intakeGrabberPosition = 0.6;
         }
         else {
             drive.foundationMoverLeft.setPosition(0);
@@ -201,33 +218,45 @@ public class ManualDrive extends LinearOpMode {
     }
 
     private void controlIntakeGrabber() {
-        if (gamepad2.left_bumper || gamepad2.a) drive.intakeGrabber.setPosition(0); // close
-        if (gamepad2.right_bumper || gamepad2.b) {
-            drive.intakeGrabber.setPosition(0.4); // open
+        if (gamepad2.a) { // close
+            intakeGrabberPosition = 0;
+        }
+        if (gamepad2.b) { // open
+            intakeGrabberPosition = 0.4;
 
             if (verticalPosition >= 20) {
                 lastTopPosition = verticalPosition;
             }
         }
+
+        drive.intakeGrabber.setPosition(intakeGrabberPosition);
     }
 
     private void controlCapstone() {
-        if (gamepad1.b && !pressed[6]) {
+        if (gamepad2.x && !pressed[6]) {
             if (capstoneArmMode == "Stored") capstoneArmMode = "Ready";
             else if (capstoneArmMode == "Ready") capstoneArmMode = "Dropped";
             else if (capstoneArmMode == "Dropped") capstoneArmMode = "Stored";
+
+            if (capstoneArmMode == "Stored") {
+                capstonePosition = 0;
+            } else if (capstoneArmMode == "Ready") {
+                capstonePosition = 0.55;
+                intakeGrabberPosition = 0.6;
+                horizontalPosition = 0;
+            } else if (capstoneArmMode == "Dropped") {
+               capstonePosition = 0.7;
+            }
+
             pressed[6] = true;
-        } else if (!gamepad1.b && pressed[6]) {
+        } else if (!gamepad2.x && pressed[6]) {
             pressed[6] = false;
         }
 
-        if (capstoneArmMode == "Stored") {
-            drive.capstoneArm.setPosition(0);
-        } else if (capstoneArmMode == "Ready") {
-            drive.capstoneArm.setPosition(0.8);
-        } else if (capstoneArmMode == "Dropped") {
-            drive.capstoneArm.setPosition(1);
-        }
+        if (gamepad2.left_bumper) capstonePosition = Math.min(capstonePosition + 0.005, 1);
+        if (gamepad2.right_bumper) capstonePosition = Math.max(capstonePosition - 0.005, 0);
+
+        drive.capstoneArm.setPosition(capstonePosition);
     }
 
     private void controlParkingArm() {
@@ -331,14 +360,6 @@ public class ManualDrive extends LinearOpMode {
     private void resetStuff() {
         if (gamepad1.x) {
             stoneGrabberMode = "|| \n|";
-        }
-        if (gamepad2.x) {
-            stoneGrabberMode = "|| \n|";
-            horizontalPosition = 0;
-            drive.parkingArm.setPosition(0);
-            drive.intakeGrabber.setPosition(0.6);
-            verticalPosition = 0;
-            capstoneArmMode = "Stored";
         }
     }
 }

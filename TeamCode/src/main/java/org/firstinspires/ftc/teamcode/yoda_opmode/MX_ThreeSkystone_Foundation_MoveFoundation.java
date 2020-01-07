@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.yoda_opmode;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
-import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.yoda_code.AutonomousBase;
@@ -94,7 +93,7 @@ public class MX_ThreeSkystone_Foundation_MoveFoundation extends AutonomousBase {
             drive.turnToRadians(Math.toRadians(-90 * neg), drive.getHeading());
 
             strategist.resetSkystoneArms(); // get arm back to position.
-            drive.parkingArm.setPosition(1);
+            drive.capstoneArm.setPosition(1);
 
             drive.followTrajectorySync(drive.trajectoryBuilder()
                     .strafeTo(new Vector2d(50, drive.getY() + 1))

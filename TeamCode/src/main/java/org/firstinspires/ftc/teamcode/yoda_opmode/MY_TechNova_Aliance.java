@@ -73,7 +73,7 @@ public class MY_TechNova_Aliance extends AutonomousBase {
                     .strafeTo(new Vector2d(drive.getX(), 60 * neg))
                     .addMarker(new Vector2d(drive.getX(), 61.5 * neg), () -> {
                         strategist.resetSkystoneArms();
-                        //drive.parkingArm.setPosition(1);
+                        //drive.capstoneArm.setPosition(1);
                         return null;})
                     .strafeTo(new Vector2d(0, 61.5 * neg))
                     .strafeTo(new Vector2d(0, 70 * neg))

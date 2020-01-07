@@ -203,7 +203,7 @@ public class OpencvDetector {
                     new Point(
                             input.cols()*(leftPos[0]+rectWidth/2),
                             input.rows()*(leftPos[1]+rectHeight/2)),
-                    (movablePos == 0)? movableScalar:notMovableScalar, 3);
+                    (movablePos == 0 || movablePos == 3)? movableScalar:notMovableScalar, 3);
             Imgproc.rectangle(//3-5
                     all,
                     new Point(
@@ -212,7 +212,7 @@ public class OpencvDetector {
                     new Point(
                             input.cols()*(midPos[0]+rectWidth/2),
                             input.rows()*(midPos[1]+rectHeight/2)),
-                    (movablePos == 1)? movableScalar:notMovableScalar, 3);
+                    (movablePos == 1 || movablePos == 3)? movableScalar:notMovableScalar, 3);
             Imgproc.rectangle(//5-7
                     all,
                     new Point(
@@ -221,7 +221,7 @@ public class OpencvDetector {
                     new Point(
                             input.cols()*(rightPos[0]+rectWidth/2),
                             input.rows()*(rightPos[1]+rectHeight/2)),
-                    (movablePos == 2)? movableScalar:notMovableScalar, 3);
+                    (movablePos == 2 || movablePos == 3)? movableScalar:notMovableScalar, 3);
 
             switch (stageToRenderToViewport) {
                 case THRESHOLD:
@@ -240,24 +240,24 @@ public class OpencvDetector {
     }
     public void incrementMovablePos() {
         movablePos += 1;
-        if (movablePos > 2) movablePos = -1;
+        if (movablePos > 3) movablePos = -1;
     }
     public void decrementMovablePos() {
         movablePos -= 1;
-        if (movablePos < -1) movablePos = 2;
+        if (movablePos < -1) movablePos = 3;
     }
     public void stopMovable() {movablePos = -1;}
 
     public void movePoint(double x, double y) {
-        if (movablePos == 0) {
+        if (movablePos == 0 || movablePos == 3) {
             leftPos[0] = limit(leftPos[0] + x * movingResolution);
             leftPos[1] = limit(leftPos[1] + y * movingResolution);
         }
-        else if (movablePos == 1) {
+        if (movablePos == 1 || movablePos == 3) {
             midPos[0] = limit(midPos[0] + x * movingResolution);
             midPos[1] = limit(midPos[1] + y * movingResolution);
         }
-        else if (movablePos == 2) {
+        if (movablePos == 2 || movablePos == 3) {
             rightPos[0] = limit(rightPos[0] + x * movingResolution);
             rightPos[1] = limit(rightPos[1] + y * movingResolution);
         }
