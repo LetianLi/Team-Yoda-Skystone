@@ -153,7 +153,8 @@ public abstract class AutonomousBase extends LinearOpMode {
         telemetry.log().clear();
     }
 
-    protected void logError(String context, double x, double y) {
+    // return y error
+    protected double logError(String context, double x, double y) {
         drive.update();
         Pose2d currentPos = drive.getPoseEstimate();
         double imu = Math.toDegrees(drive.getRawExternalHeading());
@@ -163,6 +164,7 @@ public abstract class AutonomousBase extends LinearOpMode {
                 + String.format("\nY expected:%.3f, actual: %.3f, error: %.3f",y, currentPos.getY(),  (currentPos.getY() - y))
                 + String.format("\nHeading:%.3f", Math.toDegrees(currentPos.getHeading()))
                 + String.format("\nimu:%.3f", imu));
+        return currentPos.getY() - y;
     }
 
     public void deactivateDetector() {

@@ -70,21 +70,29 @@ public class MX_ThreeSkystone_Foundation_MoveFoundation extends AutonomousBase {
             strategist.moveSkystoneArms(getArmSide(armOrder[0]), ArmStage.GRAB);
             logCurrentPos("*** Grabbed 1st stone");
 
-            moveAndDrop(1, 59 + armOrder[0] * neg, getArmSide(armOrder[0]), -1);
+            double y_error = moveAndDrop(1, 59 + armOrder[0] * neg, getArmSide(armOrder[0]), -1);
             logCurrentPos("After dropping 1st stone");
+            double offset = 0;
+            if (y_error > 2.0) {
+                offset = y_error - 2;
+            }
 
             // go back for 2nd stone
-            foundationToGrab(2, -49 - forwardOffset + armOrder[1] * neg, getArmSide(armOrder[1]), 0);
+            foundationToGrab(2, -49 - forwardOffset + armOrder[1] * neg, getArmSide(armOrder[1]), teamColor == TeamColor.BLUE ? offset : 0);
             logCurrentPos("Grabbed 2nd stone");
 
-            moveAndDrop(2, 50 + armOrder[1] * neg, getArmSide(armOrder[1]), 0);
+            y_error = moveAndDrop(2, 50 + armOrder[1] * neg, getArmSide(armOrder[1]), teamColor == TeamColor.BLUE ? 1 : 0);
             logCurrentPos("After dropping 2nd stone");
+            offset = 0;
+            if (y_error > 2.0) {
+                offset = y_error - 2;
+            }
 
             // go back for 3rd stone
-            foundationToGrab(3, -26 - thirdStoneOffset + armOrder[2] * neg, getArmSide(armOrder[2]), 0);
+            foundationToGrab(3, -26 - thirdStoneOffset + armOrder[2] * neg, getArmSide(armOrder[2]), teamColor == TeamColor.BLUE ? offset : 0);
             logCurrentPos("Grabbed 3rd stone");
 
-            moveAndDrop(3, 39 + armOrder[2] * neg, getArmSide(armOrder[2]), 0);
+            moveAndDrop(3, 39 + armOrder[2] * neg, getArmSide(armOrder[2]), teamColor == TeamColor.BLUE ? offset : 0);
             logCurrentPos("After dropping 3rd stone");
 
             // Move Foundation
@@ -163,7 +171,7 @@ public class MX_ThreeSkystone_Foundation_MoveFoundation extends AutonomousBase {
         drive.turnLedOff();
     }
 
-    private void moveAndDrop(int stoneIndex, double foundationX, ArmSide arm, double y_offset) {
+    private double moveAndDrop(int stoneIndex, double foundationX, ArmSide arm, double y_offset) {
         auto_timer.reset();
         drive.setLogTag("moveAndDrop for stone " + stoneIndex);
 //        logCurrentPos("before trajectory");
@@ -179,9 +187,10 @@ public class MX_ThreeSkystone_Foundation_MoveFoundation extends AutonomousBase {
                 .splineTo(new Pose2d(foundationX, (foundationY + 5) * neg, baseHeading))
                 .strafeTo(new Vector2d(expected_x, expected_y))
                 .build());
-        logError("after moving to foundation", expected_x, expected_y);
+        double y_error = logError("after moving to foundation", expected_x, expected_y);
         strategist.moveSkystoneArms(arm, ArmStage.DROP);
         drive.log("Cycle time:" + auto_timer.milliseconds());
+        return y_error;
 //        logCurrentPos("after trajectory");
     }
 
@@ -203,15 +212,15 @@ public class MX_ThreeSkystone_Foundation_MoveFoundation extends AutonomousBase {
                     strategist.resetSkystoneArms();
                     return null;})
                 .setReversed(!reversed)
-                .splineTo(centerLinePlain)
-                .addMarker(centerLinePlain.vec().plus(new Vector2d(getArmOffset(arm) * neg - 5)), () -> {
+                .splineTo(centerLinePlain.plus(new Pose2d(0, y_offset * neg)))
+                .addMarker(centerLinePlain.vec().plus(new Vector2d(getArmOffset(arm) * neg - 5, y_offset * neg)), () -> {
                     strategist.moveSkystoneArms(arm, ArmStage.OPENGRABBER);
                     return null;})
-                .addMarker(centerLinePlain.vec().plus(new Vector2d(getArmOffset(arm) * neg - 15)), () -> {
+                .addMarker(centerLinePlain.vec().plus(new Vector2d(getArmOffset(arm) * neg - 15, y_offset * neg)), () -> {
                     strategist.moveSkystoneArms(arm, ArmStage.PREPARM);
                     return null;})
-                .splineTo(new Pose2d(stoneX, (stoneY + 6 + y_offset) * neg, baseHeading))
-                .addMarker(new Vector2d(stoneX, (stoneY + y_offset + 3) * neg), () -> {
+                .splineTo(new Pose2d(stoneX, (stoneY + 6 ) * neg, baseHeading))
+                .addMarker(new Vector2d(stoneX, (stoneY  + 3) * neg), () -> {
                     strategist.moveSkystoneArms(arm, ArmStage.LOWERARM);
                     return null;})
                 .strafeTo(new Vector2d(expected_x, expected_y))
@@ -219,7 +228,7 @@ public class MX_ThreeSkystone_Foundation_MoveFoundation extends AutonomousBase {
         logError("after moving from foundation to stones", expected_x, expected_y);
         double currentDistance = drive.getRightDistance();
         drive.log("current distance right:" + currentDistance);
-        if (currentDistance > 1.5 && currentDistance < 6) {
+        if (currentDistance > 1.5 && currentDistance < 8) {
             drive.log("strafeRight:"+ (currentDistance - 1.5));
             drive.followTrajectorySync(drive.trajectoryBuilder()
                     .strafeRight(currentDistance - 1.5)
