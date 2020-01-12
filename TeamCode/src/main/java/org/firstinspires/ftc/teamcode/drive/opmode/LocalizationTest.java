@@ -1,10 +1,7 @@
 package org.firstinspires.ftc.teamcode.drive.opmode;
 
-import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -29,6 +26,7 @@ public class LocalizationTest extends LinearOpMode {
     public static double STARTINGX = -32;
     public static double STARTINGY = 61.5;
     public static double STARTINGHEADINGDEG = 0;
+    public static boolean TESTINGMODE = true;
 
     private YodaMecanumDrive drive;
 
@@ -39,7 +37,7 @@ public class LocalizationTest extends LinearOpMode {
 
         drive = new YodaMecanumDrive(hardwareMap);
         drive.setPoseEstimate(new Pose2d(STARTINGX, STARTINGY, Math.toRadians(STARTINGHEADINGDEG)));
-        drive.resetServos();
+        drive.resetInitServos();
         waitForStart();
 
         while (!isStopRequested()) {
@@ -57,17 +55,20 @@ public class LocalizationTest extends LinearOpMode {
             double extraX = 0;
             double extraY = 0;
 
-//            if (gamepad1.dpad_up) drive.forward(DISTANCE);
-//            if (gamepad1.dpad_down) drive.back(DISTANCE);
-//            if (gamepad1.dpad_right) drive.strafeRight(DISTANCE);
-//            if (gamepad1.dpad_left) drive.strafeLeft(DISTANCE);
-
-            if (gamepad1.dpad_up) extraY += 0.1;
-            if (gamepad1.dpad_down) extraY-= 0.1;
-            if (gamepad1.dpad_right) extraX += 0.1;
-            if (gamepad1.dpad_left) extraX -= 0.1;
-            if (gamepad1.right_bumper) bumperTurn += 0.1;
-            if (gamepad1.left_bumper) bumperTurn -= 0.1;
+            if (TESTINGMODE) {
+                if (gamepad1.dpad_up) drive.forward(DISTANCE);
+                if (gamepad1.dpad_down) drive.back(DISTANCE);
+                if (gamepad1.dpad_right) drive.strafeRight(DISTANCE);
+                if (gamepad1.dpad_left) drive.strafeLeft(DISTANCE);
+            }
+            else {
+                if (gamepad1.dpad_up) extraY += 0.1;
+                if (gamepad1.dpad_down) extraY -= 0.1;
+                if (gamepad1.dpad_right) extraX += 0.1;
+                if (gamepad1.dpad_left) extraX -= 0.1;
+                if (gamepad1.right_bumper) bumperTurn += 0.1;
+                if (gamepad1.left_bumper) bumperTurn -= 0.1;
+            }
 
             Pose2d baseVel = new Pose2d(
                     -gamepad1.left_stick_y + extraY,
@@ -95,12 +96,12 @@ public class LocalizationTest extends LinearOpMode {
             drive.update();
 
             Pose2d poseEstimate = drive.getPoseEstimate();
-            double calcY = getCalculatedY(STARTINGY);
+//            double calcY = getCalculatedY(STARTINGY);
 //            telemetry.addData("Encoder values, lf, lr, rr, rf", drive.getWheelPositions());
             telemetry.addData("x", poseEstimate.getX());
             telemetry.addData("y", poseEstimate.getY());
-            telemetry.addData("Calculated y", calcY);
-            telemetry.addData("Y error", calcY - poseEstimate.getY());
+//            telemetry.addData("Calculated y", calcY);
+//            telemetry.addData("Y error", calcY - poseEstimate.getY());
             telemetry.addData("heading", Math.toDegrees(poseEstimate.getHeading()));
             telemetry.addData("IMU", Math.toDegrees(drive.getRawExternalHeading()));
             telemetry.addData("Braking", braking);

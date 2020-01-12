@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.yoda_opmode;
 
 import com.acmerobotics.dashboard.config.Config;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -28,7 +27,7 @@ public class MotorTestingV2 extends LinearOpMode {
         if (isStopRequested()) return;
         drive.setMotorNoEncoder();
 
-        drive.resetServos(); // open, set power so that it does not go down
+        drive.resetInitServos(); // open, set power so that it does not go down
 
         while (!isStopRequested()) {
             boolean up = gamepad1.dpad_up;

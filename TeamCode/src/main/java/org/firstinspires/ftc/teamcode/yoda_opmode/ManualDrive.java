@@ -20,7 +20,6 @@ public class ManualDrive extends LinearOpMode {
     private double SLOW_MODE_MULTIPLIER = 0.5;
     private double TURNING_SPEED = 1;
     private double DPAD_SPEED = 0.2;
-    private boolean isGlobalHeading = false;
 
     private String stoneGrabberMode = "|| \n|";
     private String capstoneArmMode = "Stored";
@@ -30,11 +29,11 @@ public class ManualDrive extends LinearOpMode {
 
     private double verticalPosition = 0;
     private double previousVerticalPos = -1;
-    private final double bottomVerticalLim = -2;
+    private final double bottomVerticalLim = -10;
     private final double topVerticalLim = 2542;
     private double lastTopPosition = 20;
-    private final double ticksPerUpBlock = 300;
-    private final double ticksPerDownBlock = 230;
+    private final double ticksPerUpBlock = 550;
+    private final double ticksPerDownBlock = 200;
 
     private double horizontalPosition = 0;
     private double previousHorizontalPos = -1;
@@ -48,6 +47,8 @@ public class ManualDrive extends LinearOpMode {
         // telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
         horizontalPosition = 0.99;
         previousHorizontalPos = 0.99;
+        gamepad1.setJoystickDeadzone(0.01f);
+        gamepad2.setJoystickDeadzone(0.01f);
 
         telemetry.addLine("Ready!");
         telemetry.update();
@@ -58,7 +59,7 @@ public class ManualDrive extends LinearOpMode {
         drive.setMotorNoEncoder();
         ElapsedTime op_timer = new ElapsedTime();
 
-        drive.intakeGrabber.setPosition(0.4); // open, set power so that it does not go down
+        drive.intakeGrabber.setPosition(0); // open, set power so that it does not go down
 
         while (!isStopRequested()) {
             op_timer.reset();
@@ -108,30 +109,16 @@ public class ManualDrive extends LinearOpMode {
 
         //if (gamepad1.x) drive.turnSync(drive.getAngleToFront(telemetry));
 
-        double leftFrontPower = 0;
-        double rightFrontPower = 0;
-        double leftRearPower = 0;
-        double rightRearPower = 0;
+        double leftFrontPower, rightFrontPower, leftRearPower, rightRearPower;
 
-        double input_x = gamepad1.left_stick_x;
-        double input_y = -gamepad1.left_stick_y;
-        double input_turning = gamepad1.right_stick_x;
+        double input_x = drive.pow(gamepad1.left_stick_x, 1.1);
+        double input_y = drive.pow(-gamepad1.left_stick_y, 1.1);
+        double input_turning = drive.pow(gamepad1.right_stick_x, 1.1);
 
 //        telemetry.addData("Initial Input:", "x %.2f, y %.2f, turning %.2f", input_x, input_y, input_turning);
 
         // Skip too small input from joystick as they might be noise
         // SetJoystickDeadzone does not work, has to do ourselves.
-        if (Math.abs(input_x) < 0.15) {
-            input_x = 0;
-        }
-
-        if (Math.abs(input_y) < 0.15) {
-            input_y = 0;
-        }
-
-        if (Math.abs(input_turning) < 0.15) {
-            input_turning = 0;
-        }
 
         boolean dpad_pressed = false;
         if (gamepad1.dpad_up) {
@@ -173,20 +160,8 @@ public class ManualDrive extends LinearOpMode {
 //            }
 //        }
 
-        if (gamepad1.b && !pressed[7]) {
-            isGlobalHeading = !isGlobalHeading;
-            pressed[7] = true;
-        } else if (!gamepad1.b && pressed[7]) {
-            pressed[7] = false;
-        }
-
-        double globalHeading = 0;
-        if (isGlobalHeading) {
-            globalHeading = drive.getIMUHeading();
-        }
-
         double r = Math.hypot(input_x, input_y);
-        double robotAngle = Math.atan2(input_y, input_x) - Math.PI / 4 - globalHeading; // Math.PI/4 is the equivalent of 45 degrees
+        double robotAngle = Math.atan2(input_y, input_x) - Math.PI / 4; // Math.PI/4 is the equivalent of 45 degrees
 
         leftFrontPower = (r * Math.cos(robotAngle) + TURNING_SPEED * input_turning) * speed_multiplier;
         rightFrontPower = (r * Math.sin(robotAngle) - TURNING_SPEED * input_turning) * speed_multiplier;
@@ -209,7 +184,7 @@ public class ManualDrive extends LinearOpMode {
         if (gamepad1.left_trigger >= 0.5 || gamepad1.right_trigger >= 0.5) {
             drive.foundationMoverLeft.setPosition(1);
             drive.foundationMoverRight.setPosition(1);
-            intakeGrabberPosition = 0.6;
+            intakeGrabberPosition = 0;
         }
         else {
             drive.foundationMoverLeft.setPosition(0);
@@ -219,7 +194,7 @@ public class ManualDrive extends LinearOpMode {
 
     private void controlIntakeGrabber() {
         if (gamepad2.a) { // close
-            intakeGrabberPosition = 0;
+            intakeGrabberPosition = 1;
         }
         if (gamepad2.b) { // open
             intakeGrabberPosition = 0.4;
@@ -228,7 +203,8 @@ public class ManualDrive extends LinearOpMode {
                 lastTopPosition = verticalPosition;
             }
         }
-
+        if (gamepad2.left_trigger > 0.1) intakeGrabberPosition = Math.min(intakeGrabberPosition + 0.005, 1);
+        if (gamepad2.right_trigger > 0.1) intakeGrabberPosition = Math.max(intakeGrabberPosition - 0.005, 0);
         drive.intakeGrabber.setPosition(intakeGrabberPosition);
     }
 
@@ -242,7 +218,7 @@ public class ManualDrive extends LinearOpMode {
                 capstonePosition = 0;
             } else if (capstoneArmMode == "Ready") {
                 capstonePosition = 0.55;
-                intakeGrabberPosition = 0.6;
+                intakeGrabberPosition = 0;
                 horizontalPosition = 0;
             } else if (capstoneArmMode == "Dropped") {
                capstonePosition = 0.7;
@@ -362,4 +338,5 @@ public class ManualDrive extends LinearOpMode {
             stoneGrabberMode = "|| \n|";
         }
     }
+
 }

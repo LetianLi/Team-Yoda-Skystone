@@ -92,23 +92,22 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         verticalExtender.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         verticalExtender.setTargetPositionTolerance(0);
 
-        foundationMoverRight.setDirection(Servo.Direction.REVERSE);
-        foundationMoverLeft.setDirection(Servo.Direction.REVERSE);
         skystoneArmFront.setDirection(Servo.Direction.REVERSE);
         skystoneGrabberFront.setDirection(Servo.Direction.REVERSE);
         horizontalExtender.setDirection(Servo.Direction.REVERSE);
-        intakeGrabber.setDirection(Servo.Direction.REVERSE);
         capstoneArm.setDirection(Servo.Direction.REVERSE);
 
         setLocalizer(new StandardTrackingWheelLocalizer(hardwareMap));
 
         horizontalExtender.scaleRange(1 - 0.37, 1 - 0.13); // actually limit 0.37
 
-        skystoneArmFront.scaleRange(1 - 0.28, 1);
-        skystoneArmBack.scaleRange(0, 0.28);
+        skystoneArmFront.scaleRange(0.64, 1);
+        skystoneArmBack.scaleRange(0, 0.3);
 
-        foundationMoverLeft.scaleRange(0.5, 1);
-        foundationMoverRight.scaleRange(0.55, 1);
+        intakeGrabber.scaleRange(0, 0.43);
+
+        foundationMoverLeft.scaleRange(0.02, 0.88);
+        foundationMoverRight.scaleRange(0.1, 0.79);
     }
 
     public void resetTimer() {
@@ -256,7 +255,7 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         return 0;
     }
 
-    public void resetServos() {
+    public void resetInitServos() {
         // Skystone Arms
         skystoneArmFront.setPosition(0);
         skystoneArmBack.setPosition(0);
@@ -268,16 +267,17 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         foundationMoverRight.setPosition(0);
 
         // Parking Arm
-//        parkingArm.setPosition(0);
+        parkingArm.setPosition(0);
 
         // Capstone Arm
         capstoneArm.setPosition(0);
+    }
+
+    public void resetAllServos() {
+        resetInitServos();
 
         // Intake Grabber
-        intakeGrabber.setPosition(0.6);
-
-        // Horizontal Extender
-//        horizontalExtender.setPosition(0);
+        intakeGrabber.setPosition(0);
     }
 
     public void setMotorNoEncoder() {
@@ -326,5 +326,11 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
     }
     public void resetIMUHeading() {
         newZeroIMU = getRawExternalHeading();
+    }
+
+    public double pow(double base, double exponent) {
+        double result = Math.pow(Math.abs(base), exponent);
+        if (base < 0) result *= -1;
+        return result;
     }
 }

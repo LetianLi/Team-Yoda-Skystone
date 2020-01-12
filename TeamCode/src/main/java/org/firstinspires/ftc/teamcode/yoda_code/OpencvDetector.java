@@ -47,9 +47,13 @@ public class OpencvDetector {
     private static float offsetX = 0f/8f;//changing this moves the three rects and the three circles left or right, range : (-2, 2) not inclusive
     private static float offsetY = 0f/8f;//changing this moves the three rects and circles up or down, range: (-4, 4) not inclusive
 
-    public static float[] midPos = {4f/8f + offsetX, 4f/8f + offsetY};//0 = col, 1 = row
-    public static float[] leftPos = {2f/8f + offsetX, 4f/8f + offsetY};
-    public static float[] rightPos = {6f/8f + offsetX, 4f/8f + offsetY};
+    private static float[] defaultMidPos = {4f/8f + offsetX, 4f/8f + offsetY}; //0 = col, 1 = row
+    private static float[] defaultLeftPos = {2f/8f + offsetX, 4f/8f + offsetY};
+    private static float[] defaultRightPos = {6f/8f + offsetX, 4f/8f + offsetY};
+
+    public static float[] midPos = defaultMidPos.clone();
+    public static float[] leftPos = defaultLeftPos.clone();
+    public static float[] rightPos = defaultRightPos.clone();
     //moves all rectangles right or left by amount. units are in ratio to monitor
 
     public static int movablePos = -1;
@@ -78,6 +82,9 @@ public class OpencvDetector {
         //width, height
         //width = height in this case, because camera is in portrait mode.
 
+        midPos = defaultMidPos.clone();
+        leftPos = defaultLeftPos.clone();
+        rightPos = defaultRightPos.clone();
     }
 
     public void deactivate() {

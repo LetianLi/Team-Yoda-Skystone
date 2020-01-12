@@ -79,7 +79,7 @@ public abstract class StrategistBase {
                 targetArm.setPosition(0);
                 break;
             case PREPDROP:
-                targetArm.setPosition(0.45);
+                targetArm.setPosition(0.4);
                 break;
             case PREPARM:
                 targetArm.setPosition(0.8);
@@ -93,6 +93,7 @@ public abstract class StrategistBase {
                 targetGrabber.setPosition(0); // grab it
                 opMode.sleep(250);
                 targetArm.setPosition(0); // put arm up. No need for sleep as next step is moving robot away
+                opMode.sleep(50);
                 break;
             case DROP:
                 targetArm.setPosition(1 - 0.16); // This attempts to put arm down
