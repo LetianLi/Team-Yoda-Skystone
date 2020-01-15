@@ -84,9 +84,8 @@ public class MX_ThreeSkystone_Foundation_MoveFoundation extends AutonomousBase {
             y_error = moveAndDrop(2, 50 + armOrder[1] * neg, getArmSide(armOrder[1]), teamColor == TeamColor.BLUE ? 1 : 0);
             logCurrentPos("After dropping 2nd stone");
             offset = 0;
-            if (y_error > 2.0) {
-                offset = y_error - 2;
-            }
+
+            offset = y_error;
 
             // go back for 3rd stone
             foundationToGrab(3, -26 - thirdStoneOffset + armOrder[2] * neg, getArmSide(armOrder[2]), teamColor == TeamColor.BLUE ? offset : 0);
@@ -119,7 +118,7 @@ public class MX_ThreeSkystone_Foundation_MoveFoundation extends AutonomousBase {
                     .addMarker(0.1, () -> { strategist.moveFoundationServos(0.7); return null;}) // open mover
                     .build());
 
-            if (teamColor == TeamColor.BLUE) setPoseYToDistance();
+//            if (teamColor == TeamColor.BLUE) setPoseYToDistance();
 
             drive.followTrajectorySync(drive.trajectoryBuilder()
                     .strafeTo(new Vector2d(drive.getX() - 5, drive.getY() - 5 * neg))

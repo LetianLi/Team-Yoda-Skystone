@@ -16,6 +16,7 @@ public class ManualDrive extends LinearOpMode {
 
     private double speed_multiplier = 1;
     private boolean isSlowMode = false;
+    private boolean isStopMode = false;
     private double FAST_MODE_MULTIPLIER = 1.4; //change to 1.0 for now but it only get 0.7 power. Try using 1.4, but it disables other directions
     private double SLOW_MODE_MULTIPLIER = 0.5;
     private double TURNING_SPEED = 1;
@@ -26,6 +27,7 @@ public class ManualDrive extends LinearOpMode {
     private double capstonePosition = 0;
 
     private double intakeGrabberPosition = 0;
+    private double foundationMoverPosition = 0;
 
     private double verticalPosition = 0;
     private double previousVerticalPos = -1;
@@ -59,6 +61,8 @@ public class ManualDrive extends LinearOpMode {
         drive.setMotorNoEncoder();
         ElapsedTime op_timer = new ElapsedTime();
 
+        drive.foundationMoverLeft.setPosition(0);
+        drive.foundationMoverRight.setPosition(0);
         drive.intakeGrabber.setPosition(0); // open, set power so that it does not go down
 
         while (!isStopRequested()) {
@@ -72,19 +76,17 @@ public class ManualDrive extends LinearOpMode {
             moveFoundationServo();
             controlSkystoneGrabbers();
             controlParkingArm();
-            resetStuff();
 
-            telemetry.addData("Encoders", "Left %d, Right %d, Front %d", drive.leftEncoder.getCurrentPosition(), drive.rightEncoder.getCurrentPosition(), drive.frontEncoder.getCurrentPosition());
+//            telemetry.addData("Encoders", "Left %d, Right %d, Front %d", drive.leftEncoder.getCurrentPosition(), drive.rightEncoder.getCurrentPosition(), drive.frontEncoder.getCurrentPosition());
             telemetry.addData("Speed co-efficients", "turn %.2f   ||   entire %.2f", TURNING_SPEED, speed_multiplier);
-            telemetry.addData("Encoder values, lf, lr, rr, rf", drive.getWheelPositions());
-            //disable because they are slow
-//            telemetry.addData("Distance", "Left %.2f, Right %.2f", drive.frontLeftDistance.getDistance(DistanceUnit.INCH), drive.frontRightDistance.getDistance(DistanceUnit.INCH));
-//            telemetry.addData("Front Angle", Math.toDegrees(drive.getAngleToFront()));
+//            telemetry.addData("Encoder values, lf, lr, rr, rf", drive.getWheelPositions());
             telemetry.addData("Capstone Arm", capstoneArmMode);
             telemetry.addData("Capstone Pos", capstonePosition);
-//            telemetry.addData("Stone Grabber", "\n" + stoneGrabberMode + "\n|");
+
             telemetry.addData("Horizontal Pos", horizontalPosition);
-            telemetry.addData("Vertical Pos", drive.verticalExtender.getCurrentPosition());
+            telemetry.addData("Vertical Pos", verticalPosition + " - " + drive.verticalExtender.getCurrentPosition());
+            telemetry.addData("Intake Pos", intakeGrabberPosition);
+//            telemetry.addData("Stone Grabber", "\n" + stoneGrabberMode + "\n|");
             telemetry.addData("Latency", op_timer.milliseconds());
             telemetry.update();
         }
@@ -96,6 +98,14 @@ public class ManualDrive extends LinearOpMode {
             pressed[1] = true;
         } else if (!gamepad1.a && pressed[1]) {
             pressed[1] = false;
+        }
+
+        if (gamepad1.x && !pressed[7]) {
+            isStopMode = !isStopMode;
+            isSlowMode = true;
+            pressed[7] = true;
+        } else if (!gamepad1.x && pressed[7]) {
+            pressed[7] = false;
         }
 
         // does not work, disable now
@@ -117,48 +127,46 @@ public class ManualDrive extends LinearOpMode {
 
 //        telemetry.addData("Initial Input:", "x %.2f, y %.2f, turning %.2f", input_x, input_y, input_turning);
 
-        // Skip too small input from joystick as they might be noise
-        // SetJoystickDeadzone does not work, has to do ourselves.
+        if (isStopMode) {
+            speed_multiplier = SLOW_MODE_MULTIPLIER - 0.1;
+            drive.setLed(RevBlinkinLedDriver.BlinkinPattern.DARK_RED);
+        }
+        else if (isSlowMode) {
+            speed_multiplier = SLOW_MODE_MULTIPLIER;
+            drive.setLed(RevBlinkinLedDriver.BlinkinPattern.RED);
+        }
+        else {
+            speed_multiplier = FAST_MODE_MULTIPLIER;
+            drive.setLed(RevBlinkinLedDriver.BlinkinPattern.BLACK);
+        }
 
-        boolean dpad_pressed = false;
         if (gamepad1.dpad_up) {
-            input_y += DPAD_SPEED;
-            dpad_pressed = true;
-        } else if (gamepad1.dpad_down) {
-            input_y -= DPAD_SPEED;
-            dpad_pressed = true;
+            input_y += DPAD_SPEED / speed_multiplier;
+        } if (gamepad1.dpad_down) {
+            input_y -= DPAD_SPEED / speed_multiplier;
         }
 
         if (gamepad1.dpad_right) {
-            input_x += 2 * DPAD_SPEED;
-            dpad_pressed = true;
-        } else if (gamepad1.dpad_left) {
-            input_x -= 2 * DPAD_SPEED;
-            dpad_pressed = true;
+            input_x += 2 * DPAD_SPEED / speed_multiplier;
+        } if (gamepad1.dpad_left) {
+            input_x -= 2 * DPAD_SPEED / speed_multiplier;
         }
 
         if (gamepad1.left_bumper) {
-            input_turning -= DPAD_SPEED * 0.65;
-            dpad_pressed = true;
-        } else if (gamepad1.right_bumper) {
-            input_turning += DPAD_SPEED * 0.65;
-            dpad_pressed = true;
+            input_turning -= DPAD_SPEED * 0.65 / speed_multiplier;
+        } if (gamepad1.right_bumper) {
+            input_turning += DPAD_SPEED * 0.65 / speed_multiplier;
         }
 
         telemetry.addData("Input:", "x %.2f, y %.2f, turning %.2f", input_x, input_y, input_turning);
 
-        if (isSlowMode && !dpad_pressed) speed_multiplier = SLOW_MODE_MULTIPLIER;
-        else speed_multiplier = FAST_MODE_MULTIPLIER;
-
-        if (isSlowMode) drive.setLed(RevBlinkinLedDriver.BlinkinPattern.RED);
-        else drive.setLed(RevBlinkinLedDriver.BlinkinPattern.BLACK);
-
-//        if ((gamepad2.left_trigger > 0.9 || gamepad2.right_trigger > 0.9) && input_y > 0) {
-//            if (drive.frontLeftDistance.getDistance(DistanceUnit.INCH) < 10 || drive.frontRightDistance.getDistance(DistanceUnit.INCH) < 10) {
-//                input_y = 0;
-//                setLed(RevBlinkinLedDriver.BlinkinPattern.DARK_RED);
-//            }
-//        }
+        if (isStopMode && input_y > 0 && foundationMoverPosition == 0) {
+            double frontShort = Math.min(drive.getFrontLeftDistance(), drive.getFrontRightDistance());
+            frontShort = Math.max(frontShort, 0);
+            if (frontShort <= 10) {
+                input_y = drive.pow(frontShort / 10, 0.8) * input_y;
+            }
+        }
 
         double r = Math.hypot(input_x, input_y);
         double robotAngle = Math.atan2(input_y, input_x) - Math.PI / 4; // Math.PI/4 is the equivalent of 45 degrees
@@ -170,6 +178,7 @@ public class ManualDrive extends LinearOpMode {
 
         List<Double> powersList = drive.scaleDown(leftFrontPower, leftRearPower, rightRearPower, rightFrontPower, 1);
 
+        telemetry.addData("Powers", powersList);
         drive.setMotorPowers(powersList.get(0), powersList.get(1), powersList.get(2), powersList.get(3));
 
 //        telemetry.addData("Wheel Powers", "lf %.2f, lr %.2f, rr %.2f, rf %.2f", powersList.get(0), powersList.get(1), powersList.get(2), powersList.get(3));
@@ -181,23 +190,19 @@ public class ManualDrive extends LinearOpMode {
     }
 
     private void moveFoundationServo() {
-        if (gamepad1.left_trigger >= 0.5 || gamepad1.right_trigger >= 0.5) {
-            drive.foundationMoverLeft.setPosition(1);
-            drive.foundationMoverRight.setPosition(1);
-            intakeGrabberPosition = 0;
-        }
-        else {
-            drive.foundationMoverLeft.setPosition(0);
-            drive.foundationMoverRight.setPosition(0);
-        }
+        if (gamepad1.left_trigger >= 0.1) foundationMoverPosition = 1;
+        else if (gamepad1.right_trigger >= 0.5) foundationMoverPosition = 0;
+
+        drive.foundationMoverLeft.setPosition(foundationMoverPosition);
+        drive.foundationMoverRight.setPosition(foundationMoverPosition);
     }
 
     private void controlIntakeGrabber() {
-        if (gamepad2.a) { // close
+        if (gamepad2.a) { // grab
             intakeGrabberPosition = 1;
         }
-        if (gamepad2.b) { // open
-            intakeGrabberPosition = 0.4;
+        if (gamepad2.b) { // release
+            intakeGrabberPosition = 0.35;
 
             if (verticalPosition >= 20) {
                 lastTopPosition = verticalPosition;
@@ -332,11 +337,4 @@ public class ManualDrive extends LinearOpMode {
         }
 
     }
-
-    private void resetStuff() {
-        if (gamepad1.x) {
-            stoneGrabberMode = "|| \n|";
-        }
-    }
-
 }

@@ -28,7 +28,7 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
     public Servo foundationMoverLeft, foundationMoverRight;
     public Servo skystoneGrabberFront, skystoneArmFront, skystoneGrabberBack, skystoneArmBack;
     public Servo capstoneArm, intakeGrabber, parkingArm;
-//    public Rev2mDistanceSensor frontLeftDistance, frontRightDistance;
+    public Rev2mDistanceSensor frontLeftDistance, frontRightDistance;
     public Rev2mDistanceSensor rightDistance;
 //    public ModernRoboticsI2cRangeSensor backDistance, frontDistance;
     public ModernRoboticsI2cRangeSensor leftDistance;
@@ -67,8 +67,8 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         intakeGrabber = hardwareMap.get(Servo.class, "intake grabber");
         parkingArm = hardwareMap.get(Servo.class, "parking arm");
 
-//        frontLeftDistance = hardwareMap.get(Rev2mDistanceSensor.class, "front left distance");
-//        frontRightDistance = hardwareMap.get(Rev2mDistanceSensor.class, "front right distance");
+        frontLeftDistance = hardwareMap.get(Rev2mDistanceSensor.class, "front left distance");
+        frontRightDistance = hardwareMap.get(Rev2mDistanceSensor.class, "front right distance");
         rightDistance = hardwareMap.get(Rev2mDistanceSensor.class, "right distance");
         leftDistance = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "left distance");
 //        backDistance = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "back distance");
@@ -227,8 +227,8 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
 //
 //    public double getGreatestBottomFrontDistance() { return Math.max(getFrontLeftDistance(), getFrontRightDistance());}
 //
-//    public double getFrontLeftDistance() { return frontLeftDistance.getDistance(DistanceUnit.INCH);}
-//    public double getFrontRightDistance() { return frontRightDistance.getDistance(DistanceUnit.INCH);}
+    public double getFrontLeftDistance() { return frontLeftDistance.getDistance(DistanceUnit.INCH);}
+    public double getFrontRightDistance() { return frontRightDistance.getDistance(DistanceUnit.INCH);}
     public double getRightDistance() { return rightDistance.getDistance(DistanceUnit.INCH);}
     public double getLeftDistance() { return leftDistance.getDistance(DistanceUnit.INCH) - leftSensorToWall;}
 
@@ -332,5 +332,14 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         double result = Math.pow(Math.abs(base), exponent);
         if (base < 0) result *= -1;
         return result;
+    }
+
+    public double checkNaN(double number) {
+        return checkNaN(number, -1);
+    }
+
+    public double checkNaN(double number, double caseNaN) {
+        if (number != number) return caseNaN;
+        return number;
     }
 }
