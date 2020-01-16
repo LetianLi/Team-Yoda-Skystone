@@ -40,6 +40,7 @@ public class ManualDrive extends LinearOpMode {
     private double horizontalPosition = 0;
     private double previousHorizontalPos = -1;
     private final double placingHorizontalPos = 0.75;
+    private final double capstonePositionThreshold = 0.25;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -49,8 +50,6 @@ public class ManualDrive extends LinearOpMode {
         // telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
         horizontalPosition = 0.99;
         previousHorizontalPos = 0.99;
-        gamepad1.setJoystickDeadzone(0.01f);
-        gamepad2.setJoystickDeadzone(0.01f);
 
         telemetry.addLine("Ready!");
         telemetry.update();
@@ -163,8 +162,11 @@ public class ManualDrive extends LinearOpMode {
         if (isStopMode && input_y > 0 && foundationMoverPosition == 0) {
             double frontShort = Math.min(drive.getFrontLeftDistance(), drive.getFrontRightDistance());
             frontShort = Math.max(frontShort, 0);
-            if (frontShort <= 10) {
-                input_y = drive.pow(frontShort / 10, 0.8) * input_y;
+            if (frontShort <= 1) {
+                input_y = input_y * 0.2;
+            }
+            else if (frontShort <= 10) {
+                input_y = Math.max(drive.pow(drive.maxMin(frontShort/10, 1, 0.2), 0.75) * input_y, 0.2);
             }
         }
 
@@ -178,7 +180,6 @@ public class ManualDrive extends LinearOpMode {
 
         List<Double> powersList = drive.scaleDown(leftFrontPower, leftRearPower, rightRearPower, rightFrontPower, 1);
 
-        telemetry.addData("Powers", powersList);
         drive.setMotorPowers(powersList.get(0), powersList.get(1), powersList.get(2), powersList.get(3));
 
 //        telemetry.addData("Wheel Powers", "lf %.2f, lr %.2f, rr %.2f, rf %.2f", powersList.get(0), powersList.get(1), powersList.get(2), powersList.get(3));
@@ -216,17 +217,12 @@ public class ManualDrive extends LinearOpMode {
     private void controlCapstone() {
         if (gamepad2.x && !pressed[6]) {
             if (capstoneArmMode == "Stored") capstoneArmMode = "Ready";
-            else if (capstoneArmMode == "Ready") capstoneArmMode = "Dropped";
-            else if (capstoneArmMode == "Dropped") capstoneArmMode = "Stored";
+            else if (capstoneArmMode == "Ready") capstoneArmMode = "Stored";
 
             if (capstoneArmMode == "Stored") {
                 capstonePosition = 0;
             } else if (capstoneArmMode == "Ready") {
                 capstonePosition = 0.55;
-                intakeGrabberPosition = 0;
-                horizontalPosition = 0;
-            } else if (capstoneArmMode == "Dropped") {
-               capstonePosition = 0.7;
             }
 
             pressed[6] = true;
@@ -234,9 +230,13 @@ public class ManualDrive extends LinearOpMode {
             pressed[6] = false;
         }
 
-        if (gamepad2.left_bumper) capstonePosition = Math.min(capstonePosition + 0.005, 1);
-        if (gamepad2.right_bumper) capstonePosition = Math.max(capstonePosition - 0.005, 0);
+        if (gamepad2.left_bumper) capstonePosition = Math.min(capstonePosition + 0.002, 1);
+        if (gamepad2.right_bumper) capstonePosition = Math.max(capstonePosition - 0.002, 0);
 
+        if (capstonePosition >= capstonePositionThreshold) {
+            intakeGrabberPosition = 0;
+            horizontalPosition = 0;
+        }
         drive.capstoneArm.setPosition(capstonePosition);
     }
 
@@ -255,26 +255,26 @@ public class ManualDrive extends LinearOpMode {
     }
 
     private void controlVerticalExtender() {
-        if (gamepad2.dpad_up && !pressed[4]) {
+        if (gamepad2.dpad_up && !pressed[4] && capstonePosition < capstonePositionThreshold) {
             verticalPosition = lastTopPosition + ticksPerUpBlock;
             pressed[4] = true;
         } else if (!gamepad2.dpad_up && pressed[4]) {
             pressed[4] = false;
         }
 
-        if (gamepad2.dpad_down && !pressed[5]) {
-            verticalPosition -= ticksPerDownBlock;
-            pressed[5] = true;
-        } else if (!gamepad2.dpad_down && pressed[5]) {
-            pressed[5] = false;
-        }
+//        if (gamepad2.dpad_down && !pressed[5] && capstonePosition < capstonePositionThreshold) {
+//            verticalPosition -= ticksPerDownBlock;
+//            pressed[5] = true;
+//        } else if (!gamepad2.dpad_down && pressed[5]) {
+//            pressed[5] = false;
+//        }
 
         if (gamepad2.dpad_left) verticalPosition -= 2;
         if (gamepad2.dpad_right) verticalPosition += 2;
 
         if (gamepad2.right_stick_button) verticalPosition = bottomVerticalLim;
 
-        verticalPosition = Math.min(Math.max(verticalPosition - gamepad2.right_stick_y * 25, bottomVerticalLim), topVerticalLim);
+        verticalPosition = Math.min(Math.max(verticalPosition - gamepad2.right_stick_y * 25 * ((capstonePosition >= capstonePositionThreshold) ? 0.25:1.0), bottomVerticalLim), topVerticalLim);
 
         if (verticalPosition != previousVerticalPos) drive.verticalExtender.setTargetPosition((int) verticalPosition);
         previousVerticalPos = verticalPosition;
@@ -289,7 +289,7 @@ public class ManualDrive extends LinearOpMode {
             input_y = 0;
         }
 
-        horizontalPosition = drive.keepBetweenMaxMin(horizontalPosition - input_y / 25, 1, 0);
+        horizontalPosition = drive.maxMin(horizontalPosition - input_y / 25, 1, 0);
         if (horizontalPosition != previousHorizontalPos) {
             //drive.log("Horizontal Position set to: " + horizontalPosition);
             drive.horizontalExtender.setPosition(horizontalPosition);

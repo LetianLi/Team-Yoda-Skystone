@@ -204,7 +204,7 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         }
     }
 
-    public double keepBetweenMaxMin(double number, double max, double min) {
+    public double maxMin(double number, double max, double min) {
         return Math.min(Math.max(number, min), max);
     }
 
