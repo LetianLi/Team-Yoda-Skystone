@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.drive.opmode;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -56,42 +57,50 @@ public class LocalizationTest extends LinearOpMode {
             double extraY = 0;
 
             if (TESTINGMODE) {
-                if (gamepad1.dpad_up) drive.forward(DISTANCE);
-                if (gamepad1.dpad_down) drive.back(DISTANCE);
-                if (gamepad1.dpad_right) drive.strafeRight(DISTANCE);
-                if (gamepad1.dpad_left) drive.strafeLeft(DISTANCE);
+                if (!drive.isBusy()) {
+                    if (gamepad1.dpad_up) drive.followTrajectory(drive.trajectoryBuilder().forward(DISTANCE).build());
+                    if (gamepad1.dpad_down) drive.followTrajectory(drive.trajectoryBuilder().back(DISTANCE).build());
+                    if (gamepad1.dpad_right) drive.followTrajectory(drive.trajectoryBuilder().strafeRight(DISTANCE).build());
+                    if (gamepad1.dpad_left) drive.followTrajectory(drive.trajectoryBuilder().strafeLeft(DISTANCE).build());
+                    if (gamepad1.y) {
+                        drive.followTrajectory(drive.trajectoryBuilder().strafeTo(new Vector2d(0, 0)).build());
+                    }
+                }
             }
+
             else {
                 if (gamepad1.dpad_up) extraY += 0.1;
                 if (gamepad1.dpad_down) extraY -= 0.1;
                 if (gamepad1.dpad_right) extraX += 0.1;
                 if (gamepad1.dpad_left) extraX -= 0.1;
-                if (gamepad1.right_bumper) bumperTurn += 0.1;
-                if (gamepad1.left_bumper) bumperTurn -= 0.1;
             }
+            if (gamepad1.right_bumper) bumperTurn += 0.1;
+            if (gamepad1.left_bumper) bumperTurn -= 0.1;
 
-            Pose2d baseVel = new Pose2d(
-                    -gamepad1.left_stick_y + extraY,
-                    -gamepad1.left_stick_x - extraX,
-                    -gamepad1.right_stick_x - bumperTurn
-            );
+            if (!drive.isBusy()) {
+                Pose2d baseVel = new Pose2d(
+                        -gamepad1.left_stick_y + extraY,
+                        -gamepad1.left_stick_x - extraX,
+                        -gamepad1.right_stick_x - bumperTurn
+                );
 
-            Pose2d vel;
-            if (Math.abs(baseVel.getX()) + Math.abs(baseVel.getY()) + Math.abs(baseVel.getHeading()) > 1) {
-                // re-normalize the powers according to the weights
-                double denom = VX_WEIGHT * Math.abs(baseVel.getX())
-                    + VY_WEIGHT * Math.abs(baseVel.getY())
-                    + OMEGA_WEIGHT * Math.abs(baseVel.getHeading());
-                vel = new Pose2d(
-                    VX_WEIGHT * baseVel.getX(),
-                    VY_WEIGHT * baseVel.getY(),
-                    OMEGA_WEIGHT * baseVel.getHeading()
-                ).div(denom);
-            } else {
-                vel = baseVel;
+                Pose2d vel;
+                if (Math.abs(baseVel.getX()) + Math.abs(baseVel.getY()) + Math.abs(baseVel.getHeading()) > 1) {
+                    // re-normalize the powers according to the weights
+                    double denom = VX_WEIGHT * Math.abs(baseVel.getX())
+                            + VY_WEIGHT * Math.abs(baseVel.getY())
+                            + OMEGA_WEIGHT * Math.abs(baseVel.getHeading());
+                    vel = new Pose2d(
+                            VX_WEIGHT * baseVel.getX(),
+                            VY_WEIGHT * baseVel.getY(),
+                            OMEGA_WEIGHT * baseVel.getHeading()
+                    ).div(denom);
+                } else {
+                    vel = baseVel;
+                }
+
+                drive.setDrivePower(vel);
             }
-
-            drive.setDrivePower(vel);
 
             drive.update();
 
