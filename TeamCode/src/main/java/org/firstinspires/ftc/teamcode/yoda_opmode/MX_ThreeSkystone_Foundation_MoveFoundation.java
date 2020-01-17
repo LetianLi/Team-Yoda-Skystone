@@ -18,7 +18,7 @@ public class MX_ThreeSkystone_Foundation_MoveFoundation extends AutonomousBase {
     private double forwardOffset = 0;
     private double neg = 1;
 
-    private double stoneY = 34;
+    private double stoneY = 33;
     private double foundationY = 0;
 
     private double[] armOrder;
@@ -63,13 +63,13 @@ public class MX_ThreeSkystone_Foundation_MoveFoundation extends AutonomousBase {
 //                stopProgram();
                 //logCurrentPos("Failed");
             //}
-            logError("*** After initial move to 1st stone", expected_x, expected_y);
+            logError("*** stone 1 | after moving to stone", expected_x, expected_y);
 
             drive.setLogTag("main");
             strategist.moveSkystoneArms(getArmSide(armOrder[0]), ArmStage.GRAB);
             logCurrentPos("*** Grabbed 1st stone");
 
-            double y_error = moveAndDrop(1, 59 + armOrder[0] * neg, getArmSide(armOrder[0]), -1);
+            double y_error = moveAndDrop(1, 59 + armOrder[0] * neg, getArmSide(armOrder[0]), teamColor == TeamColor.BLUE ? -1: -3);
             logCurrentPos("After dropping 1st stone");
             double offset = 0;
             if (y_error > 2.0) {
@@ -80,7 +80,7 @@ public class MX_ThreeSkystone_Foundation_MoveFoundation extends AutonomousBase {
             foundationToGrab(2, -49 - forwardOffset + armOrder[1] * neg, getArmSide(armOrder[1]), teamColor == TeamColor.BLUE ? offset : 0);
             logCurrentPos("Grabbed 2nd stone");
 
-            y_error = moveAndDrop(2, 50 + armOrder[1] * neg, getArmSide(armOrder[1]), teamColor == TeamColor.BLUE ? 1 : 0);
+            y_error = moveAndDrop(2, 50 + armOrder[1] * neg, getArmSide(armOrder[1]), teamColor == TeamColor.BLUE ? 1 : -1);
             logCurrentPos("After dropping 2nd stone");
             offset = 0;
 
@@ -94,7 +94,7 @@ public class MX_ThreeSkystone_Foundation_MoveFoundation extends AutonomousBase {
             logCurrentPos("After dropping 3rd stone");
 
             // Move Foundation
-            drive.strafeLeft(2);
+            drive.strafeLeft(3);
             drive.turnToRadians(Math.toRadians(-90 * neg), drive.getHeading());
 
             drive.followTrajectorySync(drive.trajectoryBuilder()
@@ -103,13 +103,13 @@ public class MX_ThreeSkystone_Foundation_MoveFoundation extends AutonomousBase {
                         drive.parkingArm.setPosition(1);
                         strategist.moveFoundationServos(0.7);
                         return null;})
-                    .strafeTo(new Vector2d(50, drive.getY() + 1))
+                    //.strafeTo(new Vector2d(50, drive.getY() + 1))
                     .strafeTo(new Vector2d(50, drive.getY() - 5 * neg)) // forward
-                    .addMarker(new Vector2d(50, drive.getY() - 4 * neg), () -> { strategist.moveFoundationServos(1); return null; }) //put mover down while moving
+                    .addMarker(new Vector2d(50, drive.getY() - 4.5 * neg), () -> { strategist.moveFoundationServos(1); return null; }) //put mover down while moving
                     .build());
             drive.followTrajectorySync(drive.trajectoryBuilder()
                     .setReversed(true)
-                    .splineTo(new Pose2d(35, 50 * neg, Math.toRadians(20 * neg))) // turn
+                    .splineTo(new Pose2d(35, (teamColor == TeamColor.BLUE ? 50 : 40) * neg, Math.toRadians(20 * neg))) // turn
                     .build());
 //            drive.turnToRadians(0, drive.getHeading()); // make another turn
 
@@ -122,7 +122,7 @@ public class MX_ThreeSkystone_Foundation_MoveFoundation extends AutonomousBase {
 //            if (teamColor == TeamColor.BLUE) setPoseYToDistance();
 
             drive.followTrajectorySync(drive.trajectoryBuilder()
-                    .strafeTo(new Vector2d(drive.getX() - 5, drive.getY() - 5 * neg))
+                    //.strafeTo(new Vector2d(drive.getX() - 5, drive.getY() - 5 * neg))
                     .strafeTo(new Vector2d(0, 38 * neg))
                     .build());
 
@@ -143,7 +143,7 @@ public class MX_ThreeSkystone_Foundation_MoveFoundation extends AutonomousBase {
             if (getSkystonePos() == SkystonePos.LEFT)        armOrder = new double[] {backArm, frontArm, frontArm};
             else if (getSkystonePos() == SkystonePos.MIDDLE) armOrder = new double[] {backArm, frontArm, frontArm};
             else if (getSkystonePos() == SkystonePos.RIGHT)  armOrder = new double[] {backArm, frontArm, frontArm};
-            foundationY = 31;
+            foundationY = 29;
         }
         else if (teamColor == TeamColor.BLUE) {
             neg = 1;
