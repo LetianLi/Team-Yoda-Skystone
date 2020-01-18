@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.yoda_opmode;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -12,7 +14,7 @@ import java.util.List;
 @TeleOp(group = "drive")
 public class ManualDrive extends LinearOpMode {
     private YodaMecanumDrive drive;
-    private boolean[] pressed = new boolean[8];
+    private boolean[] pressed = new boolean[10];
 
     private double speed_multiplier = 1;
     private boolean isSlowMode = false;
@@ -27,7 +29,8 @@ public class ManualDrive extends LinearOpMode {
     private double capstonePosition = 0;
 
     private double intakeGrabberPosition = 0;
-    private double foundationMoverPosition = 0;
+    private double leftFoundationMoverPosition = 0;
+    private double rightFoundationMoverPosition = 0;
 
     private double verticalPosition = 0;
     private double previousVerticalPos = -1;
@@ -47,7 +50,7 @@ public class ManualDrive extends LinearOpMode {
         drive = new YodaMecanumDrive(hardwareMap);
         drive.setOpMode(this);
         drive.resetTimer();
-        // telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         horizontalPosition = 0.99;
         previousHorizontalPos = 0.99;
 
@@ -159,7 +162,7 @@ public class ManualDrive extends LinearOpMode {
 
         telemetry.addData("Input:", "x %.2f, y %.2f, turning %.2f", input_x, input_y, input_turning);
 
-        if (isStopMode && input_y > 0 && foundationMoverPosition == 0) {
+        if (isStopMode && input_y > 0 && leftFoundationMoverPosition == 0 && rightFoundationMoverPosition == 0) {
             double frontShort = Math.min(drive.getFrontLeftDistance(), drive.getFrontRightDistance());
             frontShort = Math.max(frontShort, 0);
             if (frontShort <= 1) {
@@ -191,11 +194,25 @@ public class ManualDrive extends LinearOpMode {
     }
 
     private void moveFoundationServo() {
-        if (gamepad1.left_trigger >= 0.1) foundationMoverPosition = 1;
-        else if (gamepad1.right_trigger >= 0.5) foundationMoverPosition = 0;
+        if (gamepad1.left_trigger > 0.2 && !pressed[8]) {
+            leftFoundationMoverPosition = (leftFoundationMoverPosition == 0) ? 1 : 0;
+            pressed[8] = true;
+        }
+        if (gamepad1.left_trigger <= 0.2 && pressed[8]) pressed[8] = false;
 
-        drive.foundationMoverLeft.setPosition(foundationMoverPosition);
-        drive.foundationMoverRight.setPosition(foundationMoverPosition);
+        if (gamepad1.right_trigger > 0.2 && !pressed[9]) {
+            rightFoundationMoverPosition = (rightFoundationMoverPosition == 0) ? 1 : 0;
+            pressed[9] = true;
+        }
+        if (gamepad1.right_trigger <= 0.2 && pressed[9]) pressed[9] = false;
+
+
+//
+//        if (gamepad1.left_trigger >= 0.1) foundationMoverPosition = 1;
+//        else if (gamepad1.right_trigger >= 0.5) foundationMoverPosition = 0;
+//
+        drive.foundationMoverLeft.setPosition(leftFoundationMoverPosition);
+        drive.foundationMoverRight.setPosition(rightFoundationMoverPosition);
     }
 
     private void controlIntakeGrabber() {
@@ -222,7 +239,7 @@ public class ManualDrive extends LinearOpMode {
             if (capstoneArmMode == "Stored") {
                 capstonePosition = 0;
             } else if (capstoneArmMode == "Ready") {
-                capstonePosition = 0.55;
+                capstonePosition = 0.7;
             }
 
             pressed[6] = true;
@@ -274,7 +291,7 @@ public class ManualDrive extends LinearOpMode {
 
         if (gamepad2.right_stick_button) verticalPosition = bottomVerticalLim;
 
-        verticalPosition = Math.min(Math.max(verticalPosition - gamepad2.right_stick_y * 25 * ((capstonePosition >= capstonePositionThreshold) ? 0.25:1.0), bottomVerticalLim), topVerticalLim);
+        verticalPosition = Math.min(Math.max(verticalPosition - gamepad2.right_stick_y * 20 * ((capstonePosition >= capstonePositionThreshold) ? 0.25:1.0), bottomVerticalLim), topVerticalLim);
 
         if (verticalPosition != previousVerticalPos) drive.verticalExtender.setTargetPosition((int) verticalPosition);
         previousVerticalPos = verticalPosition;
