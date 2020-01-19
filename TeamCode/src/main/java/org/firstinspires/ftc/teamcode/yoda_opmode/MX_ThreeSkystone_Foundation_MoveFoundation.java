@@ -203,6 +203,10 @@ public class MX_ThreeSkystone_Foundation_MoveFoundation extends AutonomousBase {
                 .strafeTo(new Vector2d(expected_x, expected_y))
                 .build());
         double y_error = logError("after moving to foundation", expected_x, expected_y);
+        double rightDistance = drive.getRightDistance();
+        double leftDistance = drive.getLeftDistance();
+        drive.log("current distance right to foundation:" + rightDistance);
+        drive.log("current distance left to wall:" + leftDistance);
         strategist.moveSkystoneArms(arm, ArmStage.DROP);
         drive.log("Cycle time:" + auto_timer.milliseconds());
         return y_error;
@@ -251,6 +255,7 @@ public class MX_ThreeSkystone_Foundation_MoveFoundation extends AutonomousBase {
                         strategist.moveSkystoneArms(arm, ArmStage.CLOSEGRABBER);
                         return null;})
                     .build());
+            sleep(300);
             logError("after strafeRight", expected_x, expected_y - (currentDistance - 2.5));
         }
         else {

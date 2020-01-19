@@ -23,7 +23,7 @@ public class LocalizationTest extends LinearOpMode {
     private double VX_WEIGHT = 1;
     private double VY_WEIGHT = 1;
     private double OMEGA_WEIGHT = 1;
-    public static double DISTANCE = 10;
+    public static double DISTANCE = 70;
     public static double STARTINGX = -32;
     public static double STARTINGY = 61.5;
     public static double STARTINGHEADINGDEG = 0;

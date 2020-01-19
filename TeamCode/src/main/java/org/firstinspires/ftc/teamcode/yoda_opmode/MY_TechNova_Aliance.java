@@ -19,7 +19,7 @@ public class MY_TechNova_Aliance extends AutonomousBase {
     private double stoneY = 32;
     private double foundationY = 0;
 
-    private double[] armOrder;
+    private double armOrder;
     private double frontArm = -5;
     private double backArm = 7;
 
@@ -35,6 +35,12 @@ public class MY_TechNova_Aliance extends AutonomousBase {
     public void runOpMode() throws InterruptedException {
         initialize();
 
+        // wait for a while
+        while (!isStopRequested() && op_timer.seconds() < 5) {
+            telemetry.addData("Status", "Waiting to move");
+            telemetry.update();
+        }
+
         if (isStopRequested()) return;
         if (strategist != null) {
 
@@ -46,26 +52,27 @@ public class MY_TechNova_Aliance extends AutonomousBase {
 
             double expected_x;
             double expected_y =  stoneY * neg;
-            if ((teamColor == TeamColor.BLUE && getSkystonePos() == SkystonePos.RIGHT) || (teamColor == TeamColor.RED && getSkystonePos() == SkystonePos.LEFT)) {
-                expected_x = -58.5 + armOrder[0] * neg; // get middle
+            if ((teamColor == TeamColor.BLUE && getSkystonePos() == SkystonePos.RIGHT) ||
+                (teamColor == TeamColor.RED && getSkystonePos() == SkystonePos.LEFT)) {
+                expected_x = -58.5 + armOrder * neg; // get middle
             }
             else {
-                expected_x = -66.5 + armOrder[0] * neg; // get furthest
+                expected_x = -66.5 + armOrder * neg; // get furthest
             }
             drive.log("strafeTo(" + expected_x + "," + expected_y);
             drive.followTrajectorySync(drive.trajectoryBuilder()
                     .addMarker(0, () -> {
-                        strategist.moveSkystoneArms(getArmSide(armOrder[0]), ArmStage.LOWERARM);
-                        strategist.moveSkystoneArms(getArmSide(armOrder[0]), ArmStage.OPENGRABBER);
+                        strategist.moveSkystoneArms(getArmSide(armOrder), ArmStage.LOWERARM);
+                        strategist.moveSkystoneArms(getArmSide(armOrder), ArmStage.OPENGRABBER);
                         return null;})
                     .strafeTo(new Vector2d(expected_x, expected_y))
-                    .addMarker(new Vector2d(expected_x, expected_y + 4 * neg), () -> { strategist.moveSkystoneArms(getArmSide(armOrder[0]), ArmStage.CLOSEGRABBER); return null;})
+                    .addMarker(new Vector2d(expected_x, expected_y + 4 * neg), () -> { strategist.moveSkystoneArms(getArmSide(armOrder), ArmStage.CLOSEGRABBER); return null;})
                     .build());
             logError("After init move", expected_x, expected_y);
 
-            strategist.moveSkystoneArms(getArmSide(armOrder[0]), ArmStage.GRAB);
+            strategist.moveSkystoneArms(getArmSide(armOrder), ArmStage.GRAB);
 
-            moveAndDrop(1, 59, getArmSide(armOrder[0]));
+            moveAndDrop(1, 57, getArmSide(armOrder));
 
             //if (teamColor == TeamColor.BLUE) setPoseYToDistance();
 
@@ -73,10 +80,9 @@ public class MY_TechNova_Aliance extends AutonomousBase {
                     .strafeTo(new Vector2d(drive.getX(), 60 * neg))
                     .addMarker(new Vector2d(drive.getX(), 61.5 * neg), () -> {
                         strategist.resetSkystoneArms();
-                        //drive.capstoneArm.setPosition(1);
                         return null;})
                     .strafeTo(new Vector2d(0, 61.5 * neg))
-                    .strafeTo(new Vector2d(0, 70 * neg))
+                    .strafeLeft(10)
                     .build());
             logError("final check", 0, 60 * neg);
 
@@ -91,7 +97,7 @@ public class MY_TechNova_Aliance extends AutonomousBase {
             reversed = true;
             startingPos = new Pose2d(-16, -61.5, baseHeading);
             foundationY = 28;
-            armOrder = new double[] {frontArm};
+            armOrder = frontArm;
         }
 
         else if (teamColor == TeamColor.BLUE) {
@@ -100,7 +106,7 @@ public class MY_TechNova_Aliance extends AutonomousBase {
             reversed = false;
             startingPos = new Pose2d(-16, 61.5, baseHeading);
             foundationY = 32;
-            armOrder = new double[] {backArm};
+            armOrder = backArm;
         }
         drive.setPoseEstimate(startingPos);
         drive.resetLeftSensorToWall(startingPos.getY(), 0.1);
@@ -118,8 +124,13 @@ public class MY_TechNova_Aliance extends AutonomousBase {
 //        logCurrentPos("before trajectory");
         double expected_x = foundationX;
         double expected_y = (foundationY + 5) * neg;
+
         drive.followTrajectorySync(drive.trajectoryBuilder()
-                .strafeTo(new Vector2d(startingPos.getX(), 58 * neg))
+                .strafeTo(new Vector2d(drive.getX() + 10, 58 * neg))
+                .strafeTo(new Vector2d(startingPos.getX(), 60 * neg))
+                .build());
+        sleep(1000);
+        drive.followTrajectorySync(drive.trajectoryBuilder()
                 .strafeTo(new Vector2d(foundationX, 60 * neg))
                 .build());
 
@@ -128,7 +139,6 @@ public class MY_TechNova_Aliance extends AutonomousBase {
 
         Servo targetArm = (arm == ArmSide.FRONT) ? drive.skystoneArmFront : drive.skystoneArmBack;
         targetArm.setPosition(0.5); // This attempts to put arm down
-        sleep(200);
 
         double currentDistance = drive.getRightDistance();
         drive.log("current distance right:" + currentDistance);

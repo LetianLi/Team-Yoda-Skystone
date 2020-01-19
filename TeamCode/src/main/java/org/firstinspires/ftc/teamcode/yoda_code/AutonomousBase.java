@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.yoda_enum.TeamColor;
 public abstract class AutonomousBase extends LinearOpMode {
 
     public YodaMecanumDrive drive;
-    ElapsedTime op_timer;
+    protected ElapsedTime op_timer;
     ElapsedTime timer_for_led;
     ElapsedTime time_since_detection_start;
     public ElapsedTime auto_timer;
@@ -112,6 +112,7 @@ public abstract class AutonomousBase extends LinearOpMode {
             idle();
             sleep(50);
         }
+        op_timer.reset();
         drive.setLed(RevBlinkinLedDriver.BlinkinPattern.BLACK);
         drive.resetAllServos();
     }

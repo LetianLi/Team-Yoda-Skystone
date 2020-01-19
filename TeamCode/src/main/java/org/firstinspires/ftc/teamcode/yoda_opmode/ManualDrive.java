@@ -286,8 +286,8 @@ public class ManualDrive extends LinearOpMode {
 //            pressed[5] = false;
 //        }
 
-        if (gamepad2.dpad_left) verticalPosition -= 2;
-        if (gamepad2.dpad_right) verticalPosition += 2;
+        if (gamepad2.dpad_left) verticalPosition -= 3;
+        if (gamepad2.dpad_right) verticalPosition += 3;
 
         if (gamepad2.right_stick_button) verticalPosition = bottomVerticalLim;
 
