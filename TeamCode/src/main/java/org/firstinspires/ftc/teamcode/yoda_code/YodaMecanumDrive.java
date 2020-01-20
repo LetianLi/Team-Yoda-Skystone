@@ -36,8 +36,8 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
     public RevBlinkinLedDriver led;
     private RevBlinkinLedDriver.BlinkinPattern lastPattern;
     public static double leftSensorToWall = 0;
-    public static double sensorXOffset = 0.5;
-    public static double sensorYOffset = -6;
+    public static double sensorXOffset = 0;
+    public static double sensorYOffset = -6 - 7.0/8.0;
     public static double middleToLeft = 8.214;
     private double newZeroIMU = 0;
 
@@ -301,12 +301,12 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         double heading = getHeading();
         double leftDist = getLeftDistance();
         double negativeMultiplier = startingY < 0 ? -1 : 1;
-        startingY += middleToLeft * negativeMultiplier;
-        if ((60 < Math.toDegrees(heading) && Math.toDegrees(heading) < 360 - 60) || leftDist > 300) return getY();
+//        startingY += middleToLeft * negativeMultiplier;
+        if ((60 < Math.toDegrees(heading) && Math.toDegrees(heading) < 360 - 60) || leftDist > 300 || isNaN(leftDist)) return getY();
 
-        double robotToWall = (leftDist + Math.abs(sensorYOffset)) * Math.cos(heading) + sensorXOffset * Math.sin(heading);
+        double robotLeftToWall = (leftDist + Math.abs(sensorYOffset)) * Math.cos(heading) + sensorXOffset * Math.sin(heading);
 
-        return startingY - (robotToWall * negativeMultiplier);
+        return startingY - (robotLeftToWall * negativeMultiplier);
     }
 
     public void resetLeftSensorToWall(double startingY, double extra) {
@@ -334,12 +334,7 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         return result;
     }
 
-    public double checkNaN(double number) {
-        return checkNaN(number, -1);
-    }
-
-    public double checkNaN(double number, double caseNaN) {
-        if (number != number) return caseNaN;
-        return number;
+    public boolean isNaN(double number) {
+        return number != number;
     }
 }

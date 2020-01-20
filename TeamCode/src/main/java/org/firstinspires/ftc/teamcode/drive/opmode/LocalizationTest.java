@@ -24,8 +24,8 @@ public class LocalizationTest extends LinearOpMode {
     private double VY_WEIGHT = 1;
     private double OMEGA_WEIGHT = 1;
     public static double DISTANCE = 70;
-    public static double STARTINGX = -32;
-    public static double STARTINGY = 61.5;
+    public static double STARTINGX = 0;
+    public static double STARTINGY = 0;
     public static double STARTINGHEADINGDEG = 0;
     public static boolean TESTINGMODE = true;
 
@@ -38,6 +38,7 @@ public class LocalizationTest extends LinearOpMode {
 
         drive = new YodaMecanumDrive(hardwareMap);
         drive.setPoseEstimate(new Pose2d(STARTINGX, STARTINGY, Math.toRadians(STARTINGHEADINGDEG)));
+        drive.resetLeftSensorToWall(STARTINGY, 0);
         drive.resetInitServos();
         waitForStart();
 
@@ -50,7 +51,10 @@ public class LocalizationTest extends LinearOpMode {
                 drive.setMotorsZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
                 braking = false;
             }
-            if (gamepad1.x) drive.setPoseEstimate(new Pose2d());
+            if (gamepad1.x) {
+                drive.setPoseEstimate(new Pose2d(0, 0, 0));
+                drive.resetLeftSensorToWall(0, 0);
+            }
 
             double bumperTurn = 0;
             double extraX = 0;
@@ -105,12 +109,15 @@ public class LocalizationTest extends LinearOpMode {
             drive.update();
 
             Pose2d poseEstimate = drive.getPoseEstimate();
-//            double calcY = getCalculatedY(STARTINGY);
+            double calcY = drive.getCalculatedY(STARTINGY);
+            double dist = drive.getLeftDistance();
 //            telemetry.addData("Encoder values, lf, lr, rr, rf", drive.getWheelPositions());
             telemetry.addData("x", poseEstimate.getX());
             telemetry.addData("y", poseEstimate.getY());
-//            telemetry.addData("Calculated y", calcY);
-//            telemetry.addData("Y error", calcY - poseEstimate.getY());
+            telemetry.addData("Calculated y", calcY);
+            telemetry.addData("Y difference", calcY - poseEstimate.getY());
+            telemetry.addData("Left Distance", dist);
+            telemetry.addData("Calc - Dist", calcY - dist);
             telemetry.addData("heading", Math.toDegrees(poseEstimate.getHeading()));
             telemetry.addData("IMU", Math.toDegrees(drive.getRawExternalHeading()));
             telemetry.addData("Braking", braking);
@@ -124,18 +131,4 @@ public class LocalizationTest extends LinearOpMode {
         return 2.9/2.54 * 2 * Math.PI * 1 * ticks / 2880;
     }
 
-    public double getCalculatedY(double startingY) {
-        double heading = Math.abs(drive.getPoseEstimate().getHeading());
-        double leftDist = drive.getLeftDistance();
-        double negativeMultiplier = startingY < 0 ? -1 : 1;
-        startingY += drive.middleToLeft * negativeMultiplier;
-//        if (Math.toDegrees(heading) > 30 || leftDist > 300) return drive.getY();
-
-        double robotToWall = (leftDist + Math.abs(drive.sensorYOffset)) * Math.cos(heading) + drive.sensorXOffset * Math.sin(heading);
-        telemetry.addData("negative", negativeMultiplier);
-        telemetry.addData("robot to wall", robotToWall);
-        telemetry.addData("sensor", leftDist);
-
-        return startingY - (robotToWall * negativeMultiplier);
-    }
 }

@@ -18,7 +18,6 @@ public class ManualDrive extends LinearOpMode {
 
     private double speed_multiplier = 1;
     private boolean isSlowMode = false;
-    private boolean isStopMode = false;
     private double FAST_MODE_MULTIPLIER = 1.4; //change to 1.0 for now but it only get 0.7 power. Try using 1.4, but it disables other directions
     private double SLOW_MODE_MULTIPLIER = 0.5;
     private double TURNING_SPEED = 1;
@@ -102,14 +101,6 @@ public class ManualDrive extends LinearOpMode {
             pressed[1] = false;
         }
 
-        if (gamepad1.x && !pressed[7]) {
-            isStopMode = !isStopMode;
-            isSlowMode = true;
-            pressed[7] = true;
-        } else if (!gamepad1.x && pressed[7]) {
-            pressed[7] = false;
-        }
-
         // does not work, disable now
 
         //if (gamepad1.x && !pressed[0]) {
@@ -129,11 +120,7 @@ public class ManualDrive extends LinearOpMode {
 
 //        telemetry.addData("Initial Input:", "x %.2f, y %.2f, turning %.2f", input_x, input_y, input_turning);
 
-        if (isStopMode) {
-            speed_multiplier = SLOW_MODE_MULTIPLIER - 0.1;
-            drive.setLed(RevBlinkinLedDriver.BlinkinPattern.DARK_RED);
-        }
-        else if (isSlowMode) {
+        if (isSlowMode) {
             speed_multiplier = SLOW_MODE_MULTIPLIER;
             drive.setLed(RevBlinkinLedDriver.BlinkinPattern.RED);
         }
@@ -162,17 +149,6 @@ public class ManualDrive extends LinearOpMode {
 
         telemetry.addData("Input:", "x %.2f, y %.2f, turning %.2f", input_x, input_y, input_turning);
 
-        if (isStopMode && input_y > 0 && leftFoundationMoverPosition == 0 && rightFoundationMoverPosition == 0) {
-            double frontShort = Math.min(drive.getFrontLeftDistance(), drive.getFrontRightDistance());
-            frontShort = Math.max(frontShort, 0);
-            if (frontShort <= 1) {
-                input_y = input_y * 0.2;
-            }
-            else if (frontShort <= 10) {
-                input_y = Math.max(drive.pow(drive.maxMin(frontShort/10, 1, 0.2), 0.75) * input_y, 0.2);
-            }
-        }
-
         double r = Math.hypot(input_x, input_y);
         double robotAngle = Math.atan2(input_y, input_x) - Math.PI / 4; // Math.PI/4 is the equivalent of 45 degrees
 
@@ -184,13 +160,6 @@ public class ManualDrive extends LinearOpMode {
         List<Double> powersList = drive.scaleDown(leftFrontPower, leftRearPower, rightRearPower, rightFrontPower, 1);
 
         drive.setMotorPowers(powersList.get(0), powersList.get(1), powersList.get(2), powersList.get(3));
-
-//        telemetry.addData("Wheel Powers", "lf %.2f, lr %.2f, rr %.2f, rf %.2f", powersList.get(0), powersList.get(1), powersList.get(2), powersList.get(3));
-//        drive.log("Left Front " + leftFrontPower + " > " + powersList.get(0));
-//        drive.log("Left Rear " + leftRearPower + " > " + powersList.get(1));
-//        drive.log("Right Rear " + rightRearPower + " > " + powersList.get(2));
-//        drive.log("Right Front " + rightFrontPower + " > " + powersList.get(3));
-//        drive.log("");
     }
 
     private void moveFoundationServo() {
@@ -206,11 +175,11 @@ public class ManualDrive extends LinearOpMode {
         }
         if (gamepad1.right_trigger <= 0.2 && pressed[9]) pressed[9] = false;
 
+        if (gamepad1.x) {
+            leftFoundationMoverPosition = 0;
+            rightFoundationMoverPosition = 0;
+        }
 
-//
-//        if (gamepad1.left_trigger >= 0.1) foundationMoverPosition = 1;
-//        else if (gamepad1.right_trigger >= 0.5) foundationMoverPosition = 0;
-//
         drive.foundationMoverLeft.setPosition(leftFoundationMoverPosition);
         drive.foundationMoverRight.setPosition(rightFoundationMoverPosition);
     }
@@ -247,8 +216,8 @@ public class ManualDrive extends LinearOpMode {
             pressed[6] = false;
         }
 
-        if (gamepad2.left_bumper) capstonePosition = Math.min(capstonePosition + 0.002, 1);
-        if (gamepad2.right_bumper) capstonePosition = Math.max(capstonePosition - 0.002, 0);
+        if (gamepad2.left_bumper) capstonePosition = Math.min(capstonePosition + 0.0015, 1);
+        if (gamepad2.right_bumper) capstonePosition = Math.max(capstonePosition - 0.0015, 0);
 
         if (capstonePosition >= capstonePositionThreshold) {
             intakeGrabberPosition = 0;
@@ -272,7 +241,7 @@ public class ManualDrive extends LinearOpMode {
     }
 
     private void controlVerticalExtender() {
-        if (gamepad2.dpad_up && !pressed[4] && capstonePosition < capstonePositionThreshold) {
+        if ((gamepad2.dpad_up && !gamepad2.dpad_left && !gamepad2.dpad_right) && !pressed[4] && capstonePosition < capstonePositionThreshold) {
             verticalPosition = lastTopPosition + ticksPerUpBlock;
             pressed[4] = true;
         } else if (!gamepad2.dpad_up && pressed[4]) {
@@ -291,8 +260,9 @@ public class ManualDrive extends LinearOpMode {
 
         if (gamepad2.right_stick_button) verticalPosition = bottomVerticalLim;
 
-        verticalPosition = Math.min(Math.max(verticalPosition - gamepad2.right_stick_y * 20 * ((capstonePosition >= capstonePositionThreshold) ? 0.25:1.0), bottomVerticalLim), topVerticalLim);
-
+        if (!(gamepad2.dpad_left && gamepad2.dpad_right)) {
+            verticalPosition = Math.min(Math.max(verticalPosition - gamepad2.right_stick_y * 15 * ((capstonePosition >= capstonePositionThreshold) ? 0.25 : 1.0), bottomVerticalLim), topVerticalLim);
+        }
         if (verticalPosition != previousVerticalPos) drive.verticalExtender.setTargetPosition((int) verticalPosition);
         previousVerticalPos = verticalPosition;
     }
