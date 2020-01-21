@@ -44,7 +44,7 @@ import java.util.concurrent.TimeUnit;
 public abstract class SampleMecanumDriveBase extends MecanumDrive {
     protected LinearOpMode opMode;
     public static PIDCoefficients AXIAL_PID = new PIDCoefficients(1.75, 0, 0.07); // X    9, 0, 0
-    public static PIDCoefficients LATERAL_PID = new PIDCoefficients(1, 0, 0); // Y 10, 0, 0
+    public static PIDCoefficients LATERAL_PID = new PIDCoefficients(5, 0, 0.1); // Y 10, 0, 0
     public static PIDCoefficients HEADING_PID = new PIDCoefficients(3.2, 0, 0); // Heading 7, 0, 0
 
 
