@@ -229,8 +229,12 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
 //
     public double getFrontLeftDistance() { return frontLeftDistance.getDistance(DistanceUnit.INCH);}
     public double getFrontRightDistance() { return frontRightDistance.getDistance(DistanceUnit.INCH);}
-    public double getRightDistance() { return rightDistance.getDistance(DistanceUnit.INCH);}
-    public double getLeftDistance() { return leftDistance.getDistance(DistanceUnit.INCH) - leftSensorToWall;}
+    public double getRightDistance() {
+        return rightDistance.getDistance(DistanceUnit.INCH);
+    }
+    public double getLeftDistance() {
+        return leftDistance.getDistance(DistanceUnit.INCH) - 2; // 2" is the sensor to wall
+    }
 
     public double getBackDistance() {
 //
@@ -310,9 +314,9 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
     }
 
     public void resetLeftSensorToWall(double startingY, double extra) {
-        leftSensorToWall = getLeftDistance() + Math.abs(sensorYOffset);
+/*        leftSensorToWall = getLeftDistance() + Math.abs(sensorYOffset);
         if (startingY >= 0) leftSensorToWall += extra;
-        else if (startingY < 0) leftSensorToWall -= extra;
+        else if (startingY < 0) leftSensorToWall -= extra;*/
     }
 
     public double getX() { return getPoseEstimate().getX();}
