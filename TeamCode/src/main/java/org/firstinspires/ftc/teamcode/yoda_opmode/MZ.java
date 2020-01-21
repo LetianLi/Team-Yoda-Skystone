@@ -20,6 +20,8 @@ public class MZ extends AutonomousBase {
 
     private double stoneY = 33;
     private double foundationY = 0;
+    private double adjustDistanceToFoundation = 0;
+    private double lastDistanceToFoundation = 0;
 
     private double[] armOrder;
     private double frontArm = -5;
@@ -39,6 +41,10 @@ public class MZ extends AutonomousBase {
     @Override
     public void runOpMode() throws InterruptedException {
         initialize();
+
+        adjustDistanceToFoundation = 0;
+        lastDistanceToFoundation = 0;
+
         if (isStopRequested()) return;
         if (strategist != null) {
 
@@ -59,10 +65,6 @@ public class MZ extends AutonomousBase {
                     .strafeTo(new Vector2d(expected_x, expected_y))
                     .addMarker(new Vector2d(expected_x, expected_y + 4 * neg), () -> { strategist.moveSkystoneArms(getArmSide(armOrder[0]), ArmStage.CLOSEGRABBER); return null;})
                     .build());
-            //if (checkForFailure(new Vector2d(expected_x, expected_y), startingPos.getHeading(), 2, 2, 10)) {
-//                stopProgram();
-                //logCurrentPos("Failed");
-            //}
             logError("*** stone 1 | after moving to stone", expected_x, expected_y);
 
             drive.setLogTag("main");
@@ -73,38 +75,40 @@ public class MZ extends AutonomousBase {
                     1,
                     59 + armOrder[0] * neg,
                     getArmSide(armOrder[0]),
-                    teamColor == TeamColor.BLUE ? -1: -3,
-                    teamColor == TeamColor.BLUE ? 1 : 1);
+                    teamColor == TeamColor.BLUE ? -1: -3);
             logCurrentPos("After dropping 1st stone");
-            double offset = 0;
-            if (y_error > 2.0) {
-                offset = y_error - 2;
-            }
+            double offset = y_error;
 
             // go back for 2nd stone
-            foundationToGrab(2, -49 - forwardOffset + armOrder[1] * neg, getArmSide(armOrder[1]), teamColor == TeamColor.BLUE ? offset : 0, 0);
+            foundationToGrab(2,
+                    -49 - forwardOffset + armOrder[1] * neg,
+                    getArmSide(armOrder[1]),
+                    teamColor == TeamColor.BLUE ? offset : 1,
+                    1);
             logCurrentPos("Grabbed 2nd stone");
 
             y_error = moveAndDrop(
                     2,
                     50 + armOrder[1] * neg,
                     getArmSide(armOrder[1]),
-                    teamColor == TeamColor.BLUE ? 1 : -1,
-                    0);
+                    teamColor == TeamColor.BLUE ? 1 : -1);
             logCurrentPos("After dropping 2nd stone");
-
             offset = y_error;
 
             // go back for 3rd stone
-            foundationToGrab(3, -26 - thirdStoneOffset + armOrder[2] * neg, getArmSide(armOrder[2]), teamColor == TeamColor.BLUE ? offset : 0, teamColor == TeamColor.BLUE ? 2 : 2);
+            foundationToGrab(
+                    3,
+                    -26 - thirdStoneOffset + armOrder[2] * neg,
+                    getArmSide(armOrder[2]),
+                    teamColor == TeamColor.BLUE ? offset : 2,
+                    teamColor == TeamColor.BLUE ? 2 : 3);
             logCurrentPos("Grabbed 3rd stone");
 
             moveAndDrop(
                     3,
                     39 + armOrder[2] * neg,
                     getArmSide(armOrder[2]),
-                    teamColor == TeamColor.BLUE ? offset : 0,
-                    2);
+                    teamColor == TeamColor.BLUE ? offset : 0);
             logCurrentPos("After dropping 3rd stone");
 
             // Move Foundation
@@ -117,15 +121,13 @@ public class MZ extends AutonomousBase {
                         drive.parkingArm.setPosition(1);
                         strategist.moveFoundationServos(0.7);
                         return null;})
-                    //.strafeTo(new Vector2d(50, drive.getY() + 1))
                     .strafeTo(new Vector2d(50, drive.getY() - 5 * neg)) // forward
                     .addMarker(new Vector2d(50, drive.getY() - 4.5 * neg), () -> { strategist.moveFoundationServos(1); return null; }) //put mover down while moving
                     .build());
             drive.followTrajectorySync(drive.trajectoryBuilder()
                     .setReversed(true)
-                    .splineTo(new Pose2d(35, (teamColor == TeamColor.BLUE ? 50 : 40) * neg, Math.toRadians(20 * neg))) // turn
+                    .splineTo(new Pose2d(35, (teamColor == TeamColor.BLUE ? 50 : 45) * neg, Math.toRadians(20 * neg))) // turn
                     .build());
-//            drive.turnToRadians(0, drive.getHeading()); // make another turn
 
             // Push to wall and Park
             drive.followTrajectorySync(drive.trajectoryBuilder()
@@ -133,10 +135,7 @@ public class MZ extends AutonomousBase {
                     .addMarker(0.1, () -> { strategist.moveFoundationServos(0.7); return null;}) // open mover
                     .build());
 
-//            if (teamColor == TeamColor.BLUE) setPoseYToDistance();
-
             drive.followTrajectorySync(drive.trajectoryBuilder()
-                    //.strafeTo(new Vector2d(drive.getX() - 5, drive.getY() - 5 * neg))
                     .strafeTo(new Vector2d(0, 38 * neg))
                     .build());
 
@@ -157,7 +156,7 @@ public class MZ extends AutonomousBase {
             if (getSkystonePos() == SkystonePos.LEFT)        armOrder = new double[] {backArm, frontArm, frontArm};
             else if (getSkystonePos() == SkystonePos.MIDDLE) armOrder = new double[] {backArm, frontArm, frontArm};
             else if (getSkystonePos() == SkystonePos.RIGHT)  armOrder = new double[] {backArm, frontArm, frontArm};
-            foundationY = 29;
+            foundationY = 30.5;
         }
         else if (teamColor == TeamColor.BLUE) {
             neg = 1;
@@ -170,12 +169,11 @@ public class MZ extends AutonomousBase {
             forwardOffset = strategist.getForwardOffset(getSkystonePos(), blueForwardOffsets);
 
             if (getSkystonePos() == SkystonePos.LEFT)        armOrder = new double[] {frontArm, frontArm, backArm};
-            else if (getSkystonePos() == SkystonePos.MIDDLE) armOrder = new double[] {frontArm, backArm, backArm};
+            else if (getSkystonePos() == SkystonePos.MIDDLE) armOrder = new double[] {frontArm, backArm, frontArm};
             else if (getSkystonePos() == SkystonePos.RIGHT)  armOrder = new double[] {frontArm, backArm, backArm};
             foundationY = 34;
         }
         drive.setPoseEstimate(startingPos);
-        drive.resetLeftSensorToWall(startingPos.getY(), 0);
 
         buildingZone = new Pose2d(buildingZone.getX(), buildingZone.getY() * neg, baseHeading);
         loadingZone = new Pose2d(loadingZone.getX(), loadingZone.getY() * neg, baseHeading);
@@ -185,45 +183,62 @@ public class MZ extends AutonomousBase {
         drive.turnLedOff();
     }
 
-    private double moveAndDrop(int stoneIndex, double foundationX, ArmSide arm, double center_y_offset, double foundation_y_offset) {
+
+    private double moveAndDrop(int stoneIndex, double foundationX, ArmSide arm, double center_y_offset) {
         auto_timer.reset();
         drive.setLogTag("moveAndDrop for stone " + stoneIndex);
-//        logCurrentPos("before trajectory");
         double expected_x = foundationX;
-        double expected_y = (foundationY + foundation_y_offset) * neg;
+        drive.log("adjustDistanceToFoundation: " + adjustDistanceToFoundation);
+        double expected_y = (foundationY + adjustDistanceToFoundation) * neg;
         drive.followTrajectorySync(drive.trajectoryBuilder()
                 .strafeTo(new Vector2d(drive.getX(), drive.getY() + 3 * neg))
                 .setReversed(reversed)
-//                .splineTo(loadingZone)
-//                .splineTo(buildingZone)
                 .splineTo(centerLineStone.plus(new Pose2d(0, center_y_offset * neg)))
                 .addMarker(buildingZone.vec(), () -> { strategist.moveSkystoneArms(arm, ArmStage.PREPDROP); return null;})
-                .splineTo(new Pose2d(foundationX, (foundationY + 5 + foundation_y_offset) * neg, baseHeading))
+                .splineTo(new Pose2d(expected_x - 6, expected_y + 6 * neg, baseHeading))
                 .strafeTo(new Vector2d(expected_x, expected_y))
                 .build());
         double y_error = logError("after moving to foundation", expected_x, expected_y);
-        double rightDistance = drive.getRightDistance();
-        double leftDistance = drive.getLeftDistance();
-        drive.log("current distance right to foundation: " + rightDistance);
-        drive.log("current distance left to wall: " + leftDistance);
-        //drive.log("Calculated Y: " + drive.getCalculatedY(startingPos.getY()));
+        lastDistanceToFoundation = drive.getRightDistance();
+        if (lastDistanceToFoundation >= 1.9 && lastDistanceToFoundation < 10) { // too far
+            adjustDistanceToFoundation = 1.9 - lastDistanceToFoundation ;
+        } else if (lastDistanceToFoundation >=1.5) {
+            adjustDistanceToFoundation = 0;
+        } else if (lastDistanceToFoundation < 1.5) { // too close, move away from foundation
+            if ( adjustDistanceToFoundation <= 0) {
+                adjustDistanceToFoundation = 2;
+            } else {
+                adjustDistanceToFoundation += 2;
+            }
+        } else {
+            adjustDistanceToFoundation = 0;
+        }
+        drive.log("current distance right to foundation: " + lastDistanceToFoundation);
+
+        if (lastDistanceToFoundation > 1.9 && lastDistanceToFoundation < 10) {
+            drive.log("strafeRight: " + (lastDistanceToFoundation - 1.8));
+            drive.followTrajectorySync(drive.trajectoryBuilder()
+                    .strafeRight(lastDistanceToFoundation - 1.8)
+                    .build());
+        }
         strategist.moveSkystoneArms(arm, ArmStage.DROP);
+        //double leftDistance = drive.getLeftDistance();
+        //drive.log("current distance left to wall: " + leftDistance);
+        //drive.log("Calculated Y: " + drive.getCalculatedY(startingPos.getY()));
         drive.log("Cycle time:" + auto_timer.milliseconds());
-        return y_error;
-//        logCurrentPos("after trajectory");
+        return Math.abs(y_error);
     }
 
     private void foundationToGrab(int stoneIndex, double stoneX, ArmSide arm, double center_y_offset, double stone_y_offset) {
         auto_timer.reset();
         drive.setLogTag("foundationToGrab for stone " + stoneIndex);
-//        logCurrentPos("after trajectory");
         double expected_x = stoneX;
         double expected_y = (stoneY + stone_y_offset) * neg;
 
         drive.log("strafeTo(new Vector2d( " + drive.getX() + ", " + (drive.getY() + 2 * neg) + ")");
         drive.log("addMarker(0.3, strategist.resetSkystoneArms()");
         drive.log("splineTo(centerLinePlain)");
-        drive.log("splineTo(new Pose2d(" + stoneX + "," + (stoneY + 5 + center_y_offset) * neg + ", " + baseHeading + ")");
+        drive.log("splineTo(new Pose2d(" + stoneX + "," + (stoneY + 5 + center_y_offset) * neg + ", " + Math.toDegrees(baseHeading) + ")");
         drive.log("strafeTo(new Pose2d(" + stoneX + "," + stoneY * neg);
         drive.followTrajectorySync(drive.trajectoryBuilder()
                 .strafeTo(new Vector2d(drive.getX(), drive.getY() + 2 * neg)) // move away from foundation
@@ -238,8 +253,8 @@ public class MZ extends AutonomousBase {
                 .addMarker(centerLinePlain.vec().plus(new Vector2d(getArmOffset(arm) * neg - 15, center_y_offset * neg)), () -> {
                     strategist.moveSkystoneArms(arm, ArmStage.PREPARM);
                     return null;})
-                .splineTo(new Pose2d(stoneX, (stoneY  + stone_y_offset + 6) * neg, baseHeading))
-                .addMarker(new Vector2d(stoneX, (stoneY  + stone_y_offset + 3) * neg), () -> {
+                .strafeTo(new Vector2d(expected_x, centerLinePlain.getY() + stone_y_offset * neg))
+                .addMarker(new Vector2d(expected_x, (stoneY  + stone_y_offset + 3) * neg), () -> {
                     strategist.moveSkystoneArms(arm, ArmStage.LOWERARM);
                     return null;})
                 .strafeTo(new Vector2d(expected_x, expected_y))
@@ -272,7 +287,7 @@ public class MZ extends AutonomousBase {
 
         drive.log(context + " current Position:" + currentPos.getX() + "," + currentPos.getY()
                 + ", heading:" + Math.toDegrees(currentPos.getHeading()));
-                //+ "\n imu:" + Math.toDegrees(drive.getRawExternalHeading()));
+        //+ "\n imu:" + Math.toDegrees(drive.getRawExternalHeading()));
         ;
     }
 
@@ -289,39 +304,4 @@ public class MZ extends AutonomousBase {
             default: return frontArm;
         }
     }
-
-//    private void shiftPoseY(double shift) {
-//        drive.setPoseEstimate(drive.getPoseEstimate().minus(new Pose2d(0, shift * neg, 0)));
-//    }
-
-    private void setPoseYToDistance() {
-        Pose2d newPose = new Pose2d(drive.getX(), drive.getCalculatedY(startingPos.getY()), drive.getHeading());
-        drive.log("Current Position: " + drive.getPoseEstimate().toString());
-        drive.log("New Position: " + newPose.toString());
-        drive.setPoseEstimate(newPose);
-    }
-
-/*
-    private boolean checkForFailure(Vector2d targetPos, double targetHeading, double toleranceX, double toleranceY, double toleranceHeadingDeg) {
-        drive.update();
-        Pose2d currentPos = drive.getPoseEstimate();
-        boolean failedX = false, failedY = false, failedHeading = false;
-        if (Math.abs(currentPos.getX()       - targetPos.getX() ) > toleranceX)      failedX = true;
-        if (Math.abs(currentPos.getY()       - targetPos.getY() ) > toleranceY)      failedY = true;
-        if (Math.abs(currentPos.getHeading() - targetHeading    ) > Math.toRadians(toleranceHeadingDeg)) failedHeading = true;
-        drive.setLogTag("Fail Check");
-        drive.log("Current Pos:  " + currentPos.toString());
-        drive.log("Supposed Pos: " + new Pose2d(targetPos, targetHeading).toString());
-        drive.log("FailedX: " + failedX);
-        drive.log("FailedY: " + failedY);
-        drive.log("FailedHeading: " + failedHeading);
-
-        return failedX || failedY || failedHeading;
-    }
-    private void stopProgram() {
-        drive.led.setPattern(RevBlinkinLedDriver.BlinkinPattern.STROBE_RED);
-        drive.setMotorPowers(0, 0, 0, 0); // Just in case still moving
-        sleep(2000);
-        requestOpModeStop();
-    }*/
 }
