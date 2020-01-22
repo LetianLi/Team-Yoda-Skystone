@@ -56,7 +56,6 @@ public class MZ extends AutonomousBase {
 
             double expected_x = -27 - forwardOffset + armOrder[0] * neg;
             double expected_y =  stoneY * neg;
-            drive.log("splineTo(new Pose2d(" + expected_x + "," + expected_y);
             drive.followTrajectorySync(drive.trajectoryBuilder()
                     .addMarker(0, () -> {
                         strategist.moveSkystoneArms(getArmSide(armOrder[0]), ArmStage.LOWERARM);
@@ -71,36 +70,34 @@ public class MZ extends AutonomousBase {
             strategist.moveSkystoneArms(getArmSide(armOrder[0]), ArmStage.GRAB);
             logCurrentPos("*** Grabbed 1st stone");
 
-            double y_error = moveAndDrop(
+            moveAndDrop(
                     1,
                     59 + armOrder[0] * neg,
                     getArmSide(armOrder[0]),
                     teamColor == TeamColor.BLUE ? -1: -3);
             logCurrentPos("After dropping 1st stone");
-            double offset = y_error;
 
             // go back for 2nd stone
             foundationToGrab(2,
                     -49 - forwardOffset + armOrder[1] * neg,
                     getArmSide(armOrder[1]),
-                    teamColor == TeamColor.BLUE ? offset : 1,
+                    teamColor == TeamColor.BLUE ? 2 : 1,
                     1);
             logCurrentPos("Grabbed 2nd stone");
 
-            y_error = moveAndDrop(
+            moveAndDrop(
                     2,
                     50 + armOrder[1] * neg,
                     getArmSide(armOrder[1]),
-                    teamColor == TeamColor.BLUE ? 0 : -1);
+                    teamColor == TeamColor.BLUE ? 2 : -1);
             logCurrentPos("After dropping 2nd stone");
-            offset = y_error;
 
             // go back for 3rd stone
             foundationToGrab(
                     3,
                     -26 - thirdStoneOffset + armOrder[2] * neg,
                     getArmSide(armOrder[2]),
-                    teamColor == TeamColor.BLUE ? offset : 2,
+                    teamColor == TeamColor.BLUE ? 2 : 2,
                     teamColor == TeamColor.BLUE ? 3 : 3);
             logCurrentPos("Grabbed 3rd stone");
 
@@ -108,7 +105,7 @@ public class MZ extends AutonomousBase {
                     3,
                     39 + armOrder[2] * neg,
                     getArmSide(armOrder[2]),
-                    teamColor == TeamColor.BLUE ? 0 : 0);
+                    teamColor == TeamColor.BLUE ? 3 : 0);
             logCurrentPos("After dropping 3rd stone");
 
             // Move Foundation
@@ -186,7 +183,7 @@ public class MZ extends AutonomousBase {
     }
 
 
-    private double moveAndDrop(int stoneIndex, double foundationX, ArmSide arm, double center_y_offset) {
+    private void moveAndDrop(int stoneIndex, double foundationX, ArmSide arm, double center_y_offset) {
         auto_timer.reset();
         drive.setLogTag("moveAndDrop for stone " + stoneIndex);
         double expected_x = foundationX;
@@ -228,7 +225,6 @@ public class MZ extends AutonomousBase {
         //drive.log("current distance left to wall: " + leftDistance);
         //drive.log("Calculated Y: " + drive.getCalculatedY(startingPos.getY()));
         drive.log("Cycle time:" + auto_timer.milliseconds());
-        return Math.abs(y_error);
     }
 
     private void foundationToGrab(int stoneIndex, double stoneX, ArmSide arm, double center_y_offset, double stone_y_offset) {
@@ -237,11 +233,6 @@ public class MZ extends AutonomousBase {
         double expected_x = stoneX;
         double expected_y = (stoneY + stone_y_offset) * neg;
 
-        drive.log("strafeTo(new Vector2d( " + drive.getX() + ", " + (drive.getY() + 2 * neg) + ")");
-        drive.log("addMarker(0.3, strategist.resetSkystoneArms()");
-        drive.log("splineTo(centerLinePlain)");
-        drive.log("splineTo(new Pose2d(" + stoneX + "," + (stoneY + 5 + center_y_offset) * neg + ", " + Math.toDegrees(baseHeading) + ")");
-        drive.log("strafeTo(new Pose2d(" + stoneX + "," + stoneY * neg);
         drive.followTrajectorySync(drive.trajectoryBuilder()
                 .strafeTo(new Vector2d(drive.getX(), drive.getY() + 2 * neg)) // move away from foundation
                 .addMarker(0.3, () -> {
