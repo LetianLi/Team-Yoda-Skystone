@@ -10,8 +10,8 @@ import org.firstinspires.ftc.teamcode.yoda_enum.ArmStage;
 import org.firstinspires.ftc.teamcode.yoda_enum.SkystonePos;
 import org.firstinspires.ftc.teamcode.yoda_enum.TeamColor;
 
-@Autonomous(group = "auto", name = "MZ (testing)")
-public class MZ extends AutonomousBase {
+@Autonomous(group = "auto", name = "M12")
+public class M12 extends AutonomousBase {
 
     private double[] blueForwardOffsets = {0, 8, 16}; // left, middle, right
     private double[] redForwardOffsets  = {16, 8, 0}; // left middle, right
