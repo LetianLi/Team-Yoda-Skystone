@@ -88,6 +88,17 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
         constraints = new MecanumConstraints(BASE_CONSTRAINTS, TRACK_WIDTH);
         follower = new HolonomicPIDVAFollower(AXIAL_PID, LATERAL_PID, HEADING_PID);
     }
+    public void setFollower(TrajectoryFollower newFollower) {
+        follower = newFollower;
+    }
+
+    public void setMaxVelAndAccel(double maxVel, double maxAccel) {
+        DriveConstraints new_constraints = new DriveConstraints(
+                maxVel, maxAccel, 0.0,
+                Math.toRadians(180.0), Math.toRadians(180.0), 0.0
+        );
+        constraints = new MecanumConstraints(new_constraints, TRACK_WIDTH);
+    }
 
     public TrajectoryBuilder trajectoryBuilder() {
         return new TrajectoryBuilder(getPoseEstimate(), constraints);
