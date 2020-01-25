@@ -21,6 +21,7 @@ public abstract class AutonomousBase extends LinearOpMode {
     protected TeamColor teamColor = TeamColor.UNKNOWN;
     protected boolean askTeamColor = true;
     protected boolean detectStoneAndWait = true;
+    protected boolean initialize = true;
 
     private SkystonePos skystonePos = SkystonePos.UNKNOW;
     public OpencvDetector detector;
@@ -30,7 +31,7 @@ public abstract class AutonomousBase extends LinearOpMode {
         telemetry.addData("Status", "Initializing, please wait");
         telemetry.update();
 
-        detector = new OpencvDetector(hardwareMap);
+        if (detectStoneAndWait && initialize) detector = new OpencvDetector(hardwareMap);
 
         drive = new YodaMecanumDrive(hardwareMap);
         drive.setOpMode(this);
@@ -41,7 +42,7 @@ public abstract class AutonomousBase extends LinearOpMode {
         auto_timer = new ElapsedTime();
         drive.resetInitServos();
         drive.setMotorsZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        if (askTeamColor) {
+        if (askTeamColor && initialize) {
             askTeamColor();
         }
 
@@ -49,7 +50,7 @@ public abstract class AutonomousBase extends LinearOpMode {
             strategist = new BlueStrategist(drive, op_timer, this);
         } else if (teamColor == TeamColor.RED) {
             strategist = new RedStrategist(drive, op_timer, this);
-        } else {
+        } else if (initialize){
             telemetry.addData("Error", "Started the robot before picking team");
             telemetry.update();
             requestOpModeStop();
@@ -58,7 +59,7 @@ public abstract class AutonomousBase extends LinearOpMode {
         drive.setMotorsZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         telemetry.log().add("Ready!");
         telemetry.update();
-        if (detectStoneAndWait) detectStoneWhileWaiting();
+        if (detectStoneAndWait && initialize) detectStoneWhileWaiting();
         drive.resetTimer();
         drive.setLogTag("initialize");
         drive.log("Skystone position:" + getSkystonePos());

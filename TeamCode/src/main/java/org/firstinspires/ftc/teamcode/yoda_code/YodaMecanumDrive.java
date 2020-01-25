@@ -23,7 +23,7 @@ import java.util.List;
 @Config
 public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
     public ExpansionHubEx hub2;
-    public ExpansionHubMotor verticalExtender;
+    public ExpansionHubMotor verticalExtender, parkingTape;
     public Servo horizontalExtender;
     public Servo foundationMoverLeft, foundationMoverRight;
     public Servo skystoneGrabberFront, skystoneArmFront, skystoneGrabberBack, skystoneArmBack;
@@ -32,7 +32,7 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
     public Rev2mDistanceSensor rightDistance;
 //    public ModernRoboticsI2cRangeSensor backDistance, frontDistance;
     public ModernRoboticsI2cRangeSensor leftDistance;
-    public DcMotor leftEncoder, rightEncoder, frontEncoder;
+    public ExpansionHubMotor leftEncoder, rightEncoder, frontEncoder;
     public RevBlinkinLedDriver led;
     private RevBlinkinLedDriver.BlinkinPattern lastPattern;
     public static double leftSensorToWall = 0;
@@ -53,6 +53,21 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
 
         hub2 = hardwareMap.get(ExpansionHubEx.class, "Secondary Hub id: 2");
 
+        leftEncoder = hardwareMap.get(ExpansionHubMotor.class, "leftEncoder");
+        rightEncoder = hardwareMap.get(ExpansionHubMotor.class, "rightEncoder");
+        frontEncoder = hardwareMap.get(ExpansionHubMotor.class, "frontEncoder");
+        leftEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        leftEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        frontEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        leftEncoder.setDirection(DcMotorSimple.Direction.REVERSE);
+        frontEncoder.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        parkingTape = leftEncoder;
         verticalExtender = hardwareMap.get(ExpansionHubMotor.class, "vertical extender");
 
         horizontalExtender = hardwareMap.get(Servo.class, "horizontal extender");
@@ -76,15 +91,6 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
 
         led = hardwareMap.get(RevBlinkinLedDriver.class, "led");
 
-        leftEncoder = hardwareMap.dcMotor.get("leftEncoder");
-        rightEncoder = hardwareMap.dcMotor.get("rightEncoder");
-        frontEncoder = hardwareMap.dcMotor.get("frontEncoder");
-        leftEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        frontEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        leftEncoder.setDirection(DcMotorSimple.Direction.REVERSE);
-        frontEncoder.setDirection(DcMotorSimple.Direction.REVERSE);
-
         verticalExtender.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         verticalExtender.setTargetPosition(0);
         verticalExtender.setPower(1);
@@ -104,7 +110,9 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         skystoneArmFront.scaleRange(0.69, 1);
         skystoneArmBack.scaleRange(0, 0.28);
 
-        intakeGrabber.scaleRange(0, 0.43);
+        parkingArm.scaleRange(0, 0.45);
+
+        intakeGrabber.scaleRange(0, 0.7);
 
         foundationMoverLeft.scaleRange(0.02, 0.88);
         foundationMoverRight.scaleRange(0.1, 0.79);
@@ -165,12 +173,7 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
     public void turnToRadians(double angle, double currentAngle) {
         log("turnToRadians: angle" + Math.toDegrees(angle) + ", currentAngle:" + Math.toDegrees(currentAngle));
         angle = Math.toDegrees(angle) - Math.toDegrees(currentAngle);
-        while (angle < -180) {
-            angle += 360;
-        }
-        while (angle > 180) {
-            angle -= 360;
-        }
+        angle = convertAngle180(angle);
         log("turnToRadians: actual turning angle: " + angle);
         turnSync(Math.toRadians(angle));
     }
@@ -204,7 +207,7 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         }
     }
 
-    public double maxMin(double number, double max, double min) {
+    public double minMax(double number, double min, double max) {
         return Math.min(Math.max(number, min), max);
     }
 
@@ -325,7 +328,7 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
 
     public double getIMUHeading() {
         double heading = getRawExternalHeading() + newZeroIMU;
-        while (heading > 2 * Math.PI) heading -= 2 * Math.PI; // 2 * Math.PI is equal to 360 degrees
+        while (heading > 2 * Math.PI) heading -= 2 * Math.PI; // 2 * Math.PI radians is equal to 360 degrees
         return heading;
     }
     public void resetIMUHeading() {
@@ -336,6 +339,30 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         double result = Math.pow(Math.abs(base), exponent);
         if (base < 0) result *= -1;
         return result;
+    }
+
+    public double getAngleToTurn(double currentHeading, double targetHeading) {
+        log("Current Heading: " + Math.toDegrees(currentHeading));
+        currentHeading = convertAngle180(Math.toDegrees(currentHeading));
+        log("Current Heading: " + currentHeading);
+
+        log("Target Heading: " + Math.toDegrees(targetHeading));
+        targetHeading = convertAngle180(Math.toDegrees(targetHeading));
+        log("Target Heading: " + targetHeading);
+        log("Angle To Turn: " + (targetHeading - currentHeading));
+        return Math.toRadians(targetHeading - currentHeading);
+    }
+
+    public double convertAngle180(double degrees) { // converts to -180 to 180
+        while (degrees > 180) degrees -= 360;
+        while (degrees < -180) degrees += 360;
+        return degrees;
+    }
+
+    public double convertAngle360(double degrees) { // converts to 0 to 360
+        while (degrees >= 360) degrees -= 360;
+        while (degrees < 0) degrees += 360;
+        return degrees;
     }
 
     public boolean isNaN(double number) {

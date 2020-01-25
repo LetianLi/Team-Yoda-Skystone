@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.yoda_opmode;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.acmerobotics.roadrunner.path.heading.LinearInterpolator;
+import com.acmerobotics.roadrunner.path.heading.SplineInterpolator;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.yoda_code.AutonomousBase;
@@ -79,7 +81,7 @@ public class M12 extends AutonomousBase {
 
             // go back for 2nd stone
             foundationToGrab(2,
-                    -49 - forwardOffset + armOrder[1] * neg,
+                    -46 - forwardOffset + armOrder[1] * neg,
                     getArmSide(armOrder[1]),
                     teamColor == TeamColor.BLUE ? 2 : 1,
                     1);
@@ -95,7 +97,7 @@ public class M12 extends AutonomousBase {
             // go back for 3rd stone
             foundationToGrab(
                     3,
-                    -26 - thirdStoneOffset + armOrder[2] * neg,
+                    -25 - thirdStoneOffset + armOrder[2] * neg,
                     getArmSide(armOrder[2]),
                     teamColor == TeamColor.BLUE ? 2 : 2,
                     teamColor == TeamColor.BLUE ? 3 : 3);
@@ -120,22 +122,24 @@ public class M12 extends AutonomousBase {
                     .strafeTo(new Vector2d(50, drive.getY() - 5 * neg)) // forward
                     .addMarker(new Vector2d(50, drive.getY() - 4.5 * neg), () -> { strategist.moveFoundationServos(1); return null; }) //put mover down while moving
                     .build());
-            Pose2d currentPos = drive.getPoseEstimate();
 
             drive.followTrajectorySync(drive.trajectoryBuilder()
-                    .setReversed(true)
-                    .splineTo(new Pose2d(35, (teamColor == TeamColor.BLUE ? 55 : 45) * neg, Math.toRadians(20 * neg))) // turn
+                    .strafeTo(new Vector2d(drive.getX() - 5, drive.getY() + 10 * neg))
+                    .lineTo(new Vector2d(25, 50 * neg), new LinearInterpolator(drive.getHeading(), drive.getAngleToTurn(drive.getHeading(), Math.toRadians(20 * neg))))
+//                    .splineTo(new Pose2d(35, (teamColor == TeamColor.BLUE ? 55 : 45) * neg, Math.toRadians(20 * neg))) // turn
                     .build());
 
             // Push to wall and Park
             drive.followTrajectorySync(drive.trajectoryBuilder()
-                    .addMarker(0, () -> {drive.parkingArm.setPosition(1);; return null;})
+//                    .addMarker(0, () -> { drive.parkingTape.setPower(1); return null;})
                     .forward(10) // push foundation to wall
                     .addMarker(0.1, () -> { strategist.moveFoundationServos(0.7); return null;}) // open mover
                     .build());
 
             drive.followTrajectorySync(drive.trajectoryBuilder()
-                    .strafeTo(new Vector2d(0, 38 * neg))
+                    .addMarker(0, () -> { drive.parkingTape.setPower(1); return null;})
+                    .addMarker(0.5, () -> { drive.parkingTape.setPower(0); return null;})
+                    .lineTo(new Vector2d(0, 38 * neg), new LinearInterpolator(drive.getHeading(), drive.getAngleToTurn(drive.getHeading(), 0)))
                     .build());
 
         }
@@ -214,10 +218,10 @@ public class M12 extends AutonomousBase {
         }
         drive.log("current distance right to foundation: " + lastDistanceToFoundation);
 
-        if (lastDistanceToFoundation > 2.0 && lastDistanceToFoundation < 10) {
-            drive.log("strafeRight: " + (lastDistanceToFoundation - 1.8));
+        if (lastDistanceToFoundation > 3.0 && lastDistanceToFoundation < 10) {
+            drive.log("strafeRight: " + (lastDistanceToFoundation - 2.5));
             drive.followTrajectorySync(drive.trajectoryBuilder()
-                    .strafeRight(lastDistanceToFoundation - 1.8)
+                    .strafeRight(lastDistanceToFoundation - 2.5)
                     .build());
         }
         strategist.moveSkystoneArms(arm, ArmStage.DROP);
@@ -256,10 +260,10 @@ public class M12 extends AutonomousBase {
         double currentDistance = drive.getRightDistance();
         drive.log("current distance right to stone:" + currentDistance);
         Pose2d currentPos = drive.getPoseEstimate();
-        if (currentDistance > 2.5 && currentDistance < 8) {
-            drive.log("strafeRight:"+ (currentDistance - 2.5));
+        if (currentDistance > 3.0 && currentDistance < 8) {
+            drive.log("strafeRight:"+ (currentDistance - 2.0));
             drive.followTrajectorySync(drive.trajectoryBuilder()
-                    .strafeRight(currentDistance - 2.5)
+                    .strafeRight(currentDistance - 2.0)
                     .addMarker(new Vector2d(expected_x, expected_y + (currentDistance + 1) * neg), () -> {
                         strategist.moveSkystoneArms(arm, ArmStage.CLOSEGRABBER);
                         return null;})

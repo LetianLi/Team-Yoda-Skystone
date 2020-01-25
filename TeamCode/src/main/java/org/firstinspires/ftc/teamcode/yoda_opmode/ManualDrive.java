@@ -33,8 +33,8 @@ public class ManualDrive extends LinearOpMode {
 
     private double verticalPosition = 0;
     private double previousVerticalPos = -1;
-    private final double bottomVerticalLim = -10;
-    private final double topVerticalLim = 2542;
+    private final double bottomVerticalLim = 0 - 10;
+    private final double topVerticalLim = 2542 + 10;
     private double lastTopPosition = 20;
     private final double ticksPerUpBlock = 550;
     private final double ticksPerDownBlock = 200;
@@ -189,14 +189,14 @@ public class ManualDrive extends LinearOpMode {
             intakeGrabberPosition = 1;
         }
         if (gamepad2.b) { // release
-            intakeGrabberPosition = 0.35;
+            intakeGrabberPosition = 0.5;
 
             if (verticalPosition >= 20) {
                 lastTopPosition = verticalPosition;
             }
         }
-        if (gamepad2.left_trigger > 0.1) intakeGrabberPosition = Math.min(intakeGrabberPosition + 0.005, 1);
-        if (gamepad2.right_trigger > 0.1) intakeGrabberPosition = Math.max(intakeGrabberPosition - 0.005, 0);
+//        if (gamepad2.left_trigger > 0.1) intakeGrabberPosition = Math.min(intakeGrabberPosition + 0.005, 1);
+//        if (gamepad2.right_trigger > 0.1) intakeGrabberPosition = Math.max(intakeGrabberPosition - 0.005, 0);
         drive.intakeGrabber.setPosition(intakeGrabberPosition);
     }
 
@@ -238,6 +238,9 @@ public class ManualDrive extends LinearOpMode {
         } else if (!gamepad2.y && pressed[3]) {
             pressed[3] = false;
         }
+
+        drive.parkingTape.setPower(Math.pow(gamepad2.right_trigger, 3) - Math.pow(gamepad2.left_trigger, 3));
+
     }
 
     private void controlVerticalExtender() {
@@ -260,8 +263,10 @@ public class ManualDrive extends LinearOpMode {
 
         if (gamepad2.right_stick_button) verticalPosition = bottomVerticalLim;
 
-        if (!(gamepad2.dpad_left && gamepad2.dpad_right)) {
-            verticalPosition = Math.min(Math.max(verticalPosition - gamepad2.right_stick_y * 15 * ((capstonePosition >= capstonePositionThreshold) ? 0.25 : 1.0), bottomVerticalLim), topVerticalLim);
+        verticalPosition = verticalPosition - gamepad2.right_stick_y * 15 * ((capstonePosition >= capstonePositionThreshold) ? 0.25 : 1.0);
+
+        if (!(gamepad2.dpad_left || gamepad2.dpad_right || gamepad2.dpad_down)) {
+            verticalPosition = drive.minMax(verticalPosition, bottomVerticalLim, topVerticalLim);
         }
         if (verticalPosition != previousVerticalPos) drive.verticalExtender.setTargetPosition((int) verticalPosition);
         previousVerticalPos = verticalPosition;
@@ -276,7 +281,7 @@ public class ManualDrive extends LinearOpMode {
             input_y = 0;
         }
 
-        horizontalPosition = drive.maxMin(horizontalPosition - input_y / 25, 1, 0);
+        horizontalPosition = drive.minMax(horizontalPosition - input_y / 25, 0, 1);
         if (horizontalPosition != previousHorizontalPos) {
             //drive.log("Horizontal Position set to: " + horizontalPosition);
             drive.horizontalExtender.setPosition(horizontalPosition);

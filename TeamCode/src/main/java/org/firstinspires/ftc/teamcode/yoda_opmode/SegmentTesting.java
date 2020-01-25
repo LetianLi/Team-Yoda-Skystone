@@ -16,13 +16,11 @@ import org.firstinspires.ftc.teamcode.yoda_enum.TeamColor;
 //@Disabled
 @Config
 @TeleOp(group = "Test", name = "Segment Testing")
-@Disabled
 public class SegmentTesting extends AutonomousBase {
     public static double position;
     @Override
     public void runOpMode() throws InterruptedException {
-        askTeamColor = false;
-        teamColor = TeamColor.BLUE;
+        initialize = false;
         initialize();
         drive.setMotorsZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         if (isStopRequested()) return;
