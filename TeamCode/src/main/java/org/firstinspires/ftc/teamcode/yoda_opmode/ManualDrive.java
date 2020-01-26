@@ -34,7 +34,7 @@ public class ManualDrive extends LinearOpMode {
     private double verticalPosition = 0;
     private double previousVerticalPos = -1;
     private final double bottomVerticalLim = 0 - 10;
-    private final double topVerticalLim = 2542 + 10;
+    private final double topVerticalLim = 2800;
     private double lastTopPosition = 20;
     private final double ticksPerUpBlock = 550;
     private final double ticksPerDownBlock = 200;
@@ -49,7 +49,7 @@ public class ManualDrive extends LinearOpMode {
         drive = new YodaMecanumDrive(hardwareMap);
         drive.setOpMode(this);
         drive.resetTimer();
-        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+//        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         horizontalPosition = 0.99;
         previousHorizontalPos = 0.99;
 
@@ -60,14 +60,14 @@ public class ManualDrive extends LinearOpMode {
 
         if (isStopRequested()) return;
         drive.setMotorNoEncoder();
-        ElapsedTime op_timer = new ElapsedTime();
+//        ElapsedTime op_timer = new ElapsedTime();
 
         drive.foundationMoverLeft.setPosition(0);
         drive.foundationMoverRight.setPosition(0);
         drive.intakeGrabber.setPosition(0); // open, set power so that it does not go down
 
         while (!isStopRequested()) {
-            op_timer.reset();
+//            op_timer.reset();
 
             moveRobot();
             controlIntakeGrabber();
@@ -79,16 +79,16 @@ public class ManualDrive extends LinearOpMode {
             controlParkingArm();
 
 //            telemetry.addData("Encoders", "Left %d, Right %d, Front %d", drive.leftEncoder.getCurrentPosition(), drive.rightEncoder.getCurrentPosition(), drive.frontEncoder.getCurrentPosition());
-            telemetry.addData("Speed co-efficients", "turn %.2f   ||   entire %.2f", TURNING_SPEED, speed_multiplier);
+//            telemetry.addData("Speed co-efficients", "turn %.2f   ||   entire %.2f", TURNING_SPEED, speed_multiplier);
 //            telemetry.addData("Encoder values, lf, lr, rr, rf", drive.getWheelPositions());
-            telemetry.addData("Capstone Arm", capstoneArmMode);
+//            telemetry.addData("Capstone Arm", capstoneArmMode);
             telemetry.addData("Capstone Pos", capstonePosition);
 
             telemetry.addData("Horizontal Pos", horizontalPosition);
-            telemetry.addData("Vertical Pos", verticalPosition + " - " + drive.verticalExtender.getCurrentPosition());
+//            telemetry.addData("Vertical Pos", "I: " + verticalPosition + " - O: " + drive.verticalExtender.getCurrentPosition());
             telemetry.addData("Intake Pos", intakeGrabberPosition);
-//            telemetry.addData("Stone Grabber", "\n" + stoneGrabberMode + "\n|");
-            telemetry.addData("Latency", op_timer.milliseconds());
+            telemetry.addData("Stone Grabber", "\n" + stoneGrabberMode + "\n|");
+//            telemetry.addData("Latency", op_timer.milliseconds());
             telemetry.update();
         }
     }
@@ -147,7 +147,7 @@ public class ManualDrive extends LinearOpMode {
             input_turning += DPAD_SPEED * 0.65 / speed_multiplier;
         }
 
-        telemetry.addData("Input:", "x %.2f, y %.2f, turning %.2f", input_x, input_y, input_turning);
+//        telemetry.addData("Input:", "x %.2f, y %.2f, turning %.2f", input_x, input_y, input_turning);
 
         double r = Math.hypot(input_x, input_y);
         double robotAngle = Math.atan2(input_y, input_x) - Math.PI / 4; // Math.PI/4 is the equivalent of 45 degrees
@@ -189,7 +189,8 @@ public class ManualDrive extends LinearOpMode {
             intakeGrabberPosition = 1;
         }
         if (gamepad2.b) { // release
-            intakeGrabberPosition = 0.5;
+            if (verticalPosition >= 20) intakeGrabberPosition= 0.2;
+            else intakeGrabberPosition = 0.3;
 
             if (verticalPosition >= 20) {
                 lastTopPosition = verticalPosition;
