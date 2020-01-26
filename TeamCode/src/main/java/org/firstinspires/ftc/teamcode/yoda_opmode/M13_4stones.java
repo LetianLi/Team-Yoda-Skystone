@@ -5,6 +5,7 @@ import com.acmerobotics.roadrunner.followers.HolonomicPIDVAFollower;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.yoda_code.AutonomousBase;
@@ -13,7 +14,7 @@ import org.firstinspires.ftc.teamcode.yoda_enum.ArmStage;
 import org.firstinspires.ftc.teamcode.yoda_enum.SkystonePos;
 import org.firstinspires.ftc.teamcode.yoda_enum.TeamColor;
 import com.acmerobotics.roadrunner.followers.TrajectoryFollower;
-
+@Disabled
 @Autonomous(group = "auto", name = "M13 (testing 4 stones)")
 public class M13_4stones extends AutonomousBase {
 

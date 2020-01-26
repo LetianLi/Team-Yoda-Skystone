@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.yoda_opmode;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -8,7 +9,7 @@ import org.firstinspires.ftc.teamcode.yoda_code.YodaMecanumDrive;
 
 @Config
 @TeleOp(group = "test")
-//@Disabled
+@Disabled
 public class MotorTestingV2 extends LinearOpMode {
     private YodaMecanumDrive drive;
     public static boolean negative = false;

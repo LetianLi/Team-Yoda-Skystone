@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.yoda_code.AutonomousBase;
 import org.firstinspires.ftc.teamcode.yoda_enum.ArmSide;
 import org.firstinspires.ftc.teamcode.yoda_enum.TeamColor;
 
-//@Disabled
+@Disabled
 @Config
 @TeleOp(group = "Test", name = "Segment Testing")
 public class SegmentTesting extends AutonomousBase {

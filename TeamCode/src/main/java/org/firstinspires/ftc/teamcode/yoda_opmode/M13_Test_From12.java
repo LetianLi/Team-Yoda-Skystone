@@ -6,6 +6,7 @@ import com.acmerobotics.roadrunner.followers.TrajectoryFollower;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.yoda_code.AutonomousBase;
@@ -13,7 +14,7 @@ import org.firstinspires.ftc.teamcode.yoda_enum.ArmSide;
 import org.firstinspires.ftc.teamcode.yoda_enum.ArmStage;
 import org.firstinspires.ftc.teamcode.yoda_enum.SkystonePos;
 import org.firstinspires.ftc.teamcode.yoda_enum.TeamColor;
-
+@Disabled
 @Autonomous(group = "auto", name = "M13 Test from 12")
 public class M13_Test_From12 extends AutonomousBase {
 

@@ -3,13 +3,14 @@ package org.firstinspires.ftc.teamcode.yoda_opmode;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.teamcode.yoda_code.AutonomousBase;
 import org.firstinspires.ftc.teamcode.yoda_enum.ArmSide;
 import org.firstinspires.ftc.teamcode.yoda_enum.ArmStage;
 import org.firstinspires.ftc.teamcode.yoda_enum.SkystonePos;
 import org.firstinspires.ftc.teamcode.yoda_enum.TeamColor;
-
+@Disabled
 @Autonomous(group = "auto", name = "MX: 3 Skystone->Foundation->Move it->park ")
 public class MX_ThreeSkystone_Foundation_MoveFoundation extends AutonomousBase {
 
