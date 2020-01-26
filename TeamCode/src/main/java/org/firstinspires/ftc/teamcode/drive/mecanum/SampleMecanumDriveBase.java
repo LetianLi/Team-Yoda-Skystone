@@ -184,7 +184,7 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
         packet.put("xError", lastError.getX());
         packet.put("yError", lastError.getY());
         packet.put("headingError", Math.toDegrees(lastError.getHeading()));
-        packet.put("Latency", latency_timer.milliseconds());
+//        packet.put("Latency", latency_timer.milliseconds());
 /*
         setLogTag("update");
         log("Latency:" + (int)(latency_timer.milliseconds())
@@ -198,7 +198,7 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
 
  */
 
-        latency_timer.reset();
+//        latency_timer.reset();
 
 
         switch (mode) {
@@ -242,9 +242,7 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
 
                 fieldOverlay.setStrokeWidth(1);
                 fieldOverlay.setStroke("4CAF50");
-                if (trajectory.getPath().length() > 10000) {
-                    log("trajectory length:" + trajectory.getPath().length());
-                }
+
                 DashboardUtil.drawSampledPath(fieldOverlay, trajectory.getPath());
 
                 fieldOverlay.setStroke("#4F61C5");
