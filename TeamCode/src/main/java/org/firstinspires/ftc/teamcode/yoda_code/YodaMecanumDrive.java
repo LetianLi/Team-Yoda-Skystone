@@ -107,12 +107,12 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
 
         horizontalExtender.scaleRange(1 - 0.37, 1 - 0.13); // actually limit 0.37
 
-        skystoneArmFront.scaleRange(0.69, 1);
+        skystoneArmFront.scaleRange(0.7, 1);
         skystoneArmBack.scaleRange(0, 0.28);
 
         parkingArm.scaleRange(0, 0.45);
 
-        intakeGrabber.scaleRange(0, 0.7);
+        intakeGrabber.scaleRange(0, 0.45);
 
         foundationMoverLeft.scaleRange(0.02, 0.88);
         foundationMoverRight.scaleRange(0.1, 0.79);
@@ -207,9 +207,10 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         }
     }
 
-    public double minMax(double number, double min, double max) {
-        return Math.min(Math.max(number, min), max);
-    }
+    public int    minMax(int    number, int    min, int    max) { return Math.min(Math.max(number, min), max);}
+    public long   minMax(long   number, long   min, long   max) { return Math.min(Math.max(number, min), max);}
+    public float  minMax(float  number, float  min, float  max) { return Math.min(Math.max(number, min), max);}
+    public double minMax(double number, double min, double max) { return Math.min(Math.max(number, min), max);}
 
 //    public double getAngleToFront(Telemetry telemetry) {
 //        double adjacent =  10 + 1.0/16.0; // Distance between sensors, in.
