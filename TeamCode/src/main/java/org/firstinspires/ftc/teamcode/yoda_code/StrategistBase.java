@@ -82,7 +82,7 @@ public abstract class StrategistBase {
                 targetArm.setPosition(0.4);
                 break;
             case PREPARM:
-                targetArm.setPosition(0.8);
+                targetArm.setPosition(1); // was 0.8
                 break;
 //            case PREPGRAB:
 //                targetGrabber.setPosition(0.4);

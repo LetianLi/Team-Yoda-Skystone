@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.yoda_opmode;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.acmerobotics.roadrunner.path.heading.ConstantInterpolator;
 import com.acmerobotics.roadrunner.path.heading.LinearInterpolator;
 import com.acmerobotics.roadrunner.path.heading.SplineInterpolator;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -74,14 +75,14 @@ public class M12 extends AutonomousBase {
 
             moveAndDrop(
                     1,
-                    59 + armOrder[0] * neg,
+                    59 + armOrder[0] * neg + (teamColor == TeamColor.RED? -2 : 0),
                     getArmSide(armOrder[0]),
                     teamColor == TeamColor.BLUE ? -1: -3);
             logCurrentPos("After dropping 1st stone");
 
             // go back for 2nd stone
             foundationToGrab(2,
-                    -46 - forwardOffset + armOrder[1] * neg,
+                    -46 - forwardOffset + armOrder[1] * neg + (teamColor == TeamColor.RED? -3 : 0),
                     getArmSide(armOrder[1]),
                     teamColor == TeamColor.BLUE ? 2 : 1,
                     1);
@@ -89,9 +90,9 @@ public class M12 extends AutonomousBase {
 
             moveAndDrop(
                     2,
-                    50 + armOrder[1] * neg,
+                    50 + armOrder[1] * neg + (teamColor == TeamColor.RED? -3 : 0),
                     getArmSide(armOrder[1]),
-                    teamColor == TeamColor.BLUE ? 2 : -1);
+                    teamColor == TeamColor.BLUE ? 2 : 0);
             logCurrentPos("After dropping 2nd stone");
 
             // go back for 3rd stone
@@ -105,7 +106,7 @@ public class M12 extends AutonomousBase {
 
             moveAndDrop(
                     3,
-                    39 + armOrder[2] * neg,
+                    39 + armOrder[2] * neg + (teamColor == TeamColor.RED? -3 : 0),
                     getArmSide(armOrder[2]),
                     teamColor == TeamColor.BLUE ? 3 : 0);
             logCurrentPos("After dropping 3rd stone");
@@ -119,26 +120,30 @@ public class M12 extends AutonomousBase {
                         strategist.resetSkystoneArms(); // get arm back to position.
                         strategist.moveFoundationServos(0.7);
                         return null;})
-                    .strafeTo(new Vector2d(50, drive.getY() - 5 * neg)) // forward
+                    .strafeTo(new Vector2d(50, drive.getY() - 6 * neg)) // forward
                     .addMarker(new Vector2d(50, drive.getY() - 4.5 * neg), () -> { strategist.moveFoundationServos(1); return null; }) //put mover down while moving
                     .build());
 
             drive.followTrajectorySync(drive.trajectoryBuilder()
-                    .strafeTo(new Vector2d(drive.getX() - 5, drive.getY() + 10 * neg))
-                    .lineTo(new Vector2d(25, 50 * neg), new LinearInterpolator(drive.getHeading(), drive.getAngleToTurn(drive.getHeading(), Math.toRadians(20 * neg))))
+                    .strafeTo(new Vector2d(drive.getX() - 5, drive.getY() + 12 * neg))
+                    .lineTo(new Vector2d(24, 50 * neg), new LinearInterpolator(drive.getHeading(), drive.getAngleToTurn(drive.getHeading(), Math.toRadians(20 * neg))))
 //                    .splineTo(new Pose2d(35, (teamColor == TeamColor.BLUE ? 55 : 45) * neg, Math.toRadians(20 * neg))) // turn
                     .build());
 
             // Push to wall and Park
             drive.followTrajectorySync(drive.trajectoryBuilder()
-//                    .addMarker(0, () -> { drive.parkingTape.setPower(1); return null;})
-                    .forward(10) // push foundation to wall
+                    .addMarker(0, () -> {
+                        if (op_timer.seconds() > 28) drive.parkingTape.setPower(1);
+                        return null;
+                    })
+                    .forward(12) // push foundation to wall
                     .addMarker(0.1, () -> { strategist.moveFoundationServos(0.7); return null;}) // open mover
+                    .addMarker(0.2, () -> { drive.horizontalExtender.setPosition(1); return null;})
                     .build());
-
             drive.followTrajectorySync(drive.trajectoryBuilder()
-                    .addMarker(0, () -> { drive.parkingTape.setPower(1); return null;})
-                    .addMarker(0.5, () -> { drive.parkingTape.setPower(0); return null;})
+                    .addMarker(0.0, () -> { drive.parkingTape.setPower(1); return null;})
+                    .addMarker(0.65, () -> { drive.parkingTape.setPower(0); return null;})
+                    .strafeTo(new Vector2d(drive.getX() - 5, drive.getY() - 5 * neg))
                     .lineTo(new Vector2d(0, 38 * neg), new LinearInterpolator(drive.getHeading(), drive.getAngleToTurn(drive.getHeading(), 0)))
                     .build());
 
@@ -199,7 +204,7 @@ public class M12 extends AutonomousBase {
                 .splineTo(centerLineStone.plus(new Pose2d(0, center_y_offset * neg)))
                 .addMarker(buildingZone.vec(), () -> { strategist.moveSkystoneArms(arm, ArmStage.PREPDROP); return null;})
                 .splineTo(new Pose2d(expected_x - 6, expected_y + 6 * neg, baseHeading))
-                .strafeTo(new Vector2d(expected_x, expected_y))
+                .lineTo(new Vector2d(expected_x, expected_y), new ConstantInterpolator(baseHeading))
                 .build());
         double y_error = logError("after moving to foundation", expected_x, expected_y);
         lastDistanceToFoundation = drive.getRightDistance();
