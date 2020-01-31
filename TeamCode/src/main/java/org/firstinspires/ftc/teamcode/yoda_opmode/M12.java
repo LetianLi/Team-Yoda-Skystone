@@ -82,7 +82,7 @@ public class M12 extends AutonomousBase {
 
             // go back for 2nd stone
             foundationToGrab(2,
-                    -46 - forwardOffset + armOrder[1] * neg + (teamColor == TeamColor.RED? -3 : 0),
+                    -46 - forwardOffset + armOrder[1] * neg + (teamColor == TeamColor.RED? -3 : -2),
                     getArmSide(armOrder[1]),
                     teamColor == TeamColor.BLUE ? 2 : 1,
                     1);

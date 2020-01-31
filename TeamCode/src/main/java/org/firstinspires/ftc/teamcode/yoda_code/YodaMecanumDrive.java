@@ -107,7 +107,7 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
 
         horizontalExtender.scaleRange(1 - 0.37, 1 - 0.13); // actually limit 0.37
 
-        skystoneArmFront.scaleRange(0.7, 1);
+        skystoneArmFront.scaleRange(0.72, 1);
         skystoneArmBack.scaleRange(0, 0.28);
 
         parkingArm.scaleRange(0, 0.45);
