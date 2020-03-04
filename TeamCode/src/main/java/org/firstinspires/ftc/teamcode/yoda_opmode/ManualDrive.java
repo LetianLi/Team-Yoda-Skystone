@@ -60,14 +60,14 @@ public class ManualDrive extends LinearOpMode {
 
         if (isStopRequested()) return;
         drive.setMotorNoEncoder();
-//        ElapsedTime op_timer = new ElapsedTime();
+        ElapsedTime op_timer = new ElapsedTime();
 
         drive.foundationMoverLeft.setPosition(0);
         drive.foundationMoverRight.setPosition(0);
         drive.intakeGrabber.setPosition(0); // open, set power so that it does not go down
 
         while (!isStopRequested()) {
-//            op_timer.reset();
+            op_timer.reset();
 
             moveRobot();
             controlIntakeGrabber();
@@ -81,14 +81,14 @@ public class ManualDrive extends LinearOpMode {
 //            telemetry.addData("Encoders", "Left %d, Right %d, Front %d", drive.leftEncoder.getCurrentPosition(), drive.rightEncoder.getCurrentPosition(), drive.frontEncoder.getCurrentPosition());
 //            telemetry.addData("Speed co-efficients", "turn %.2f   ||   entire %.2f", TURNING_SPEED, speed_multiplier);
 //            telemetry.addData("Encoder values, lf, lr, rr, rf", drive.getWheelPositions());
-//            telemetry.addData("Capstone Arm", capstoneArmMode);
-            telemetry.addData("Capstone Pos", capstonePosition);
 
+            telemetry.addData("Capstone Pos", capstonePosition);
             telemetry.addData("Horizontal Pos", horizontalPosition);
-//            telemetry.addData("Vertical Pos", "I: " + verticalPosition + " - O: " + drive.verticalExtender.getCurrentPosition());
+            telemetry.addData("Vertical Pos", "I: " + verticalPosition + " - O: " + drive.verticalExtender.getCurrentPosition());
             telemetry.addData("Intake Pos", intakeGrabberPosition);
-            telemetry.addData("Stone Grabber", "\n" + stoneGrabberMode + "\n|");
-//            telemetry.addData("Latency", op_timer.milliseconds());
+//            telemetry.addData("Stone Grabber", "\n" + stoneGrabberMode + "\n|");
+
+            telemetry.addData("Latency", op_timer.milliseconds());
             telemetry.update();
         }
     }
@@ -189,7 +189,7 @@ public class ManualDrive extends LinearOpMode {
             intakeGrabberPosition = 1;
         }
         if (gamepad2.b) { // release
-            if (verticalPosition >= 20) intakeGrabberPosition= 0.2;
+            if (verticalPosition >= 20) intakeGrabberPosition= 0.15;
             else intakeGrabberPosition = 0.3;
 
             if (verticalPosition >= 20) {

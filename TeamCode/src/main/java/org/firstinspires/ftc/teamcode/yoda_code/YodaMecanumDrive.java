@@ -1,7 +1,10 @@
 package org.firstinspires.ftc.teamcode.yoda_code;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.acmerobotics.roadrunner.path.Path;
+import com.acmerobotics.roadrunner.path.PathBuilder;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
@@ -19,6 +22,8 @@ import org.openftc.revextensions2.ExpansionHubMotor;
 
 import java.util.Arrays;
 import java.util.List;
+
+import static org.firstinspires.ftc.teamcode.yoda_code.MathFunctions.*;
 
 @Config
 public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
@@ -112,7 +117,7 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
 
         parkingArm.scaleRange(0, 0.45);
 
-        intakeGrabber.scaleRange(0, 0.45);
+        intakeGrabber.scaleRange(0, 0.5);
 
         foundationMoverLeft.scaleRange(0.02, 0.88);
         foundationMoverRight.scaleRange(0.1, 0.79);
@@ -132,6 +137,70 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
 //    public void setLogTag(String tag) {
 //        last_tag_for_logging = tag;
 //    }
+
+    public PathBuilder pathBuilder() {
+        return new PathBuilder(getPoseEstimate());
+    }
+
+    public Pose2d getFollowPoint(Path path, Pose2d currentPose, double radius) {
+        double samplingDistance = 0.25;
+        Pose2d p1, p2;
+        Pose2d followPoint = null;
+        for (double s = 0; s < path.length() - samplingDistance; s += samplingDistance) {
+            p1 = path.get(s);
+            p2 = path.get(s + samplingDistance);
+
+            /**
+             * p1 = (x1, y1); p2 = (x2, y2); currentPose = (xc, yc); r = r;
+             * Line equation is y=y1+(y2-y1)t. x=x1+(x2-x1)t. Or wraped as a whole, f(t)=p1+(p2-p1)t.
+             * Where t is a constant between 0 and 1
+             * Circle equation is r^2=x^2+y^2
+             * Substituting line equation components into circle equation and solving for t results in a quadratic formula with:
+             * a=(x1-x2)^2+(y1-y2)^2
+             * b=-2[x1(x1-x2-cx)+x2*xc+y1(y1-y2-yc)+y2*yc]
+             * c=(x1-xc)^2+(y1-yc)^2-r^2
+             *
+             * so: t=[-b+sqrt(b^2-4ac)]/2a, [-b-sqrt(b^2-4ac)]/2a
+             *
+             * if t<0 or 1<t, discard as intersection is outside of line.
+             */
+
+            double quadraticA = Math.pow((p1.getX() - p2.getX()), 2) + Math.pow((p1.getY() - p2.getY()), 2);
+            double quadraticB = -2 * (p1.getX() * (p1.getX() - p2.getX() - currentPose.getX()) + p2.getX() * currentPose.getX() + p1.getY() * (p1.getX() - p2.getY() - currentPose.getY()) + p2.getY() * currentPose.getY());
+            double quadraticC = Math.pow((p1.getX() - currentPose.getX()), 2) + Math.pow((p1.getY() - currentPose.getY()), 2) - Math.pow(radius, 2);
+
+            double t1 = quadraticFormulaPlus(quadraticA, quadraticB, quadraticC);
+            double t2 = quadraticFormulaMinus(quadraticA, quadraticB, quadraticC);
+
+            boolean validIntersection1 = (0 <= t1 && t1 <= 1);
+            boolean validIntersection2 = (0 <= t2 && t2 <= 1);
+
+            Pose2d int1 = pointOnLine(p1, p2, t1);
+            Pose2d int2 = pointOnLine(p1, p2, t2);
+
+            if (validIntersection1 || validIntersection2) followPoint = null;
+
+            if (validIntersection1) followPoint = int1;
+
+            if (validIntersection2) {
+                if (followPoint == null || Math.abs(int1.getX() - p2.getX()) > Math.abs(int2.getX() - p2.getX()) || Math.abs(int1.getY() - p2.getY()) > Math.abs(int2.getY() - p2.getY())) {
+                    followPoint = int2;
+                }
+            }
+        }
+
+        // special case for the very last point on the path
+        if (path.length() > 0) {
+            Pose2d lastPoint = path.end();
+
+            // if we are closer than lookahead distance to the end, set it as the lookahead
+            if (Math.hypot(lastPoint.getX() - currentPose.getX(), lastPoint.getY() - currentPose.getY()) <= radius) {
+                return lastPoint;
+            }
+        }
+
+        return followPoint;
+    }
 
     public void strafeRight(double inches) {
         log("strafeRight:" + inches);
@@ -170,6 +239,7 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
     public void turnToRadians(double angle) {
         turnToRadians(angle, getRawExternalHeading());
     }
+
     public void turnToRadians(double angle, double currentAngle) {
         log("turnToRadians: angle" + Math.toDegrees(angle) + ", currentAngle:" + Math.toDegrees(currentAngle));
         angle = Math.toDegrees(angle) - Math.toDegrees(currentAngle);

@@ -10,15 +10,16 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kV;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
-import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.control.PIDCoefficients;
 import com.acmerobotics.roadrunner.control.PIDFController;
 import com.acmerobotics.roadrunner.drive.DriveSignal;
 import com.acmerobotics.roadrunner.drive.MecanumDrive;
 import com.acmerobotics.roadrunner.followers.HolonomicPIDVAFollower;
+import com.acmerobotics.roadrunner.followers.PathFollower;
 import com.acmerobotics.roadrunner.followers.TrajectoryFollower;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.path.Path;
 import com.acmerobotics.roadrunner.profile.MotionProfile;
 import com.acmerobotics.roadrunner.profile.MotionProfileGenerator;
 import com.acmerobotics.roadrunner.profile.MotionState;
@@ -51,7 +52,8 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
     public enum Mode {
         IDLE,
         TURN,
-        FOLLOW_TRAJECTORY
+        FOLLOW_TRAJECTORY,
+        FOLLOW_PATH
     }
 
     private FtcDashboard dashboard;
@@ -65,6 +67,7 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
 
     private DriveConstraints constraints;
     private TrajectoryFollower follower;
+    private PathFollower PPFollower;
 
     private List<Double> lastWheelPositions;
     private double lastTimestamp;
@@ -152,6 +155,18 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
         }
         log("Trajectory - End Position: " + getPoseEstimate().toString());
         //+ String.format("--- IMU:%.3f", Math.toDegrees(getRawExternalHeading())));
+    }
+
+    public void followPath(Path path) {
+        PPFollower.followPath(path);
+        mode = Mode.FOLLOW_PATH;
+    }
+
+    public void followPathSync(Path path) {
+        followPath(path);
+        latency_timer.reset();
+        waitForIdle();
+
     }
 
     public Pose2d getLastError() {
@@ -253,6 +268,26 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
                 DashboardUtil.drawRobot(fieldOverlay, currentPose); // The current robot location
 
                 if (!follower.isFollowing()) {
+                    mode = Mode.IDLE;
+                    setDriveSignal(new DriveSignal());
+                }
+
+                break;
+            }
+            case FOLLOW_PATH: {
+                setDriveSignal(PPFollower.update(currentPose));
+
+                Path path = PPFollower.getPath();
+
+                fieldOverlay.setStrokeWidth(1);
+                fieldOverlay.setStroke("4CAF50");
+
+                DashboardUtil.drawSampledPath(fieldOverlay, path);
+
+                fieldOverlay.setStroke("#F44336");
+                DashboardUtil.drawRobot(fieldOverlay, currentPose); // The current robot location
+
+                if (!PPFollower.isFollowing()) {
                     mode = Mode.IDLE;
                     setDriveSignal(new DriveSignal());
                 }
