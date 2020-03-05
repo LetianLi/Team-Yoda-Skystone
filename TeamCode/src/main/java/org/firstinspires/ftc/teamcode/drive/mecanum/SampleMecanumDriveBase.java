@@ -20,6 +20,7 @@ import com.acmerobotics.roadrunner.followers.PathFollower;
 import com.acmerobotics.roadrunner.followers.TrajectoryFollower;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.path.Path;
+import com.acmerobotics.roadrunner.path.PathBuilder;
 import com.acmerobotics.roadrunner.profile.MotionProfile;
 import com.acmerobotics.roadrunner.profile.MotionProfileGenerator;
 import com.acmerobotics.roadrunner.profile.MotionState;
@@ -155,6 +156,10 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
         }
         log("Trajectory - End Position: " + getPoseEstimate().toString());
         //+ String.format("--- IMU:%.3f", Math.toDegrees(getRawExternalHeading())));
+    }
+
+    public PathBuilder pathBuilder() {
+        return new PathBuilder(getPoseEstimate());
     }
 
     public void followPath(Path path) {

@@ -138,10 +138,6 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
 //        last_tag_for_logging = tag;
 //    }
 
-    public PathBuilder pathBuilder() {
-        return new PathBuilder(getPoseEstimate());
-    }
-
     public Pose2d getFollowPoint(Path path, Pose2d currentPose, double radius) {
         double samplingDistance = 0.25;
         Pose2d p1, p2;
