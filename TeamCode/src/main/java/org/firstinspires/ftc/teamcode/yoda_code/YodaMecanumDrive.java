@@ -172,8 +172,8 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
             double t1 = quadraticFormulaPlus(quadraticA, quadraticB, quadraticC);
             double t2 = quadraticFormulaMinus(quadraticA, quadraticB, quadraticC);
 
-            boolean validIntersection1 = (0 <= t1 && t1 <= 1);
-            boolean validIntersection2 = (0 <= t2 && t2 <= 1);
+            boolean validIntersection1 = (0 <= t1 && t1 <= 1 && !isNaN(t1));
+            boolean validIntersection2 = (0 <= t2 && t2 <= 1 && !isNaN(t2));
 
             Pose2d int1 = pointOnLine(p1, p2, t1);
             Pose2d int2 = pointOnLine(p1, p2, t2);
