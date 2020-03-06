@@ -35,6 +35,7 @@ class PurePursuitFollower @JvmOverloads constructor(
 ) : PathFollower(admissibleError, clock) {
 
     lateinit var intersections: ArrayList<Vector2d>
+    lateinit var lastFollowPoint: Pose2d
 
     override var lastError: Pose2d = Pose2d() // Un-used
 
@@ -119,6 +120,10 @@ class PurePursuitFollower @JvmOverloads constructor(
                     followPoint = int2
                 }
             }
+
+            lastFollowPoint = followPoint
+            if (!validIntersection1 && !validIntersection2) followPoint = lastFollowPoint
+
             s += samplingResolution
 
             if (validIntersection1) intersections.add(int1.vec())
@@ -131,11 +136,12 @@ class PurePursuitFollower @JvmOverloads constructor(
 
             // if we are closer than lookahead distance to the end, set it as the lookahead
             if (hypot(lastPoint.x - currentPose.x, lastPoint.y - currentPose.y) <= radius) {
+                lastFollowPoint = lastPoint
                 intersections.add(0, lastPoint.vec())
                 return lastPoint
             }
         }
-
+        lastFollowPoint = followPoint
         intersections.add(0, followPoint.vec())
         return followPoint
     }

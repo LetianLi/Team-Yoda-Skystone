@@ -285,16 +285,17 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
                 setDriveSignal(PPFollower.update(currentPose));
 
                 Path path = PPFollower.getPath();
+                PurePursuitFollower PPInfo = (PurePursuitFollower) PPFollower;
 
                 fieldOverlay.setStrokeWidth(1);
                 fieldOverlay.setStroke("#4CAF50"); // Path color
                 DashboardUtil.drawSampledPath(fieldOverlay, path);
 
                 fieldOverlay.setStroke("#5F71D5"); // Circle color
-                fieldOverlay.strokeCircle(currentPose.getX(), currentPose.getY(), ((PurePursuitFollower) PPFollower).getSearchRadius());
+                fieldOverlay.strokeCircle(currentPose.getX(), currentPose.getY(), PPInfo.getSearchRadius());
 
                 // Intersections from follower, uses Target color and Path Color
-                DashboardUtil.drawPoints(fieldOverlay, ((PurePursuitFollower) PPFollower).getIntersections(), true, "#4CAF50", "#4F61C5", 2);
+                DashboardUtil.drawPoints(fieldOverlay, PPInfo.getIntersections(), true, "#4CAF50", "#4F61C5", 2);
 
                 fieldOverlay.setStroke("#F44336"); // Current Location color
                 DashboardUtil.drawRobot(fieldOverlay, currentPose); // The current robot location
