@@ -7,6 +7,8 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.path.Path;
 
+import java.util.ArrayList;
+
 /**
  * Set of helper functions for drawing Road Runner paths and trajectories on dashboard canvases.
  */
@@ -37,31 +39,38 @@ public class DashboardUtil {
 
     public static void drawRobot(Canvas canvas, Pose2d pose) {
         //canvas.strokeCircle(pose.getX(), pose.getY(), ROBOT_RADIUS);
-        double[] leftFront  = {pose.getX() + ROBOT_LENGTH/2, pose.getY() + ROBOT_WIDTH/2};
-        double[] leftRear   = {pose.getX() - ROBOT_LENGTH/2, pose.getY() + ROBOT_WIDTH/2};
-        double[] rightRear  = {pose.getX() - ROBOT_LENGTH/2, pose.getY() - ROBOT_WIDTH/2};
-        double[] rightFront = {pose.getX() + ROBOT_LENGTH/2, pose.getY() - ROBOT_WIDTH/2};
+        Vector2d leftFront  = new Vector2d(pose.getX() + ROBOT_LENGTH/2, pose.getY() + ROBOT_WIDTH/2);
+        Vector2d leftRear   = new Vector2d(pose.getX() - ROBOT_LENGTH/2, pose.getY() + ROBOT_WIDTH/2);
+        Vector2d rightRear  = new Vector2d(pose.getX() - ROBOT_LENGTH/2, pose.getY() - ROBOT_WIDTH/2);
+        Vector2d rightFront = new Vector2d(pose.getX() + ROBOT_LENGTH/2, pose.getY() - ROBOT_WIDTH/2);
 
-        leftFront = returnRotatedPoint(leftFront, pose.getHeading(), pose);
-        leftRear = returnRotatedPoint(leftRear, pose.getHeading(), pose);
-        rightRear = returnRotatedPoint(rightRear, pose.getHeading(), pose);
-        rightFront = returnRotatedPoint(rightFront, pose.getHeading(), pose);
+        leftFront = leftFront.rotated(pose.getHeading());
+        leftRear = leftRear.rotated(pose.getHeading());
+        rightRear = rightRear.rotated(pose.getHeading());
+        rightFront = rightFront.rotated(pose.getHeading());
         canvas.setStrokeWidth(1);
-        canvas.strokeLine(leftFront[0], leftFront[1], leftRear[0], leftRear[1]);
-        canvas.strokeLine(leftRear[0], leftRear[1], rightRear[0], rightRear[1]);
-        canvas.strokeLine(rightRear[0], rightRear[1], rightFront[0], rightFront[1]);
-        canvas.strokeLine(rightFront[0], rightFront[1], leftFront[0], leftFront[1]);
+        canvas.strokeLine(leftFront.getX(), leftFront.getY(), leftRear.getX(), leftRear.getY());
+        canvas.strokeLine(leftRear.getX(), leftRear.getY(), rightRear.getX(), rightRear.getY());
+        canvas.strokeLine(rightRear.getX(), rightRear.getY(), rightFront.getX(), rightFront.getY());
+        canvas.strokeLine(rightFront.getX(), rightFront.getY(), leftFront.getX(), leftFront.getY());
+        drawPoint(canvas, pose.vec(), 2);
 
-//        canvas.strokeLine(leftFront[0], leftFront[1], rightRear[0], rightRear[1]);
-//        canvas.strokeLine(leftRear[0], leftRear[1], rightFront[0], rightFront[1]);
         canvas.setStrokeWidth(2);
         drawHeading(canvas, pose, ROBOT_RADIUS);
 //        canvas.strokeCircle(pose.getX(), pose.getY(), 2);
     }
 
-    private static double[] returnRotatedPoint(double[] point, double angle, Pose2d pose) {
-        return new double[] {(point[0] - pose.getX()) * Math.cos(angle) - (point[1] - pose.getY()) * Math.sin(angle) + pose.getX(),
-                             (point[0] - pose.getX()) * Math.sin(angle) + (point[1] - pose.getY()) * Math.cos(angle) + pose.getY()};
+    public static void drawPoints(Canvas canvas, ArrayList<Vector2d> list, boolean specialFirstPoint, String defaultColor, String specialColor, double radius) {
+        for (int i = 0; i < list.size(); i++) {
+            if (i == 0 && specialFirstPoint) {
+                canvas.setFill(specialColor);
+                canvas.setStroke(specialColor);
+            } else if (i <= 1){
+                canvas.setFill(defaultColor);
+                canvas.setStroke(defaultColor);
+            }
+            drawPoint(canvas, list.get(i), radius);
+        }
     }
 
     public static void drawHeading(Canvas canvas, Pose2d pose, double radius) {
@@ -69,5 +78,9 @@ public class DashboardUtil {
         double x1 = pose.getX() + v.getX() / 2, y1 = pose.getY() + v.getY() / 2;
         double x2 = pose.getX() + v.getX(), y2 = pose.getY() + v.getY();
         canvas.strokeLine(x1, y1, x2, y2);
+    }
+
+    public static void drawPoint(Canvas canvas, Vector2d point, double radius) {
+        canvas.fillCircle(point.getX(), point.getY(), radius);
     }
 }

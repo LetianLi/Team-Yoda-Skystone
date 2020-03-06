@@ -1,17 +1,19 @@
 package org.firstinspires.ftc.teamcode.yoda_code
 
-import com.acmerobotics.roadrunner.control.PIDCoefficients
-import com.acmerobotics.roadrunner.control.PIDFController
 import com.acmerobotics.roadrunner.drive.DriveSignal
 import com.acmerobotics.roadrunner.followers.PathFollower
 import com.acmerobotics.roadrunner.geometry.Pose2d
+import com.acmerobotics.roadrunner.geometry.Vector2d
 import com.acmerobotics.roadrunner.kinematics.Kinematics
 import com.acmerobotics.roadrunner.path.Path
-import com.acmerobotics.roadrunner.trajectory.constraints.MecanumConstraints
+import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints
 import com.acmerobotics.roadrunner.util.NanoClock
+import com.qualcomm.robotcore.util.Range
 
 import org.firstinspires.ftc.teamcode.yoda_code.MathFunctions.*
 import java.lang.Double.isNaN
+import kotlin.math.*
+
 
 /**
  * Traditional PID controller with feedforward velocity and acceleration components to follow a trajectory. More
@@ -25,20 +27,46 @@ import java.lang.Double.isNaN
  * @param clock clock
  */
 class PurePursuitFollower @JvmOverloads constructor(
-        val searchRadius: Double = 0.25,
+        val searchRadius: Double = 0.5,
         val samplingResolution: Double = 0.25,
-        val constraints: MecanumConstraints,
+        val constraints: DriveConstraints,
         admissibleError: Pose2d = Pose2d(),
         clock: NanoClock = NanoClock.system()
 ) : PathFollower(admissibleError, clock) {
 
+    lateinit var intersections: ArrayList<Vector2d>
+
     override var lastError: Pose2d = Pose2d() // Un-used
 
     override fun internalUpdate(currentPose: Pose2d): DriveSignal {
+        val movementSpeed = 0.0
+        val turnSpeed = 0.0
 
         val targetPose = getFollowPoint(path, currentPose, searchRadius)
-        val targetVel = __________
-        val targetAccel = __________
+
+        val absoluteXToPoint = targetPose.x - currentPose.x
+        val absoluteYToPoint = targetPose.y - currentPose.y
+
+//        val distanceToTarget = hypot(absoluteXToPoint, absoluteYToPoint)
+
+        val absoluteAngleToTarget = atan2(absoluteYToPoint, absoluteXToPoint)
+        val relativeAngleToPoint = radWrap(absoluteAngleToTarget - currentPose.heading)
+
+//        val relativeXToPoint = cos(relativeAngleToPoint) * distanceToTarget
+//        val relativeYToPoint = sin(relativeAngleToPoint) * distanceToTarget
+//
+//        val movementXPower = relativeXToPoint / (abs(relativeXToPoint) + abs(relativeYToPoint))
+//        val movementYPower = relativeYToPoint / (abs(relativeXToPoint) + abs(relativeYToPoint))
+//
+        val relativeTurnAngle = radWrap(relativeAngleToPoint + targetPose.heading)
+//
+//        val movement_x = movementXPower * movementSpeed
+//        val movement_y = movementYPower * movementSpeed
+        val movement_turn = Range.clip(relativeTurnAngle / Math.toRadians(30.0), -1.0, 1.0) * turnSpeed
+
+
+        val targetVel = Pose2d(absoluteXToPoint, absoluteYToPoint, movement_turn) * constraints.maxVel
+        val targetAccel = Pose2d() * constraints.maxAccel
 
         val targetRobotVel = Kinematics.fieldToRobotVelocity(targetPose, targetVel)
         val targetRobotAccel = Kinematics.fieldToRobotAcceleration(targetPose, targetVel, targetAccel)
@@ -57,7 +85,7 @@ class PurePursuitFollower @JvmOverloads constructor(
 
             /**
              * p1 = (x1, y1); p2 = (x2, y2); currentPose = (xc, yc); r = r;
-             * Line equation is y=y1+(y2-y1)t. x=x1+(x2-x1)t. Or wraped as a whole, f(t)=p1+(p2-p1)t.
+             * Line equation is y=y1+(y2-y1)t. x=x1+(x2-x1)t. Or wrapped as a whole, f(t)=p1+(p2-p1)t.
              * Where t is a constant between 0 and 1
              * Circle equation is r^2=x^2+y^2
              * Substituting line equation components into circle equation and solving for t results in a quadratic formula with:
@@ -70,15 +98,15 @@ class PurePursuitFollower @JvmOverloads constructor(
              * if t<0 or 1<t></t>, discard as intersection is outside of line.
              */
 
-            val quadraticA = Math.pow(p1.x - p2.x, 2.0) + Math.pow(p1.y - p2.y, 2.0)
-            val quadraticB = -2 * (p1.x * (p1.x - p2.x - currentPose.x) + p2.x * currentPose.x + p1.y * (p1.x - p2.y - currentPose.y) + p2.y * currentPose.y)
-            val quadraticC = Math.pow(p1.x - currentPose.x, 2.0) + Math.pow(p1.y - currentPose.y, 2.0) - Math.pow(radius, 2.0)
+            val quadraticA = (p1.x - p2.x).pow(2.0) + (p1.y - p2.y).pow(2.0)
+            val quadraticB = -2.0 * (p1.x * (p1.x - p2.x - currentPose.x) + p2.x * currentPose.x + p1.y * (p1.x - p2.y - currentPose.y) + p2.y * currentPose.y)
+            val quadraticC = (p1.x - currentPose.x).pow(2.0) + (p1.y - currentPose.y).pow(2.0) - radius.pow(2.0)
 
             val t1 = quadraticFormulaPlus(quadraticA, quadraticB, quadraticC)
             val t2 = quadraticFormulaMinus(quadraticA, quadraticB, quadraticC)
 
-            val validIntersection1 = 0 <= t1 && t1 <= 1 && !isNaN(t1)
-            val validIntersection2 = 0 <= t2 && t2 <= 1 && !isNaN(t2)
+            val validIntersection1 = t1 in 0.0..1.0 && !isNaN(t1)
+            val validIntersection2 = t2 in 0.0..1.0 && !isNaN(t2)
 
             val int1 = pointOnLine(p1, p2, t1)
             val int2 = pointOnLine(p1, p2, t2)
@@ -86,11 +114,14 @@ class PurePursuitFollower @JvmOverloads constructor(
             if (validIntersection1) followPoint = int1
 
             if (validIntersection2) {
-                if (!validIntersection1 || Math.abs(int1.x - p2.x) > Math.abs(int2.x - p2.x) || Math.abs(int1.y - p2.y) > Math.abs(int2.y - p2.y)) {
+                if (!validIntersection1 || abs(int1.x - p2.x) > abs(int2.x - p2.x) || abs(int1.y - p2.y) > abs(int2.y - p2.y)) {
                     followPoint = int2
                 }
             }
             s += samplingResolution
+
+            if (validIntersection1) intersections.add(int1.vec())
+            if (validIntersection2) intersections.add(int2.vec())
         }
 
         // special case for the very last point on the path
@@ -98,11 +129,13 @@ class PurePursuitFollower @JvmOverloads constructor(
             val lastPoint = path.end()
 
             // if we are closer than lookahead distance to the end, set it as the lookahead
-            if (Math.hypot(lastPoint.x - currentPose.x, lastPoint.y - currentPose.y) <= radius) {
+            if (hypot(lastPoint.x - currentPose.x, lastPoint.y - currentPose.y) <= radius) {
+                intersections.add(0, lastPoint.vec())
                 return lastPoint
             }
         }
 
+        intersections.add(0, followPoint.vec())
         return followPoint
     }
 }

@@ -34,6 +34,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.util.DashboardUtil;
+import org.firstinspires.ftc.teamcode.yoda_code.PurePursuitFollower;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -91,6 +92,7 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
 
         constraints = new MecanumConstraints(BASE_CONSTRAINTS, TRACK_WIDTH);
         follower = new HolonomicPIDVAFollower(AXIAL_PID, LATERAL_PID, HEADING_PID);
+        PPFollower = new PurePursuitFollower(5, 0.25, constraints);
     }
     public void setFollower(TrajectoryFollower newFollower) {
         follower = newFollower;
@@ -171,13 +173,14 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
         followPath(path);
         latency_timer.reset();
         waitForIdle();
-
     }
 
     public Pose2d getLastError() {
         switch (mode) {
             case FOLLOW_TRAJECTORY:
                 return follower.getLastError();
+            case FOLLOW_PATH:
+                return PPFollower.getLastError(); // should be Pose2d(), aka empty
             case TURN:
                 return new Pose2d(0, 0, turnController.getLastError());
             case IDLE:
@@ -261,15 +264,15 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
                 Trajectory trajectory = follower.getTrajectory();
 
                 fieldOverlay.setStrokeWidth(1);
-                fieldOverlay.setStroke("4CAF50");
+                fieldOverlay.setStroke("4CAF50"); // Path color
 
                 DashboardUtil.drawSampledPath(fieldOverlay, trajectory.getPath());
 
-                fieldOverlay.setStroke("#4F61C5");
+                fieldOverlay.setStroke("#4F61C5"); // Target color
                 double t = follower.elapsedTime();
                 DashboardUtil.drawRobot(fieldOverlay, trajectory.get(t));
 
-                fieldOverlay.setStroke("#F44336");
+                fieldOverlay.setStroke("#F44336"); // Current Location color
                 DashboardUtil.drawRobot(fieldOverlay, currentPose); // The current robot location
 
                 if (!follower.isFollowing()) {
@@ -288,6 +291,8 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
                 fieldOverlay.setStroke("4CAF50");
 
                 DashboardUtil.drawSampledPath(fieldOverlay, path);
+
+                DashboardUtil.drawPoints(fieldOverlay, ((PurePursuitFollower) PPFollower).getIntersections(), true, "4CAF50", "#4F61C5", 2);
 
                 fieldOverlay.setStroke("#F44336");
                 DashboardUtil.drawRobot(fieldOverlay, currentPose); // The current robot location
