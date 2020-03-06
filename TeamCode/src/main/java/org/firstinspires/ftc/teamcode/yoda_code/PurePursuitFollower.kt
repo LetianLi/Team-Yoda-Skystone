@@ -39,8 +39,8 @@ class PurePursuitFollower @JvmOverloads constructor(
     override var lastError: Pose2d = Pose2d() // Un-used
 
     override fun internalUpdate(currentPose: Pose2d): DriveSignal {
-        val movementSpeed = 0.0
-        val turnSpeed = 0.0
+        val movementSpeed = 1.0
+        val turnSpeed = 1.0
 
         val targetPose = getFollowPoint(path, currentPose, searchRadius)
 
@@ -79,6 +79,7 @@ class PurePursuitFollower @JvmOverloads constructor(
         var p2: Pose2d
         var followPoint: Pose2d = path.start()
         var s = 0.0
+        intersections.clear()
         while (s < path.length() - samplingResolution) {
             p1 = path[s]
             p2 = path[s + samplingResolution]

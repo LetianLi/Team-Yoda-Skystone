@@ -264,8 +264,7 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
                 Trajectory trajectory = follower.getTrajectory();
 
                 fieldOverlay.setStrokeWidth(1);
-                fieldOverlay.setStroke("4CAF50"); // Path color
-
+                fieldOverlay.setStroke("#4CAF50"); // Path color
                 DashboardUtil.drawSampledPath(fieldOverlay, trajectory.getPath());
 
                 fieldOverlay.setStroke("#4F61C5"); // Target color
@@ -288,13 +287,16 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
                 Path path = PPFollower.getPath();
 
                 fieldOverlay.setStrokeWidth(1);
-                fieldOverlay.setStroke("4CAF50");
-
+                fieldOverlay.setStroke("#4CAF50"); // Path color
                 DashboardUtil.drawSampledPath(fieldOverlay, path);
 
-                DashboardUtil.drawPoints(fieldOverlay, ((PurePursuitFollower) PPFollower).getIntersections(), true, "4CAF50", "#4F61C5", 2);
+                fieldOverlay.setStroke("#5F71D5"); // Circle color
+                fieldOverlay.strokeCircle(currentPose.getX(), currentPose.getY(), ((PurePursuitFollower) PPFollower).getSearchRadius());
 
-                fieldOverlay.setStroke("#F44336");
+                // Intersections from follower, uses Target color and Path Color
+                DashboardUtil.drawPoints(fieldOverlay, ((PurePursuitFollower) PPFollower).getIntersections(), true, "#4CAF50", "#4F61C5", 2);
+
+                fieldOverlay.setStroke("#F44336"); // Current Location color
                 DashboardUtil.drawRobot(fieldOverlay, currentPose); // The current robot location
 
                 if (!PPFollower.isFollowing()) {
