@@ -18,7 +18,7 @@ public class M0_Forward_10inches extends LinearOpMode {
     private static int delay_seconds = 20;
     @Override
     public void runOpMode() throws InterruptedException {
-        drive = new YodaMecanumDrive(hardwareMap);
+        drive = new YodaMecanumDrive(telemetry, hardwareMap);
         drive.setOpMode(this);
         drive.resetTimer();
 

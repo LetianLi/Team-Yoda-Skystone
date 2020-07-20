@@ -16,7 +16,7 @@ public class MotorTestingV2 extends LinearOpMode {
     public static double speed = 1;
     @Override
     public void runOpMode() throws InterruptedException {
-        drive = new YodaMecanumDrive(hardwareMap);
+        drive = new YodaMecanumDrive(telemetry, hardwareMap);
         drive.setOpMode(this);
         drive.resetTimer();
 

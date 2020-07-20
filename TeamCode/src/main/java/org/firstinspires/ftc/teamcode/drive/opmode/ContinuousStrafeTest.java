@@ -24,7 +24,7 @@ public class ContinuousStrafeTest extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        drive = new YodaMecanumDrive(hardwareMap);
+        drive = new YodaMecanumDrive(telemetry, hardwareMap);
         Pose2d startPose, endPose;
         Vector2d targetPose;
         waitForStart();

@@ -14,8 +14,10 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.localizer.StandardTrackingWheelLocalizer;
+import org.firstinspires.ftc.teamcode.drive.localizer.T265CameraWithThreeTrackingWheelLocalizer;
 import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveREVOptimized;
 import org.openftc.revextensions2.ExpansionHubEx;
 import org.openftc.revextensions2.ExpansionHubMotor;
@@ -40,6 +42,7 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
     public ExpansionHubMotor leftEncoder, rightEncoder, frontEncoder;
     public RevBlinkinLedDriver led;
     private RevBlinkinLedDriver.BlinkinPattern lastPattern;
+    public static T265CameraSystem slamra;
     public static double leftSensorToWall = 0;
     public static double sensorXOffset = 0;
     public static double sensorYOffset = -6 - 7.0/8.0;
@@ -49,7 +52,7 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
 //    ElapsedTime global_timer;
 //    String last_tag_for_logging;
 
-    public YodaMecanumDrive(HardwareMap hardwareMap) {
+    public YodaMecanumDrive(Telemetry telemetry, HardwareMap hardwareMap) {
         super(hardwareMap);
 
         global_timer = new ElapsedTime();
@@ -108,7 +111,8 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         horizontalExtender.setDirection(Servo.Direction.REVERSE);
         capstoneArm.setDirection(Servo.Direction.REVERSE);
 
-        setLocalizer(new StandardTrackingWheelLocalizer(hardwareMap));
+        setLocalizer(new T265CameraWithThreeTrackingWheelLocalizer(telemetry, hardwareMap, dashboard));
+        slamra = T265CameraWithThreeTrackingWheelLocalizer.slamra;
 
         horizontalExtender.scaleRange(1 - 0.37, 1 - 0.13); // actually limit 0.37
 

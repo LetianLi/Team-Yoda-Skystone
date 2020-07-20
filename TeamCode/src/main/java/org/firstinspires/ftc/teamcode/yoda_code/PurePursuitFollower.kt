@@ -16,21 +16,22 @@ import kotlin.math.*
 
 
 /**
- * Traditional PID controller with feedforward velocity and acceleration components to follow a trajectory. More
- * specifically, the feedback is applied to the components of the robot's pose (x position, y position, and heading) to
- * determine the velocity correction. The feedforward components are instead applied at the wheel level.
+ * Instead of utilizing PID and timed systems to stay on the planned trajectory. Pure pursuit
+ * draws a circle around the robot and checks for the intersection between that circle and
+ * the path it's following.
+ * This does not time-constrain the robot like the trajectoryFollowers
  *
  * @param searchRadius Radius of circle used to test for intersection
  * @param samplingResolution Distance between sampled points on path
  * @param constraints Mecanum constraints for movement. (eg. maxVel, maxAccel)
- * @param admissibleError admissible/satisfactory pose error at the end of each move (not used)
+ * @param admissibleError admissible/satisfactory pose error at the end of each move
  * @param clock clock
  */
 class PurePursuitFollower @JvmOverloads constructor(
-        val searchRadius: Double = 0.5,
-        val samplingResolution: Double = 0.25,
-        val constraints: DriveConstraints,
-        admissibleError: Pose2d = Pose2d(),
+        var searchRadius: Double = 0.5,
+        var samplingResolution: Double = 0.25,
+        var constraints: DriveConstraints,
+        admissibleError: Pose2d = Pose2d(0.5, 0.5, Math.toRadians(2.0)),
         clock: NanoClock = NanoClock.system()
 ) : PathFollower(admissibleError, clock) {
 
@@ -44,6 +45,7 @@ class PurePursuitFollower @JvmOverloads constructor(
         val turnSpeed = 1.0
 
         val targetPose = getFollowPoint(path, currentPose, searchRadius)
+        lastError = targetPose - currentPose
 
         val absoluteXToPoint = targetPose.x - currentPose.x
         val absoluteYToPoint = targetPose.y - currentPose.y
@@ -97,7 +99,7 @@ class PurePursuitFollower @JvmOverloads constructor(
              *
              * so: t=[-b+sqrt(b^2-4ac)]/2a, [-b-sqrt(b^2-4ac)]/2a
              *
-             * if t<0 or 1<t></t>, discard as intersection is outside of line.
+             * if t<0 or 1<t, discard as intersection is outside of line (not between points).
              */
 
             val quadraticA = (p1.x - p2.x).pow(2.0) + (p1.y - p2.y).pow(2.0)

@@ -20,7 +20,7 @@ public class M1_Park extends LinearOpMode {
     private YodaMecanumDrive drive;
     @Override
     public void runOpMode() throws InterruptedException {
-        drive = new YodaMecanumDrive(hardwareMap);
+        drive = new YodaMecanumDrive(telemetry, hardwareMap);
         drive.setOpMode(this);
         drive.resetTimer();
 //        double inches = 12;

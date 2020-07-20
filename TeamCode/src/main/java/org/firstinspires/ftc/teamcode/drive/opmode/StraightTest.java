@@ -19,7 +19,7 @@ public class StraightTest extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        YodaMecanumDrive drive = new YodaMecanumDrive(hardwareMap);
+        YodaMecanumDrive drive = new YodaMecanumDrive(telemetry, hardwareMap);
         Trajectory trajectory;
         if (DISTANCE < 0) {
             trajectory = drive.trajectoryBuilder()

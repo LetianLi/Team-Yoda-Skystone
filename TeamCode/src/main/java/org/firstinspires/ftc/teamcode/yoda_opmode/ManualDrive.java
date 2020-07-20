@@ -46,7 +46,7 @@ public class ManualDrive extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        drive = new YodaMecanumDrive(hardwareMap);
+        drive = new YodaMecanumDrive(telemetry, hardwareMap);
         drive.setOpMode(this);
         drive.resetTimer();
 //        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());

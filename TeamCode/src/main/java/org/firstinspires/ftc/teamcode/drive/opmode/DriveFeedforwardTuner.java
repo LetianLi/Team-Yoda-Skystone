@@ -46,7 +46,7 @@ public class DriveFeedforwardTuner extends LinearOpMode {
 
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
-        YodaMecanumDrive drive = new YodaMecanumDrive(hardwareMap);
+        YodaMecanumDrive drive = new YodaMecanumDrive(telemetry, hardwareMap);
 
         NanoClock clock = NanoClock.system();
 

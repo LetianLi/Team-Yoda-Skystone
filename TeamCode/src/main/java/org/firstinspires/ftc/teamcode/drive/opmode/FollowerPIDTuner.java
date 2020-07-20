@@ -20,7 +20,7 @@ public class FollowerPIDTuner extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        YodaMecanumDrive drive = new YodaMecanumDrive(hardwareMap);
+        YodaMecanumDrive drive = new YodaMecanumDrive(telemetry, hardwareMap);
         drive.intakeGrabber.setPosition(0.52);
 
         drive.setPoseEstimate(new Pose2d(-DISTANCE / 2, -DISTANCE / 2, 0));

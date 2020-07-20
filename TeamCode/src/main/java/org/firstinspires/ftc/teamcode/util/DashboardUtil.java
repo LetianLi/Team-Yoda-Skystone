@@ -60,6 +60,10 @@ public class DashboardUtil {
 //        canvas.strokeCircle(pose.getX(), pose.getY(), 2);
     }
 
+    public static void drawRobot(Canvas canvas, double x, double y, double rad) {
+        drawRobot(canvas, new Pose2d(x, y, rad));
+    }
+
     public static void drawPoints(Canvas canvas, ArrayList<Vector2d> list, boolean specialFirstPoint, String defaultColor, String specialColor, double radius) {
         for (int i = 0; i < list.size(); i++) {
             if (i == 0 && specialFirstPoint) {

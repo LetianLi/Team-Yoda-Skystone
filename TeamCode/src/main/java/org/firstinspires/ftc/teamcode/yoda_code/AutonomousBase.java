@@ -33,7 +33,7 @@ public abstract class AutonomousBase extends LinearOpMode {
 
         if (detectStoneAndWait && initialize) detector = new OpencvDetector(hardwareMap);
 
-        drive = new YodaMecanumDrive(hardwareMap);
+        drive = new YodaMecanumDrive(telemetry, hardwareMap);
         drive.setOpMode(this);
 
         op_timer = new ElapsedTime();

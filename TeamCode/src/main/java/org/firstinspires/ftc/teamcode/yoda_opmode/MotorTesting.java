@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.yoda_code.YodaMecanumDrive;
 public class MotorTesting extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
-        YodaMecanumDrive drive = new YodaMecanumDrive(hardwareMap);
+        YodaMecanumDrive drive = new YodaMecanumDrive(telemetry, hardwareMap);
 
         waitForStart();
 

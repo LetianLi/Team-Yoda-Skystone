@@ -34,7 +34,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.util.DashboardUtil;
-import org.firstinspires.ftc.teamcode.yoda_code.PurePursuitFollower;
+//import org.firstinspires.ftc.teamcode.yoda_code.PurePursuitFollower;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +58,7 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
         FOLLOW_PATH
     }
 
-    private FtcDashboard dashboard;
+    public FtcDashboard dashboard;
     private NanoClock clock;
 
     private Mode mode;
@@ -92,7 +92,7 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
 
         constraints = new MecanumConstraints(BASE_CONSTRAINTS, TRACK_WIDTH);
         follower = new HolonomicPIDVAFollower(AXIAL_PID, LATERAL_PID, HEADING_PID);
-        PPFollower = new PurePursuitFollower(5, 0.25, constraints);
+//        PPFollower = new PurePursuitFollower(5, 0.25, constraints);
     }
     public void setFollower(TrajectoryFollower newFollower) {
         follower = newFollower;
@@ -174,6 +174,11 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
         latency_timer.reset();
         waitForIdle();
     }
+
+//    public void followPathSync(double radius, Path path) {
+//        ((PurePursuitFollower) PPFollower).setSearchRadius(radius);
+//        followPathSync(path);
+//    }
 
     public Pose2d getLastError() {
         switch (mode) {
@@ -284,26 +289,26 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
             case FOLLOW_PATH: {
                 setDriveSignal(PPFollower.update(currentPose));
 
-                Path path = PPFollower.getPath();
-                PurePursuitFollower PPInfo = (PurePursuitFollower) PPFollower;
-
-                fieldOverlay.setStrokeWidth(1);
-                fieldOverlay.setStroke("#4CAF50"); // Path color
-                DashboardUtil.drawSampledPath(fieldOverlay, path);
-
-                fieldOverlay.setStroke("#5F71D5"); // Circle color
-                fieldOverlay.strokeCircle(currentPose.getX(), currentPose.getY(), PPInfo.getSearchRadius());
-
-                // Intersections from follower, uses Target color and Path Color
-                DashboardUtil.drawPoints(fieldOverlay, PPInfo.getIntersections(), true, "#4CAF50", "#4F61C5", 2);
-
-                fieldOverlay.setStroke("#F44336"); // Current Location color
-                DashboardUtil.drawRobot(fieldOverlay, currentPose); // The current robot location
-
-                if (!PPFollower.isFollowing()) {
-                    mode = Mode.IDLE;
-                    setDriveSignal(new DriveSignal());
-                }
+//                Path path = PPFollower.getPath();
+//                PurePursuitFollower PPInfo = (PurePursuitFollower) PPFollower;
+//
+//                fieldOverlay.setStrokeWidth(1);
+//                fieldOverlay.setStroke("#4CAF50"); // Path color
+//                DashboardUtil.drawSampledPath(fieldOverlay, path);
+//
+//                fieldOverlay.setStroke("#5F71D5"); // Circle color
+//                fieldOverlay.strokeCircle(currentPose.getX(), currentPose.getY(), PPInfo.getSearchRadius());
+//
+//                // Intersections from follower, uses Target color and Path Color
+//                DashboardUtil.drawPoints(fieldOverlay, PPInfo.getIntersections(), true, "#4CAF50", "#4F61C5", 2);
+//
+//                fieldOverlay.setStroke("#F44336"); // Current Location color
+//                DashboardUtil.drawRobot(fieldOverlay, currentPose); // The current robot location
+//
+//                if (!PPFollower.isFollowing()) {
+//                    mode = Mode.IDLE;
+//                    setDriveSignal(new DriveSignal());
+//                }
 
                 break;
             }

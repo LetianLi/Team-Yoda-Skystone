@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import org.firstinspires.ftc.teamcode.drive.localizer.T265CameraWithThreeTrackingWheelLocalizer;
 import org.firstinspires.ftc.teamcode.yoda_code.YodaMecanumDrive;
 
 /**
@@ -27,29 +28,31 @@ public class LocalizationTest extends LinearOpMode {
     public static double STARTINGX = 0;
     public static double STARTINGY = 0;
     public static double STARTINGHEADINGDEG = 0;
-    public static boolean TESTINGMODE = true;
+    public static boolean TESTINGMODE = false;
+    public static boolean BRAKING = false;
 
     private YodaMecanumDrive drive;
 
     @Override
     public void runOpMode() throws InterruptedException {
 //        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-        boolean braking = true;
+        BRAKING = false;
 
-        drive = new YodaMecanumDrive(hardwareMap);
+        drive = new YodaMecanumDrive(telemetry, hardwareMap);
         drive.setPoseEstimate(new Pose2d(STARTINGX, STARTINGY, Math.toRadians(STARTINGHEADINGDEG)));
         drive.resetLeftSensorToWall(STARTINGY, 0);
         drive.resetInitServos();
         waitForStart();
+        ((T265CameraWithThreeTrackingWheelLocalizer) drive.getLocalizer()).slamra.start(new Pose2d());
 
         while (!isStopRequested()) {
             if (gamepad1.a) {
                 drive.setMotorsZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                braking = true;
+                BRAKING = true;
             }
             else if (gamepad1.b) {
                 drive.setMotorsZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-                braking = false;
+                BRAKING = false;
             }
             if (gamepad1.x) {
                 drive.setPoseEstimate(new Pose2d(0, 0, 0));
@@ -71,7 +74,6 @@ public class LocalizationTest extends LinearOpMode {
                     }
                 }
             }
-
             else {
                 if (gamepad1.dpad_up) extraY += 0.1;
                 if (gamepad1.dpad_down) extraY -= 0.1;
@@ -111,7 +113,7 @@ public class LocalizationTest extends LinearOpMode {
             Pose2d poseEstimate = drive.getPoseEstimate();
             double calcY = drive.getCalculatedY(STARTINGY);
             double dist = drive.getLeftDistance();
-//            telemetry.addData("Encoder values, lf, lr, rr, rf", drive.getWheelPositions());
+            telemetry.addData("Encoder values, lf, lr, rr, rf", drive.getWheelPositions());
             telemetry.addData("x", poseEstimate.getX());
             telemetry.addData("y", poseEstimate.getY());
             telemetry.addData("Calculated y", calcY);
@@ -120,12 +122,14 @@ public class LocalizationTest extends LinearOpMode {
             telemetry.addData("Calc - Dist", calcY - dist);
             telemetry.addData("heading", Math.toDegrees(poseEstimate.getHeading()));
             telemetry.addData("IMU", Math.toDegrees(drive.getRawExternalHeading()));
-            telemetry.addData("Braking", braking);
+            telemetry.addData("Braking", BRAKING);
             telemetry.addData("Left Encoder", encoderTicksToInches(drive.leftEncoder.getCurrentPosition()));
             telemetry.addData("Right Encoder", encoderTicksToInches(drive.rightEncoder.getCurrentPosition()));
             telemetry.addData("Front Encoder", encoderTicksToInches(drive.frontEncoder.getCurrentPosition()));
             telemetry.update();
         }
+        ((T265CameraWithThreeTrackingWheelLocalizer) drive.getLocalizer()).slamra.stop();
+        ((T265CameraWithThreeTrackingWheelLocalizer) drive.getLocalizer()).slamra.free();
     }
     public static double encoderTicksToInches(int ticks) {
         return 2.9/2.54 * 2 * Math.PI * 1 * ticks / 2880;

@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.teamcode.yoda_code.AutonomousBase;
 import org.firstinspires.ftc.teamcode.yoda_enum.TeamColor;
-@Disabled
+//@Disabled
 @Autonomous(group = "auto", name = "Diagnostics")
 public class Diagnostics extends AutonomousBase {
 
