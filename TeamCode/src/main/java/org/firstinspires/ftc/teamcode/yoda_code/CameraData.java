@@ -42,6 +42,16 @@ public class CameraData {
         this.repeats = 0;
     }
 
+    /**
+     * Generates an exact copy
+     */
+    public CameraData(CameraData cameraData) {
+        this.robotPosition = cameraData.robotPosition;
+        this.robotVelocity = cameraData.robotVelocity;
+        this.poseConfidence = cameraData.poseConfidence;
+        this.repeats = cameraData.repeats;
+    }
+
 
     public Pose2d getRobotPosition() {
         return robotPosition;
@@ -151,5 +161,9 @@ public class CameraData {
         return this.robotPosition == comparison.robotPosition &&
                this.robotVelocity == comparison.robotVelocity &&
                this.poseConfidence == comparison.poseConfidence;
+    }
+
+    public CameraData clone() {
+        return new CameraData(this);
     }
 }
