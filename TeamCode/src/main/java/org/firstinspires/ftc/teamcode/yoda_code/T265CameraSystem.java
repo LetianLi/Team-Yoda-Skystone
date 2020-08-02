@@ -10,19 +10,17 @@ import com.spartronics4915.lib.T265Camera;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.util.ConversionUtil;
-import org.openftc.revextensions2.ExpansionHubMotor;
 
-import java.util.List;
 import java.util.function.Consumer;
+
+import static org.firstinspires.ftc.teamcode.yoda_code.YodaMecanumDrive.localizer;
+import static org.firstinspires.ftc.teamcode.yoda_code.YodaMecanumDrive.slamra;
 
 public class T265CameraSystem {
     private static T265Camera T265CameraBase = null;
     private Telemetry telemetry;
     private HardwareMap hardwareMap;
-    private OdometryWheel SupplierX = null;
-    private OdometryWheel SupplierY = null;
 
-    private static CameraData lastCameraData = new CameraData();
     private static CameraData cameraData = new CameraData();
 
 
@@ -31,36 +29,54 @@ public class T265CameraSystem {
         this.hardwareMap = hardwareMap;
     }
 
-    public void init(boolean reinitialize, Pose2d robotOffset, double odometryCovariance, String relocMapPath, Context appContext) {
+    /**
+     *
+     * @param robotOffset The position of the camera in relation to the robot's (0, 0, 0°)
+     * @param odometryCovariance How much fusion (0-1)
+     * @param relocMapPath path (including filename) to a relocalization map to load.
+     */
+    public void init(Pose2d robotOffset, double odometryCovariance, String relocMapPath) {
         telemetry.addLine("Initializing Slamra...");
         telemetry.update();
         Log.i("T265CameraSystem", "Function Call: init() called");
 
-        if (T265CameraBase == null || reinitialize) {
-            Pose2d robotOffsetMeters = ConversionUtil.inchesToMeters(robotOffset);
-            T265CameraBase = new T265Camera(ConversionUtil.toTransform2d(robotOffsetMeters), odometryCovariance, relocMapPath, appContext);
-            telemetry.addLine("SLAMRA is Re-initialized");
-            Log.i("T265CameraSystem", "Reinitialized - Reason: (Previously null - " + (T265CameraBase == null) + "), (Override Requested - " + reinitialize + ")");
-        } else {
-            telemetry.addLine("SLAMRA is already Initialized");
-            Log.i("T265CameraSystem", "Already Initialized");
+        if (T265CameraBase != null) {
+            Log.i("T265CameraSystem", "State: Already Initialized - Reinitializing");
+//            T265CameraBase.free(); // This causes nativeCameraObjectPointer Exception
         }
+
+        // Convert Pose2d into one with yaw (multiply heading by -1) and as meters
+        robotOffset = new Pose2d(robotOffset.vec(), -robotOffset.getHeading());
+        Pose2d robotOffsetMeters = ConversionUtil.inchesToMeters(robotOffset);
+
+        T265CameraBase = new T265Camera(ConversionUtil.toTransform2d(robotOffsetMeters), odometryCovariance, relocMapPath, hardwareMap.appContext);
+        telemetry.addLine("SLAMRA is Re-initialized");
+        Log.i("T265CameraSystem", "State: Reinitialized");
+
         telemetry.update();
-        Log.i("T265CameraSystem", "SLAMRA Name: " + T265CameraBase.toString());
+        Log.i("T265CameraSystem", "State: SLAMRA Name: " + T265CameraBase.toString());
     }
 
-    public void init(boolean overridePrevious, Pose2d robotOffset, double odometryCovariance, Context appContext) {
-        init(overridePrevious, robotOffset, odometryCovariance, "", appContext);
+    public void init(Pose2d robotOffset, double odometryCovariance) {
+        init(robotOffset, odometryCovariance, "");
     }
 
-    public void init(boolean overridePrevious, Pose2d robotOffset) {
-        init(overridePrevious, robotOffset, 0.1, hardwareMap.appContext);
+    public void init(Pose2d robotOffset) {
+        init(robotOffset, 0.1);
     }
 
     public void init() {
-        init(true, new Pose2d());
+        init(new Pose2d());
     }
 
+    /**
+     *
+     * @param newPose The pose the camera should be zeroed to. (-1 to yaw not yet applied)
+     * @param poseConsumer A method to be called every time we receive a pose from
+     *                     <i>from a different thread</i>! You must synchronize
+     *                     memory access across threads!
+     *                     Received poses are in meters.
+     */
     public void start(Pose2d newPose, Consumer<T265Camera.CameraUpdate> poseConsumer) {
         Log.i("T265CameraSystem", "Function Call: start() called");
         setPose(newPose);
@@ -70,16 +86,15 @@ public class T265CameraSystem {
     public void start(Pose2d newPose) {
         start(newPose, (cameraOutput) -> {
             if(cameraOutput != null) {
-                lastCameraData = cameraData.clone();
-                cameraData = new CameraData(cameraOutput, lastCameraData);
+//                localizer.updatePoseDelta();
+                slamra.sendOdometry(localizer.getPoseVelocity());
+                cameraData = new CameraData(cameraOutput, cameraData);
 
                 if (!cameraData.isUnique()) {
                     Log.d("T265CameraSystem", "Error: cameraData is not unique. This value has been repeated (" + cameraData.getRepeats() + ") times.");
                 }
 
-                if (SupplierX != null && SupplierY != null){
-                    sendOdometry(getWheelOdometryVelocity());
-                }
+                Log.i("T265CameraSystem", "Function Call: update() called");
             }
         });
     }
@@ -90,7 +105,7 @@ public class T265CameraSystem {
     }
 
     public void setPose(Pose2d newPose) {
-        Log.i("T265CameraSystem", "Function Call: setPose" + newPose.toString() + " called. (Display type inches)");
+        Log.i("T265CameraSystem", "Function Call: setPose" + newPose.toString() + " called");
 
         Pose2d newPoseMeters = ConversionUtil.inchesToMeters(newPose);
         T265CameraBase.setPose(ConversionUtil.toLibPose2d(newPoseMeters));
@@ -121,20 +136,13 @@ public class T265CameraSystem {
         T265CameraBase.sendOdometry(translationalVelocityMeters.getX(), translationalVelocityMeters.getY());
     }
 
+    public void sendOdometry(Pose2d translationalVelocity) {
+        sendOdometry(translationalVelocity.vec());
+    }
+
     public CameraData getCameraData() {
 //        Log.i("T265CameraSystem", "Function Call: getCameraData() called"); // Expect Spam
 
         return cameraData;
-    }
-
-    public Vector2d getWheelOdometryVelocity() {
-        Log.i("T265CameraSystem", "Function Call: getWheelOdometryVelocity() called");
-        return new Vector2d(SupplierX.getVelocityInches(), SupplierY.getVelocityInches());
-    }
-
-    public void setUpOdometry(OdometryWheel supplierX, OdometryWheel supplierY) {
-        Log.i("T265CameraSystem", "Function Call: setUpOdometry() called");
-        this.SupplierX = supplierX;
-        this.SupplierY = supplierY;
     }
 }

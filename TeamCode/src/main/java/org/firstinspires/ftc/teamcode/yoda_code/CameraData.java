@@ -158,9 +158,9 @@ public class CameraData {
      * @return whether every value (except repeats) is the same
      */
     public boolean equals(@NotNull CameraData comparison) {
-        return this.robotPosition == comparison.robotPosition &&
-               this.robotVelocity == comparison.robotVelocity &&
-               this.poseConfidence == comparison.poseConfidence;
+        return this.robotPosition.equals(comparison.robotPosition) &&
+               this.robotVelocity.equals(comparison.robotVelocity) &&
+               this.poseConfidence.equals(comparison.poseConfidence);
     }
 
     public CameraData clone() {

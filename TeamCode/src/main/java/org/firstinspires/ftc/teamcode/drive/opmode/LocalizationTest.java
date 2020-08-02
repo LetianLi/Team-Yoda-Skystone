@@ -7,7 +7,6 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
-import org.firstinspires.ftc.teamcode.drive.localizer.T265CameraWithThreeTrackingWheelLocalizer;
 import org.firstinspires.ftc.teamcode.yoda_code.YodaMecanumDrive;
 
 /**
@@ -35,15 +34,13 @@ public class LocalizationTest extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-//        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-        BRAKING = false;
 
         drive = new YodaMecanumDrive(telemetry, hardwareMap);
-        drive.setPoseEstimate(new Pose2d(STARTINGX, STARTINGY, Math.toRadians(STARTINGHEADINGDEG)));
-        drive.resetLeftSensorToWall(STARTINGY, 0);
+//        drive.setPoseEstimate(new Pose2d(STARTINGX, STARTINGY, Math.toRadians(STARTINGHEADINGDEG)));
+//        drive.resetLeftSensorToWall(STARTINGY, 0);
         drive.resetInitServos();
         waitForStart();
-        ((T265CameraWithThreeTrackingWheelLocalizer) drive.getLocalizer()).slamra.start(new Pose2d());
+        drive.slamra.start(new Pose2d());
 
         while (!isStopRequested()) {
             if (gamepad1.a) {
@@ -54,10 +51,10 @@ public class LocalizationTest extends LinearOpMode {
                 drive.setMotorsZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
                 BRAKING = false;
             }
-            if (gamepad1.x) {
-                drive.setPoseEstimate(new Pose2d(0, 0, 0));
-                drive.resetLeftSensorToWall(0, 0);
-            }
+//            if (gamepad1.x) {
+//                drive.setPoseEstimate(new Pose2d(0, 0, 0));
+//                drive.resetLeftSensorToWall(0, 0);
+//            }
 
             double bumperTurn = 0;
             double extraX = 0;
@@ -110,29 +107,25 @@ public class LocalizationTest extends LinearOpMode {
 
             drive.update();
 
-            Pose2d poseEstimate = drive.getPoseEstimate();
-            double calcY = drive.getCalculatedY(STARTINGY);
-            double dist = drive.getLeftDistance();
-            telemetry.addData("Encoder values, lf, lr, rr, rf", drive.getWheelPositions());
-            telemetry.addData("x", poseEstimate.getX());
-            telemetry.addData("y", poseEstimate.getY());
-            telemetry.addData("Calculated y", calcY);
-            telemetry.addData("Y difference", calcY - poseEstimate.getY());
-            telemetry.addData("Left Distance", dist);
-            telemetry.addData("Calc - Dist", calcY - dist);
-            telemetry.addData("heading", Math.toDegrees(poseEstimate.getHeading()));
-            telemetry.addData("IMU", Math.toDegrees(drive.getRawExternalHeading()));
-            telemetry.addData("Braking", BRAKING);
-            telemetry.addData("Left Encoder", encoderTicksToInches(drive.leftEncoder.getCurrentPosition()));
-            telemetry.addData("Right Encoder", encoderTicksToInches(drive.rightEncoder.getCurrentPosition()));
-            telemetry.addData("Front Encoder", encoderTicksToInches(drive.frontEncoder.getCurrentPosition()));
+//            Pose2d poseEstimate = drive.getPoseEstimate();
+//            double calcY = drive.getCalculatedY(STARTINGY);
+//            double dist = drive.getLeftDistance();
+//            telemetry.addData("Encoder values, lf, lr, rr, rf", drive.getWheelPositions());
+//            telemetry.addData("x", poseEstimate.getX());
+//            telemetry.addData("y", poseEstimate.getY());
+//            telemetry.addData("Calculated y", calcY);
+//            telemetry.addData("Y difference", calcY - poseEstimate.getY());
+//            telemetry.addData("Left Distance", dist);
+//            telemetry.addData("Calc - Dist", calcY - dist);
+//            telemetry.addData("heading", Math.toDegrees(poseEstimate.getHeading()));
+//            telemetry.addData("IMU", Math.toDegrees(drive.getRawExternalHeading()));
+//            telemetry.addData("Braking", BRAKING);
+//            telemetry.addData("Left Encoder", encoderTicksToInches(drive.leftEncoder.getCurrentPosition()));
+//            telemetry.addData("Right Encoder", encoderTicksToInches(drive.rightEncoder.getCurrentPosition()));
+//            telemetry.addData("Front Encoder", encoderTicksToInches(drive.frontEncoder.getCurrentPosition()));
             telemetry.update();
         }
-        ((T265CameraWithThreeTrackingWheelLocalizer) drive.getLocalizer()).slamra.stop();
-        ((T265CameraWithThreeTrackingWheelLocalizer) drive.getLocalizer()).slamra.free();
+        drive.slamra.stop();
+        drive.slamra.free();
     }
-    public static double encoderTicksToInches(int ticks) {
-        return 2.9/2.54 * 2 * Math.PI * 1 * ticks / 2880;
-    }
-
 }

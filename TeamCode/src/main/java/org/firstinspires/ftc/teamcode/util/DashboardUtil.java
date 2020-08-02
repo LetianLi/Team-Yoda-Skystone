@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.util;
 
-import android.util.Log;
-
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
@@ -39,20 +37,19 @@ public class DashboardUtil {
 
     public static void drawRobot(Canvas canvas, Pose2d pose) {
         //canvas.strokeCircle(pose.getX(), pose.getY(), ROBOT_RADIUS);
-        Vector2d leftFront  = new Vector2d(pose.getX() + ROBOT_LENGTH/2, pose.getY() + ROBOT_WIDTH/2);
-        Vector2d leftRear   = new Vector2d(pose.getX() - ROBOT_LENGTH/2, pose.getY() + ROBOT_WIDTH/2);
-        Vector2d rightRear  = new Vector2d(pose.getX() - ROBOT_LENGTH/2, pose.getY() - ROBOT_WIDTH/2);
-        Vector2d rightFront = new Vector2d(pose.getX() + ROBOT_LENGTH/2, pose.getY() - ROBOT_WIDTH/2);
+        Vector2d leftFront  = new Vector2d(ROBOT_LENGTH/2, ROBOT_WIDTH/2);
+        Vector2d leftRear   = new Vector2d(-ROBOT_LENGTH/2, ROBOT_WIDTH/2);
+        Vector2d rightRear  = new Vector2d(-ROBOT_LENGTH/2, -ROBOT_WIDTH/2);
+        Vector2d rightFront = new Vector2d(ROBOT_LENGTH/2, -ROBOT_WIDTH/2);
 
-        leftFront = leftFront.rotated(pose.getHeading());
-        leftRear = leftRear.rotated(pose.getHeading());
-        rightRear = rightRear.rotated(pose.getHeading());
-        rightFront = rightFront.rotated(pose.getHeading());
-        canvas.setStrokeWidth(1);
-        canvas.strokeLine(leftFront.getX(), leftFront.getY(), leftRear.getX(), leftRear.getY());
-        canvas.strokeLine(leftRear.getX(), leftRear.getY(), rightRear.getX(), rightRear.getY());
-        canvas.strokeLine(rightRear.getX(), rightRear.getY(), rightFront.getX(), rightFront.getY());
-        canvas.strokeLine(rightFront.getX(), rightFront.getY(), leftFront.getX(), leftFront.getY());
+        Vector2d[] points = new Vector2d[]{leftFront, leftRear, rightRear, rightFront};
+
+        for (int i =0; i < 4; i++) {
+            points[i] = points[i].rotated(pose.getHeading());
+            points[i] = points[i].plus(pose.vec());
+        }
+
+        drawShape(canvas, points);
         drawPoint(canvas, pose.vec(), 2);
 
         canvas.setStrokeWidth(2);
@@ -86,5 +83,15 @@ public class DashboardUtil {
 
     public static void drawPoint(Canvas canvas, Vector2d point, double radius) {
         canvas.fillCircle(point.getX(), point.getY(), radius);
+    }
+
+    public static void drawShape(Canvas canvas, Vector2d[] points) {
+        canvas.setStrokeWidth(1);
+        for (int i = 0; i < points.length - 1; i++) {
+            canvas.strokeLine(points[i].getX(), points[i].getY(),
+                              points[i+1].getX(), points[i+1].getY());
+        }
+        canvas.strokeLine(points[points.length - 1].getX(), points[points.length - 1].getY(),
+                          points[0].getX(), points[0].getY());
     }
 }
