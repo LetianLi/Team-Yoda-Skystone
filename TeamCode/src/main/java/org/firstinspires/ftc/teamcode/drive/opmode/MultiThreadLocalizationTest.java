@@ -8,7 +8,6 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
-import org.firstinspires.ftc.teamcode.drive.localizer.T265CameraWithTwoTrackingWheelLocalizer;
 import org.firstinspires.ftc.teamcode.yoda_code.YodaMecanumDrive;
 
 /**
@@ -64,7 +63,7 @@ public class MultiThreadLocalizationTest extends LinearOpMode {
 //            telemetry.addData("Left Distance", dist);
 //            telemetry.addData("Calc - Dist", calcY - dist);
 //            telemetry.addData("IMU", Math.toDegrees(drive.getRawExternalHeading()));
-//            telemetry.addData("Encoder Velocities", String.format("(%.3f, %.3f)", ((T265CameraWithTwoTrackingWheelLocalizer) drive.getLocalizer()).leftEncoder.getVelocityInches(), ((T265CameraWithTwoTrackingWheelLocalizer) drive.getLocalizer()).frontEncoder.getVelocityInches()));
+//            telemetry.addData("Encoder Velocities", String.format("(%.3f, %.3f)", ((T265CameraWithTrackingWheelLocalizer) drive.getLocalizer()).leftEncoder.getVelocityInches(), ((T265CameraWithTrackingWheelLocalizer) drive.getLocalizer()).frontEncoder.getVelocityInches()));
 //            telemetry.addData("Braking", BRAKING);
 //            telemetry.addData("Left Encoder", encoderTicksToInches(drive.leftEncoder.getCurrentPosition()));
 //            telemetry.addData("Right Encoder", encoderTicksToInches(drive.rightEncoder.getCurrentPosition()));

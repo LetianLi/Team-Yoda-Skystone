@@ -35,7 +35,7 @@ import java.util.List;
  */
 
 @Config
-public class T265CameraWithTwoTrackingWheelLocalizer extends TwoTrackingWheelVelocityMeasurer {
+public class T265CameraWithTrackingWheelLocalizer extends TwoTrackingWheelVelocityMeasurer {
     private Telemetry telemetry;
     public static T265CameraSystem slamra;
     private BNO055IMU imu;
@@ -49,12 +49,13 @@ public class T265CameraWithTwoTrackingWheelLocalizer extends TwoTrackingWheelVel
 
     public static double LATERAL_DISTANCE = 13 + 14.0/16.0; // in; distance between the left and right wheels
     public static double FORWARD_OFFSET = 4 + 9.0/16.0; // in; offset of the lateral wheel // changed from 10/16
-    
+
     public static double odometryCovariance = 0.1;
+    public static boolean useOdometry = false;
 
     public OdometryWheel leftEncoder, rightEncoder, frontEncoder;
 
-    public T265CameraWithTwoTrackingWheelLocalizer(Telemetry telemetry, HardwareMap hardwareMap, BNO055IMU imu) {
+    public T265CameraWithTrackingWheelLocalizer(Telemetry telemetry, HardwareMap hardwareMap, BNO055IMU imu) {
         super(Arrays.asList(
                 new Pose2d(1 + 3.0/16.0, LATERAL_DISTANCE / 2, 0), // left
 //                new Pose2d(1 + 3.0/16.0, -LATERAL_DISTANCE / 2, 0), // right

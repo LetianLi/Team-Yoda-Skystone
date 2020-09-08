@@ -4,7 +4,6 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.path.Path;
-import com.acmerobotics.roadrunner.path.PathBuilder;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
@@ -16,7 +15,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.drive.localizer.T265CameraWithTwoTrackingWheelLocalizer;
+import org.firstinspires.ftc.teamcode.drive.localizer.T265CameraWithTrackingWheelLocalizer;
 import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveREVOptimized;
 import org.openftc.revextensions2.ExpansionHubEx;
 import org.openftc.revextensions2.ExpansionHubMotor;
@@ -28,7 +27,6 @@ import static org.firstinspires.ftc.teamcode.yoda_code.MathFunctions.*;
 
 @Config
 public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
-    public ExpansionHubEx hub2;
     public ExpansionHubMotor verticalExtender, parkingTape;
     public Servo horizontalExtender;
     public Servo foundationMoverLeft, foundationMoverRight;
@@ -42,7 +40,7 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
     public RevBlinkinLedDriver led;
     private RevBlinkinLedDriver.BlinkinPattern lastPattern;
     public static T265CameraSystem slamra;
-    public static T265CameraWithTwoTrackingWheelLocalizer localizer;
+    public static T265CameraWithTrackingWheelLocalizer localizer;
 //    public static double leftSensorToWall = 0;
     public static double sensorXOffset = 0;
     public static double sensorYOffset = -6 - 7.0/8.0;
@@ -58,8 +56,6 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         global_timer = new ElapsedTime();
         latency_timer = new ElapsedTime();
 //        last_tag_for_logging = "";
-
-        hub2 = hardwareMap.get(ExpansionHubEx.class, "Secondary Hub id: 2");
 
         leftEncoder = hardwareMap.get(ExpansionHubMotor.class, "leftEncoder");
         rightEncoder = hardwareMap.get(ExpansionHubMotor.class, "rightEncoder");
@@ -111,9 +107,9 @@ public class YodaMecanumDrive extends SampleMecanumDriveREVOptimized {
         horizontalExtender.setDirection(Servo.Direction.REVERSE);
         capstoneArm.setDirection(Servo.Direction.REVERSE);
 
-        localizer = new T265CameraWithTwoTrackingWheelLocalizer(telemetry, hardwareMap, imu);
+        localizer = new T265CameraWithTrackingWheelLocalizer(telemetry, hardwareMap, imu);
         setLocalizer(localizer);
-        slamra = T265CameraWithTwoTrackingWheelLocalizer.slamra;
+        slamra = T265CameraWithTrackingWheelLocalizer.slamra;
 
         horizontalExtender.scaleRange(1 - 0.37, 1 - 0.13); // actually limit 0.37
 

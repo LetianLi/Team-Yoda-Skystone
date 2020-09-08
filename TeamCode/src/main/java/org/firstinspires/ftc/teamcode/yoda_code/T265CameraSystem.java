@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.yoda_code;
 
-import android.content.Context;
 import android.util.Log;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
@@ -22,7 +21,6 @@ public class T265CameraSystem {
     private HardwareMap hardwareMap;
 
     private static CameraData cameraData = new CameraData();
-
 
     public T265CameraSystem(Telemetry telemetry, HardwareMap hardwareMap) {
         this.telemetry = telemetry;
@@ -51,7 +49,9 @@ public class T265CameraSystem {
 
         T265CameraBase = new T265Camera(ConversionUtil.toTransform2d(robotOffsetMeters), odometryCovariance, relocMapPath, hardwareMap.appContext);
         telemetry.addLine("SLAMRA is Re-initialized");
+        telemetry.addData("Use Wheel Odometry", localizer.useOdometry);
         Log.i("T265CameraSystem", "State: Reinitialized");
+        Log.i("T265CameraSystem", "Use Wheel Odometry: " + localizer.useOdometry);
 
         telemetry.update();
         Log.i("T265CameraSystem", "State: SLAMRA Name: " + T265CameraBase.toString());
@@ -86,12 +86,13 @@ public class T265CameraSystem {
     public void start(Pose2d newPose) {
         start(newPose, (cameraOutput) -> {
             if(cameraOutput != null) {
-//                localizer.updatePoseDelta();
-                slamra.sendOdometry(localizer.getPoseVelocity());
+                if (localizer.useOdometry) {
+                    slamra.sendOdometry(localizer.getPoseVelocity());
+                }
                 cameraData = new CameraData(cameraOutput, cameraData);
 
                 if (!cameraData.isUnique()) {
-                    Log.d("T265CameraSystem", "Error: cameraData is not unique. This value has been repeated (" + cameraData.getRepeats() + ") times.");
+                    Log.e("T265CameraSystem", "Error: cameraData is not unique. This value has been repeated (" + cameraData.getRepeats() + ") times.");
                 }
 
                 Log.i("T265CameraSystem", "Function Call: update() called");
@@ -125,8 +126,11 @@ public class T265CameraSystem {
 
     public void free() {
         Log.i("T265CameraSystem", "Function Call: free() called");
-
-        T265CameraBase.free();
+        try {
+            T265CameraBase.free();
+        } catch(T265Camera.CameraJNIException e) {
+            Log.e("T265CameraSystem", "free() failed | " + e.getLocalizedMessage());
+        }
     }
 
     public void sendOdometry(Vector2d translationalVelocity) {

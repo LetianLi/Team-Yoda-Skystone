@@ -30,7 +30,7 @@ abstract class TwoTrackingWheelVelocityMeasurer(
             _poseEstimate = value
         }
     var robotPoseDelta = Pose2d()
-    private var lastMeasurementInterval = Double.NaN
+    var lastMeasurementInterval = Double.NaN
     private var lastWheelPositions = emptyList<Double>()
     private var lastHeading = Double.NaN
     private var clock = ElapsedTime()
